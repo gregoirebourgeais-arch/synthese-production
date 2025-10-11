@@ -5,33 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Lactalis_logo.svg" alt="Lactalis" class="logo">
+    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZiIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgc3R5bGU9ImZvbnQtc2l6ZTo2MHB4O2ZpbGw6IzAwN2JmZjsgZm9udC13ZWlnaHQ6Ym9sZDtmb250LWZhbWlseTpBcmlhbCI+TGFjdGFsaXM8L3RleHQ+PC9zdmc+" class="logo">
     <h1>Application Synthèse Production</h1>
   </header>
 
   <nav class="menu">
     <button onclick="openPage('atelier')">📊 Atelier</button>
-    <button onclick="openPage('rape')">Râpé</button>
-    <button onclick="openPage('t2')">T2</button>
-    <button onclick="openPage('rt')">RT</button>
-    <button onclick="openPage('omori')">OMORI</button>
-    <button onclick="openPage('t1')">T1</button>
-    <button onclick="openPage('sticks')">Sticks</button>
-    <button onclick="openPage('emballage')">Emballage</button>
-    <button onclick="openPage('des')">Dés</button>
-    <button onclick="openPage('filets')">Filets</button>
-    <button onclick="openPage('predecoupe')">Prédécoupé</button>
+    <button onclick="openPage('Râpé')">Râpé</button>
+    <button onclick="openPage('T2')">T2</button>
+    <button onclick="openPage('RT')">RT</button>
+    <button onclick="openPage('OMORI')">OMORI</button>
+    <button onclick="openPage('T1')">T1</button>
+    <button onclick="openPage('Sticks')">Sticks</button>
+    <button onclick="openPage('Emballage')">Emballage</button>
+    <button onclick="openPage('Dés')">Dés</button>
+    <button onclick="openPage('Filets')">Filets</button>
+    <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
   </nav>
 
   <main id="content"></main>
 
-  <footer>
-    © Lactalis - Synthèse Production
-  </footer>
-
+  <footer>© Lactalis - Synthèse Production</footer>
   <script src="app.js"></script>
 </body>
 </html>
