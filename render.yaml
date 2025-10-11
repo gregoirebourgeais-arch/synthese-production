@@ -4,4 +4,3 @@ services:
     env: static
     buildCommand: ""
     staticPublishPath: public
-    rootDir: .
