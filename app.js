@@ -7,7 +7,7 @@ const lignes = [
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {};
 let dernieresCadences = JSON.parse(localStorage.getItem("dernieresCadences")) || {};
-let saisiesEnCours = JSON.parse(localStorage.getItem("saisiesEnCours")) || {}; // nouvelle mémoire pour champ actif
+let saisiesEnCours = JSON.parse(localStorage.getItem("saisiesEnCours")) || {};
 
 lignes.forEach(l => {
   if (!Array.isArray(data[l])) data[l] = [];
@@ -35,10 +35,47 @@ function openPage(page) {
 
 // === PAGE ATELIER ===
 function pageAtelier(zone) {
-  zone.innerHTML = `
-    <h2>Tableau de Synthèse</h2>
-    <p>Choisissez une ligne pour consulter ou saisir les données.</p>
+  let html = `
+    <h2>🏭 Synthèse Atelier</h2>
+    <table class="atelier-table">
+      <tr>
+        <th>Ligne</th>
+        <th>Total (u)</th>
+        <th>Cadence moyenne (u/h)</th>
+        <th>Performance</th>
+      </tr>
   `;
+
+  lignes.forEach(ligne => {
+    const total = quantitesTemp[ligne] || 0;
+    const histo = data[ligne] || [];
+    const moy =
+      histo.length > 0
+        ? (
+            histo.reduce((sum, r) => sum + parseFloat(r.cadence || 0), 0) /
+            histo.length
+          ).toFixed(1)
+        : 0;
+
+    let perfColor = "🔴";
+    if (moy >= 80) perfColor = "🟢";
+    else if (moy >= 50) perfColor = "🟡";
+
+    html += `
+      <tr class="ligne-row" onclick="openPage('${ligne}')">
+        <td>${ligne}</td>
+        <td>${total}</td>
+        <td>${moy}</td>
+        <td>${perfColor}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+    </table>
+    <p style="text-align:center;margin-top:15px;">Cliquez sur une ligne pour ouvrir la page correspondante</p>
+  `;
+  zone.innerHTML = html;
 }
 
 // === PAGE LIGNE ===
@@ -68,6 +105,7 @@ function pageLigne(ligne, zone) {
       <button type="button" onclick="ajouter('${ligne}')">Enregistrer</button>
       <button type="button" onclick="annulerDernier('${ligne}')">Annuler dernier</button>
       <button type="button" onclick="voirHistorique('${ligne}')">Historique</button>
+      <button type="button" onclick="openPage('atelier')">⬅ Retour Atelier</button>
     </form>
 
     <canvas id="chart-${ligne}" height="120"></canvas>
@@ -79,7 +117,6 @@ function pageLigne(ligne, zone) {
     </div>
   `;
 
-  // Sauvegarde saisie en direct
   document.getElementById("quantite").addEventListener("input", (e) => {
     saisiesEnCours[ligne] = e.target.value;
     sauvegarder();
@@ -88,7 +125,7 @@ function pageLigne(ligne, zone) {
   dessinerGraphique(ligne);
 }
 
-// === CALCUL DE LA SEMAINE ===
+// === CALCUL SEMAINE ===
 function getSemaineISO(dateStr) {
   const date = new Date(dateStr.split('/').reverse().join('-'));
   const temp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -135,11 +172,9 @@ function ajouter(ligne) {
     cadence
   });
 
-  // Efface la saisie du champ (mais conserve total)
   saisiesEnCours[ligne] = "";
   sauvegarder();
 
-  // Mise à jour visuelle
   document.getElementById(`total-${ligne}`).textContent = quantiteTotale;
   document.getElementById(`cadence-${ligne}`).textContent = cadence;
   document.getElementById("quantite").value = "";
@@ -148,7 +183,7 @@ function ajouter(ligne) {
   dessinerGraphique(ligne);
 }
 
-// === ANNULER DERNIER ENREGISTREMENT ===
+// === ANNULER DERNIER ===
 function annulerDernier(ligne) {
   const histo = data[ligne];
   if (!histo.length) return alert("Aucun enregistrement à annuler.");
@@ -158,6 +193,32 @@ function annulerDernier(ligne) {
   sauvegarder();
   alert(`⛔ Dernier enregistrement annulé (${dernier.quantite} retirée).`);
   pageLigne(ligne, document.getElementById("content"));
+}
+
+// === SUPPRIMER ===
+function supprimer(ligne, index) {
+  if (confirm("Supprimer cet enregistrement ?")) {
+    data[ligne].splice(index, 1);
+    sauvegarder();
+    voirHistorique(ligne);
+  }
+}
+
+// === EXPORT ===
+function exporterExcel(ligne) {
+  const rows = data[ligne] || [];
+  if (!rows.length) return alert("Aucune donnée à exporter !");
+  const header = Object.keys(rows[0]);
+  const csv = [
+    header.join(","),
+    ...rows.map(r => header.map(h => `"${r[h] || ""}"`).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Historique_${ligne}.csv`;
+  a.click();
 }
 
 // === HISTORIQUE ===
@@ -188,32 +249,6 @@ function voirHistorique(ligne) {
 
   html += "</table>";
   document.getElementById("content").innerHTML = html;
-}
-
-// === SUPPRESSION D’UNE LIGNE ===
-function supprimer(ligne, index) {
-  if (confirm("Supprimer cet enregistrement ?")) {
-    data[ligne].splice(index, 1);
-    sauvegarder();
-    voirHistorique(ligne);
-  }
-}
-
-// === EXPORT EXCEL ===
-function exporterExcel(ligne) {
-  const rows = data[ligne] || [];
-  if (!rows.length) return alert("Aucune donnée à exporter !");
-  const header = Object.keys(rows[0]);
-  const csv = [
-    header.join(","),
-    ...rows.map(r => header.map(h => `"${r[h] || ""}"`).join(","))
-  ].join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Historique_${ligne}.csv`;
-  a.click();
 }
 
 // === GRAPHIQUES ===
