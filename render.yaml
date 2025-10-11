@@ -1,6 +1,6 @@
 services:
   - type: web
     name: synthese-production
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
+    env: static
+    buildCommand: ""
+    staticPublishPath: public
