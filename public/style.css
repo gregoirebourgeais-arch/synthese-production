@@ -1,4 +1,4 @@
-/* === GLOBAL === */
+/* === STYLE GLOBAL === */
 body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background-color: #f5f8ff;
@@ -70,60 +70,85 @@ header h1 span {
   margin: 0 auto;
 }
 
-/* === FORMULAIRES === */
+/* === FORMULAIRE === */
 form {
   background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin-bottom: 25px;
+  transition: all 0.3s ease;
+}
+
+form:hover {
+  box-shadow: 0 5px 14px rgba(0,0,0,0.1);
 }
 
 form label {
-  display: block;
-  font-size: 14px;
-  margin: 10px 0 4px;
-  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #1e2b50;
+  margin-top: 12px;
+  margin-bottom: 4px;
 }
 
 form input,
 form select {
   width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #cdd4e0;
-  font-size: 15px;
-  background-color: #f9fbff;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 12px 14px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1.5px solid #d5deef;
+  background-color: #f7faff;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
 }
 
 form input:focus,
 form select:focus {
   border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0,123,255,0.3);
-  background-color: white;
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.3);
 }
 
 form button {
   background-color: #007bff;
   color: white;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 15px;
-  margin-top: 10px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  margin-top: 16px;
   margin-right: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
+  box-shadow: 0 3px 5px rgba(0,123,255,0.2);
 }
 
 form button:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
 }
 
-/* === TABLEAUX === */
+/* === ICONES AVANT LES LABELS === */
+label::before {
+  font-family: "Segoe UI Emoji";
+  font-size: 17px;
+  margin-right: 6px;
+}
+
+label[for*="colis"]::before { content: "📦"; }
+label[for*="debut"]::before { content: "🕒"; }
+label[for*="fin"]::before { content: "⌛"; }
+label[for*="qualite"]::before { content: "✅"; }
+label[for*="arret"]::before { content: "⛔"; }
+
+/* === TABLEAU HISTORIQUE === */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -157,13 +182,23 @@ h2, h3 {
   color: #1e2b50;
 }
 
+h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 20px;
+  margin-top: 25px;
+}
+
 /* === BOUTON SUPPRESSION === */
 button[onclick^="suppr"] {
   background-color: #dc3545;
   border: none;
   color: white;
   border-radius: 8px;
-  padding: 5px 8px;
+  padding: 6px 10px;
   font-size: 14px;
   cursor: pointer;
 }
@@ -179,4 +214,14 @@ canvas {
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   padding: 10px;
+}
+
+/* === PIED DE PAGE === */
+footer {
+  text-align: center;
+  padding: 12px;
+  background: #eaf0ff;
+  color: #1e2b50;
+  font-size: 14px;
+  border-top: 1px solid #cfd9ef;
 }
