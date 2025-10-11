@@ -110,7 +110,6 @@ function pageLigne(nom, zone) {
   colisInput.addEventListener("input", () => {
     const oldVal = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
     const newVal = parseInt(colisInput.value || "0");
-    // Si on tape un chiffre supérieur au précédent → somme automatique
     if (newVal !== oldVal && newVal > 0 && oldVal > 0) {
       localStorage.setItem(`colisTemp-${nom}`, oldVal + newVal);
       colisInput.value = oldVal + newVal;
@@ -146,7 +145,7 @@ function pageLigne(nom, zone) {
 
     data[nom].push(record);
     sauvegarder();
-    localStorage.removeItem(`colisTemp-${nom}`); // reset après enregistrement
+    localStorage.removeItem(`colisTemp-${nom}`);
     pageLigne(nom, zone);
   });
 
@@ -183,6 +182,7 @@ function suppr(nom, i) {
 function voirHistorique(nom) {
   const zone = document.getElementById("content");
   const all = data[nom];
+
   let html = `
     <h2>Historique complet — ${nom}</h2>
     <input id="filtre" placeholder="Filtrer par mot-clé ou date..." oninput="filtrerHistorique('${nom}')">
@@ -198,21 +198,98 @@ function voirHistorique(nom) {
       <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td>
     </tr>`;
   });
-  html += `</table><button onclick="openPage('${nom}')">⬅️ Retour</button>`;
+  html += `</table>
+    <canvas id="chart-histo-${nom}" height="120"></canvas>
+    <button onclick="exportChartAsImage('${nom}')">📤 Exporter le graphique</button>
+    <button onclick="openPage('${nom}')">⬅️ Retour</button>
+  `;
   zone.innerHTML = html;
+
+  drawHistoriqueGraph(nom, all);
 }
 
+// === FILTRAGE + MISE À JOUR DU GRAPHE ===
 function filtrerHistorique(nom) {
   const valeur = document.getElementById("filtre").value.toLowerCase();
   const tab = document.getElementById(`tab-full-${nom}`);
   const lignesTab = tab.getElementsByTagName("tr");
+  const newData = [];
+
   for (let i = 1; i < lignesTab.length; i++) {
     const ligneTexte = lignesTab[i].textContent.toLowerCase();
-    lignesTab[i].style.display = ligneTexte.includes(valeur) ? "" : "none";
+    const visible = ligneTexte.includes(valeur);
+    lignesTab[i].style.display = visible ? "" : "none";
+
+    if (visible) {
+      const cells = lignesTab[i].getElementsByTagName("td");
+      if (cells.length >= 8) {
+        newData.push({
+          date: cells[0].innerText,
+          cadence: parseFloat(cells[4].innerText) || 0,
+          arret: parseFloat(cells[6].innerText) || 0
+        });
+      }
+    }
   }
+
+  drawHistoriqueGraph(nom, newData);
 }
 
-// === GRAPHIQUE ===
+// === DESSIN DU GRAPHE COMBINÉ CADENCE + ARRÊTS ===
+function drawHistoriqueGraph(nom, dataset) {
+  const ctx = document.getElementById(`chart-histo-${nom}`);
+  if (!ctx) return;
+
+  if (window[`chart_${nom}`]) window[`chart_${nom}`].destroy();
+
+  const labels = dataset.map(d => d.date);
+  const cadence = dataset.map(d => d.cadence);
+  const arrets = dataset.map(d => d.arret);
+
+  window[`chart_${nom}`] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Temps d'arrêt (min)",
+          data: arrets,
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+          yAxisID: "y1"
+        },
+        {
+          label: "Cadence (colis/h)",
+          data: cadence,
+          type: "line",
+          borderColor: "#007bff",
+          backgroundColor: "rgba(0, 123, 255, 0.3)",
+          fill: true,
+          yAxisID: "y"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y: { beginAtZero: true, position: "left", title: { display: true, text: "Cadence (colis/h)" } },
+        y1: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Arrêt (min)" } }
+      }
+    }
+  });
+}
+
+// === EXPORT GRAPHIQUE EN IMAGE ===
+function exportChartAsImage(nom) {
+  const chart = window[`chart_${nom}`];
+  if (!chart) return alert("Aucun graphique à exporter.");
+  const link = document.createElement("a");
+  link.href = chart.toBase64Image();
+  link.download = `${nom}_historique.png`;
+  link.click();
+}
+
+// === GRAPHIQUE RÉCENT ===
 function drawGraphique(nom) {
   const ctx = document.getElementById(`g-${nom}`);
   const labels = data[nom].map(r => r.date);
@@ -242,4 +319,4 @@ function calculDuree(debut, fin, arret) {
   if (finMin < debutMin) finMin += 24 * 60;
   let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
-}
+            }
