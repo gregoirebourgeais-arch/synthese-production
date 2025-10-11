@@ -2,9 +2,26 @@
 const lignes = ['Râpé','T2','RT','OMORI','T1','Sticks','Emballage','Dés','Filets','Prédécoupé'];
 const stockageCle = "syntheseData";
 
-// Charger les données dès le début
-let data = JSON.parse(localStorage.getItem(stockageCle) || "{}");
-lignes.forEach(l => { if (!data[l]) data[l] = []; });
+// Charger les données si elles existent déjà
+function chargerDonnees() {
+  let saved = localStorage.getItem(stockageCle);
+  let parsed = {};
+  try {
+    parsed = saved ? JSON.parse(saved) : {};
+  } catch {
+    parsed = {};
+  }
+  lignes.forEach(l => { if (!Array.isArray(parsed[l])) parsed[l] = []; });
+  return parsed;
+}
+
+// Sauvegarder les données
+function sauvegarderDonnees(d) {
+  localStorage.setItem(stockageCle, JSON.stringify(d));
+}
+
+// Données globales
+let data = chargerDonnees();
 
 // --- Charger page par défaut ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -14,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // --- Navigation ---
 function openPage(page) {
   const contenu = document.getElementById("content");
+  data = chargerDonnees(); // recharge les données à chaque changement
   if (page === "atelier") afficherAtelier(contenu);
   else afficherLigne(page, contenu);
 }
@@ -25,7 +43,7 @@ function afficherAtelier(zone) {
   let moyennes = [];
 
   lignes.forEach(l => {
-    const items = data[l] || [];
+    const items = data[l];
     const moy = items.length ? (items.reduce((a,b)=>a+b.cadence,0)/items.length).toFixed(1) : 0;
     moyennes.push({ligne:l, cadence:moy});
     html += `<tr><td>${l}</td><td>${moy}</td></tr>`;
@@ -38,7 +56,7 @@ function afficherAtelier(zone) {
 
 // --- PAGE LIGNE ---
 function afficherLigne(nom, zone) {
-  const historiques = data[nom] || [];
+  const historiques = data[nom];
 
   let html = `
     <h2>${nom}</h2>
@@ -78,7 +96,7 @@ function afficherLigne(nom, zone) {
     const enregistrement = { date:new Date().toLocaleString(), colis, debut, fin, cadence:+cadence, qualite, arret };
     data[nom].push(enregistrement);
 
-    localStorage.setItem(stockageCle, JSON.stringify(data));
+    sauvegarderDonnees(data);
     form.reset();
 
     afficherHistorique(nom, table, data[nom]);
@@ -110,7 +128,7 @@ function afficherHistorique(nom, table, liste) {
 function supprimerLigne(nom, index) {
   if (!confirm("Supprimer cette ligne ?")) return;
   data[nom].splice(index,1);
-  localStorage.setItem(stockageCle, JSON.stringify(data));
+  sauvegarderDonnees(data);
   openPage(nom);
 }
 
