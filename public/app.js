@@ -6,7 +6,7 @@ const lignes = [
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
-// Sauvegarde automatique toutes les 2 min + à la fermeture
+// Sauvegarde automatique
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
 }
@@ -86,7 +86,6 @@ function pageLigne(nom, zone) {
       </div>
 
       <button>Enregistrer</button>
-      <button type="button" onclick="exporterExcel('${nom}')">Exporter Excel</button>
       <button type="button" onclick="voirHistorique('${nom}')">📜 Historique complet</button>
     </form>
 
@@ -101,16 +100,15 @@ function pageLigne(nom, zone) {
   `;
   zone.innerHTML = html;
 
-  // Récupération du champ colis temporaire
+  // Cumul de quantité avant enregistrement
   const colisInput = document.getElementById(`colis-${nom}`);
   const temp = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
   if (temp > 0) colisInput.value = temp;
 
-  // Quand on tape un nombre, on additionne à l’existant sans effacer
   colisInput.addEventListener("input", () => {
     const oldVal = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
     const newVal = parseInt(colisInput.value || "0");
-    if (newVal !== oldVal && newVal > 0 && oldVal > 0) {
+    if (newVal > 0 && oldVal > 0 && newVal !== oldVal) {
       localStorage.setItem(`colisTemp-${nom}`, oldVal + newVal);
       colisInput.value = oldVal + newVal;
     } else {
@@ -118,7 +116,6 @@ function pageLigne(nom, zone) {
     }
   });
 
-  // Enregistrement
   document.getElementById(`form-${nom}`).addEventListener("submit", e => {
     e.preventDefault();
 
@@ -178,7 +175,7 @@ function suppr(nom, i) {
   openPage(nom);
 }
 
-// === HISTORIQUE COMPLET ===
+// === HISTORIQUE COMPLET AVEC GRAPHIQUE ===
 function voirHistorique(nom) {
   const zone = document.getElementById("content");
   const all = data[nom];
@@ -208,7 +205,6 @@ function voirHistorique(nom) {
   drawHistoriqueGraph(nom, all);
 }
 
-// === FILTRAGE + MISE À JOUR DU GRAPHE ===
 function filtrerHistorique(nom) {
   const valeur = document.getElementById("filtre").value.toLowerCase();
   const tab = document.getElementById(`tab-full-${nom}`);
@@ -235,7 +231,7 @@ function filtrerHistorique(nom) {
   drawHistoriqueGraph(nom, newData);
 }
 
-// === DESSIN DU GRAPHE COMBINÉ CADENCE + ARRÊTS ===
+// === GRAPHE CADENCE + ARRÊTS ===
 function drawHistoriqueGraph(nom, dataset) {
   const ctx = document.getElementById(`chart-histo-${nom}`);
   if (!ctx) return;
@@ -279,7 +275,6 @@ function drawHistoriqueGraph(nom, dataset) {
   });
 }
 
-// === EXPORT GRAPHIQUE EN IMAGE ===
 function exportChartAsImage(nom) {
   const chart = window[`chart_${nom}`];
   if (!chart) return alert("Aucun graphique à exporter.");
@@ -289,7 +284,7 @@ function exportChartAsImage(nom) {
   link.click();
 }
 
-// === GRAPHIQUE RÉCENT ===
+// === GRAPHE RÉCENT ===
 function drawGraphique(nom) {
   const ctx = document.getElementById(`g-${nom}`);
   const labels = data[nom].map(r => r.date);
@@ -310,7 +305,7 @@ function drawGraphique(nom) {
   });
 }
 
-// === CALCUL DUREE (gère passage minuit) ===
+// === CALCUL DUREE (passage minuit géré) ===
 function calculDuree(debut, fin, arret) {
   const [h1, m1] = debut.split(":").map(Number);
   const [h2, m2] = fin.split(":").map(Number);
@@ -319,4 +314,4 @@ function calculDuree(debut, fin, arret) {
   if (finMin < debutMin) finMin += 24 * 60;
   let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
-            }
+}
