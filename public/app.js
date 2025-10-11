@@ -1,9 +1,12 @@
-// === CONFIG ===
-const lignes = ['Râpé', 'T2', 'RT', 'OMORI', 'T1', 'Sticks', 'Emballage', 'Dés', 'Filets', 'Prédécoupé'];
+// === CONFIGURATION ===
+const lignes = [
+  "Râpé", "T2", "RT", "OMORI", "T1", 
+  "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"
+];
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
-// Sauvegarde auto toutes les 2 min + à la fermeture
+// Sauvegarde automatique toutes les 2 min + à la fermeture
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
 }
@@ -89,7 +92,10 @@ function pageLigne(nom, zone) {
 
     <h3>Historique récent</h3>
     <table id="tab-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th></tr>
+      <tr>
+        <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
+        <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th>
+      </tr>
     </table>
     <canvas id="g-${nom}" height="100"></canvas>
   `;
@@ -139,7 +145,10 @@ function remplirTableau(nom) {
     </tr>
   `).join('');
   tab.innerHTML = `
-    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th></tr>
+    <tr>
+      <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
+      <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th>
+    </tr>
     ${lignesHTML}
   `;
 }
@@ -150,7 +159,7 @@ function suppr(nom, i) {
   openPage(nom);
 }
 
-// === HISTORIQUE GLOBAL ===
+// === HISTORIQUE COMPLET ===
 function voirHistorique(nom) {
   const zone = document.getElementById("content");
   const all = data[nom];
@@ -158,10 +167,16 @@ function voirHistorique(nom) {
     <h2>Historique complet — ${nom}</h2>
     <input id="filtre" placeholder="Filtrer par mot-clé ou date..." oninput="filtrerHistorique('${nom}')">
     <table id="tab-full-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th></tr>
+      <tr>
+        <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
+        <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th>
+      </tr>
   `;
   all.forEach(r => {
-    html += `<tr><td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td><td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td></tr>`;
+    html += `<tr>
+      <td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td>
+      <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td>
+    </tr>`;
   });
   html += `</table><button onclick="openPage('${nom}')">⬅️ Retour</button>`;
   zone.innerHTML = html;
@@ -198,10 +213,19 @@ function drawGraphique(nom) {
   });
 }
 
-// === OUTILS ===
+// === CALCUL DE LA DUREE (corrigé pour passage minuit) ===
 function calculDuree(debut, fin, arret) {
   const [h1, m1] = debut.split(":").map(Number);
   const [h2, m2] = fin.split(":").map(Number);
-  const duree = (h2 + m2 / 60) - (h1 + m1 / 60) - (arret / 60);
+
+  // Conversion en minutes totales
+  let debutMin = h1 * 60 + m1;
+  let finMin = h2 * 60 + m2;
+
+  // Si fin < début → passage après minuit
+  if (finMin < debutMin) finMin += 24 * 60;
+
+  // Durée en heures
+  let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
 }
