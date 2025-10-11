@@ -2,24 +2,24 @@
 const lignes = ['Râpé','T2','RT','OMORI','T1','Sticks','Emballage','Dés','Filets','Prédécoupé'];
 const stockageCle = "syntheseData";
 
-// Charger page par défaut
+// Charger les données dès le début
+let data = JSON.parse(localStorage.getItem(stockageCle) || "{}");
+lignes.forEach(l => { if (!data[l]) data[l] = []; });
+
+// --- Charger page par défaut ---
 document.addEventListener("DOMContentLoaded", () => {
   openPage("atelier");
 });
 
-// --- Gestion de navigation ---
+// --- Navigation ---
 function openPage(page) {
   const contenu = document.getElementById("content");
-  if (page === "atelier") {
-    afficherAtelier(contenu);
-  } else {
-    afficherLigne(page, contenu);
-  }
+  if (page === "atelier") afficherAtelier(contenu);
+  else afficherLigne(page, contenu);
 }
 
 // --- PAGE ATELIER ---
 function afficherAtelier(zone) {
-  let data = chargerDonnees();
   let html = `<h2>Vue d'ensemble Atelier</h2>
               <table><tr><th>Ligne</th><th>Cadence Moyenne</th></tr>`;
   let moyennes = [];
@@ -30,6 +30,7 @@ function afficherAtelier(zone) {
     moyennes.push({ligne:l, cadence:moy});
     html += `<tr><td>${l}</td><td>${moy}</td></tr>`;
   });
+
   html += `</table><canvas id="graphAtelier"></canvas>`;
   zone.innerHTML = html;
   dessinerGraphique('graphAtelier', moyennes.map(m=>m.ligne), moyennes.map(m=>m.cadence), "Cadence Moyenne (colis/h)", "bar");
@@ -37,8 +38,7 @@ function afficherAtelier(zone) {
 
 // --- PAGE LIGNE ---
 function afficherLigne(nom, zone) {
-  let data = chargerDonnees();
-  let historiques = data[nom] || [];
+  const historiques = data[nom] || [];
 
   let html = `
     <h2>${nom}</h2>
@@ -59,9 +59,9 @@ function afficherLigne(nom, zone) {
   `;
 
   zone.innerHTML = html;
-
   const form = document.getElementById(`form-${nom}`);
   const table = document.getElementById(`table-${nom}`);
+
   form.addEventListener("submit", e => {
     e.preventDefault();
     const colis = +document.getElementById(`colis-${nom}`).value;
@@ -76,13 +76,13 @@ function afficherLigne(nom, zone) {
     const cadence = duree>0 ? (colis / duree).toFixed(1) : 0;
 
     const enregistrement = { date:new Date().toLocaleString(), colis, debut, fin, cadence:+cadence, qualite, arret };
-    historiques.push(enregistrement);
-    data[nom] = historiques;
-    localStorage.setItem(stockageCle, JSON.stringify(data));
+    data[nom].push(enregistrement);
 
+    localStorage.setItem(stockageCle, JSON.stringify(data));
     form.reset();
-    afficherHistorique(nom, table, historiques);
-    dessinerGraphique(`graph-${nom}`, historiques.map(i=>i.date), historiques.map(i=>i.cadence), "Cadence (colis/h)", "line");
+
+    afficherHistorique(nom, table, data[nom]);
+    dessinerGraphique(`graph-${nom}`, data[nom].map(i=>i.date), data[nom].map(i=>i.cadence), "Cadence (colis/h)", "line");
   });
 
   afficherHistorique(nom, table, historiques);
@@ -90,9 +90,9 @@ function afficherLigne(nom, zone) {
 }
 
 // --- AFFICHAGE HISTORIQUE ---
-function afficherHistorique(nom, table, data) {
+function afficherHistorique(nom, table, liste) {
   table.innerHTML = `<tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>`;
-  data.forEach((item, index) => {
+  liste.forEach((item, index) => {
     table.innerHTML += `<tr>
       <td>${item.date}</td>
       <td>${item.colis}</td>
@@ -106,10 +106,9 @@ function afficherHistorique(nom, table, data) {
   });
 }
 
-// --- SUPPRESSION ---
+// --- SUPPRIMER UNE LIGNE ---
 function supprimerLigne(nom, index) {
-  let data = chargerDonnees();
-  if (!data[nom]) return;
+  if (!confirm("Supprimer cette ligne ?")) return;
   data[nom].splice(index,1);
   localStorage.setItem(stockageCle, JSON.stringify(data));
   openPage(nom);
@@ -117,11 +116,11 @@ function supprimerLigne(nom, index) {
 
 // --- EXPORT EXCEL ---
 function exporterExcel(nom) {
-  let data = chargerDonnees()[nom] || [];
-  if (!data.length) return alert("Aucune donnée à exporter !");
+  const items = data[nom];
+  if (!items.length) return alert("Aucune donnée à exporter !");
   const csv = [
     ["Date","Colis","Début","Fin","Cadence","Qualité","Arrêt"],
-    ...data.map(d=>[d.date,d.colis,d.debut,d.fin,d.cadence,d.qualite,d.arret])
+    ...items.map(d=>[d.date,d.colis,d.debut,d.fin,d.cadence,d.qualite,d.arret])
   ].map(e=>e.join(",")).join("\n");
   const blob = new Blob([csv], {type:'text/csv'});
   const url = URL.createObjectURL(blob);
@@ -132,7 +131,7 @@ function exporterExcel(nom) {
   URL.revokeObjectURL(url);
 }
 
-// --- OUTILS ---
+// --- GRAPHIQUE ---
 function dessinerGraphique(id, labels, data, label, type="line") {
   const ctx = document.getElementById(id);
   if (!ctx) return;
@@ -141,10 +140,6 @@ function dessinerGraphique(id, labels, data, label, type="line") {
     data: { labels, datasets: [{ label, data, borderWidth:2, backgroundColor:"rgba(0,100,255,0.4)", borderColor:"#007bff" }] },
     options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
   });
-}
-
-function chargerDonnees() {
-  return JSON.parse(localStorage.getItem(stockageCle) || "{}");
 }
 
 function convertirHeure(h) {
