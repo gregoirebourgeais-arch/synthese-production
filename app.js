@@ -5,16 +5,19 @@ const lignes = [
 ];
 
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {}; // nouvelle mémoire temporaire
+let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {}; 
+let dernieresCadences = JSON.parse(localStorage.getItem("dernieresCadences")) || {}; 
 
 lignes.forEach(l => {
   if (!Array.isArray(data[l])) data[l] = [];
   if (!quantitesTemp[l]) quantitesTemp[l] = 0;
+  if (!dernieresCadences[l]) dernieresCadences[l] = 0;
 });
 
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
   localStorage.setItem("quantitesTemp", JSON.stringify(quantitesTemp));
+  localStorage.setItem("dernieresCadences", JSON.stringify(dernieresCadences));
 }
 setInterval(sauvegarder, 120000);
 window.addEventListener("beforeunload", sauvegarder);
@@ -38,6 +41,8 @@ function pageAtelier(zone) {
 // === PAGE LIGNE ===
 function pageLigne(ligne, zone) {
   const qTemp = quantitesTemp[ligne] || 0;
+  const lastCadence = dernieresCadences[ligne] || 0;
+
   zone.innerHTML = `
     <h2>Ligne ${ligne}</h2>
     <form id="form-${ligne}" class="form-ligne">
@@ -61,7 +66,12 @@ function pageLigne(ligne, zone) {
     </form>
 
     <canvas id="chart-${ligne}" height="120"></canvas>
-    <div id="result-${ligne}"></div>
+
+    <div id="resume-${ligne}" class="resume-ligne">
+      <h3>📊 Résumé</h3>
+      <p><strong>Total produit :</strong> <span id="total-${ligne}">${qTemp}</span> unités</p>
+      <p><strong>Dernière cadence :</strong> <span id="cadence-${ligne}">${lastCadence}</span> u/h</p>
+    </div>
   `;
 
   dessinerGraphique(ligne);
@@ -101,6 +111,9 @@ function ajouter(ligne) {
   const dateStr = date.toLocaleDateString();
   const semaine = getSemaineISO(dateStr);
 
+  // mise à jour de la dernière cadence
+  dernieresCadences[ligne] = cadence;
+
   data[ligne].push({
     date: dateStr,
     semaine,
@@ -114,8 +127,13 @@ function ajouter(ligne) {
   });
 
   sauvegarder();
+
+  // mise à jour du résumé
+  document.getElementById(`total-${ligne}`).textContent = quantiteTotale;
+  document.getElementById(`cadence-${ligne}`).textContent = cadence;
+
   alert(`✅ ${quantiteInput} ajoutée (total ${quantiteTotale}) — cadence ${cadence} u/h`);
-  pageLigne(ligne, document.getElementById("content"));
+  dessinerGraphique(ligne);
 }
 
 // === HISTORIQUE ===
@@ -169,44 +187,6 @@ function voirHistorique(ligne) {
   document.getElementById("content").innerHTML = html;
 }
 
-// === FILTRE HISTORIQUE ===
-function appliquerFiltre(ligne) {
-  const semaine = document.getElementById("filtreSemaine").value;
-  const mois = document.getElementById("filtreMois").value;
-  const histo = data[ligne] || [];
-
-  const filtré = histo.filter(r => {
-    const m = new Date(r.date.split('/').reverse().join('-')).getMonth() + 1;
-    return (!semaine || r.semaine == semaine) && (!mois || m == mois);
-  });
-
-  if (!filtré.length) return alert("Aucune donnée pour ce filtre.");
-
-  let html = `
-    <h3>${ligne} — Résultats filtrés</h3>
-    <button onclick="voirHistorique('${ligne}')">🔙 Retour</button>
-    <table border="1" class="table-histo">
-      <tr>
-        <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
-        <th>Quantité</th><th>Total</th><th>Arrêt</th><th>Cause</th><th>Cadence</th>
-      </tr>
-  `;
-
-  filtré.forEach(r => {
-    html += `
-      <tr>
-        <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
-        <td>${r.quantite}</td><td>${r.total}</td>
-        <td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table><canvas id='chart-filtre'></canvas>";
-  document.getElementById("content").innerHTML = html;
-  dessinerGraphiqueFiltré(filtré);
-}
-
 // === SUPPRESSION D’UNE LIGNE ===
 function supprimer(ligne, index) {
   if (confirm("Supprimer cet enregistrement ?")) {
@@ -243,26 +223,6 @@ function dessinerGraphique(ligne) {
   const labels = histo.map(r => r.date);
   const cadence = histo.map(r => parseFloat(r.cadence));
   const arrets = histo.map(r => parseFloat(r.arret));
-
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        { label: "Cadence (u/h)", data: cadence, borderColor: "blue", tension: 0.3 },
-        { label: "Arrêts (min)", data: arrets, borderColor: "red", tension: 0.3 }
-      ]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
-  });
-}
-
-function dessinerGraphiqueFiltré(dataFiltre) {
-  const ctx = document.getElementById("chart-filtre");
-  if (!ctx) return;
-  const labels = dataFiltre.map(r => r.date);
-  const cadence = dataFiltre.map(r => parseFloat(r.cadence));
-  const arrets = dataFiltre.map(r => parseFloat(r.arret));
 
   new Chart(ctx, {
     type: "line",
