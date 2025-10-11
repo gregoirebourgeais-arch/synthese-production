@@ -3,8 +3,12 @@ const lignes = ['Râpé', 'T2', 'RT', 'OMORI', 'T1', 'Sticks', 'Emballage', 'Dé
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
-// Sauvegarde automatique toutes les 2 min
-setInterval(() => localStorage.setItem("syntheseData", JSON.stringify(data)), 120000);
+// Sauvegarde auto toutes les 2 min + à la fermeture
+function sauvegarder() {
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+}
+setInterval(sauvegarder, 120000);
+window.addEventListener("beforeunload", sauvegarder);
 
 // === INITIALISATION ===
 document.addEventListener("DOMContentLoaded", () => {
@@ -51,10 +55,7 @@ function pageAtelier(zone) {
         backgroundColor: "rgba(0,123,255,0.6)"
       }]
     },
-    options: {
-      indexAxis: "y",
-      scales: { x: { beginAtZero: true } }
-    }
+    options: { indexAxis: "y", scales: { x: { beginAtZero: true } } }
   });
 }
 
@@ -63,31 +64,32 @@ function pageLigne(nom, zone) {
   let html = `
     <h2>${nom}</h2>
     <form id="form-${nom}">
-      <label for="colis-${nom}">📦 Colis réalisés :</label>
+      <label>📦 Colis réalisés :</label>
       <input id="colis-${nom}" type="number" required>
 
-      <label for="debut-${nom}">🕒 Heure début :</label>
+      <label>🕒 Heure début :</label>
       <input id="debut-${nom}" type="time" required>
 
-      <label for="fin-${nom}">⌛ Heure fin :</label>
+      <label>⌛ Heure fin :</label>
       <input id="fin-${nom}" type="time" required>
 
-      <label for="qual-${nom}">✅ Qualité :</label>
+      <label>✅ Qualité :</label>
       <input id="qual-${nom}" type="text" placeholder="ex : conforme, défaut visuel...">
 
       <label>⛔ Arrêt :</label>
       <div class="arret-group">
         <input type="number" id="arretDuree-${nom}" placeholder="Durée (min)" min="0">
-        <input type="text" id="arretCause-${nom}" placeholder="Cause (ex : panne, nettoyage...)">
+        <input type="text" id="arretCause-${nom}" placeholder="Cause (panne, nettoyage...)">
       </div>
 
       <button>Enregistrer</button>
       <button type="button" onclick="exporterExcel('${nom}')">Exporter Excel</button>
+      <button type="button" onclick="voirHistorique('${nom}')">📜 Historique complet</button>
     </form>
 
-    <h3>Historique</h3>
+    <h3>Historique récent</h3>
     <table id="tab-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt (min)</th><th>Cause</th><th>Suppr.</th></tr>
+      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th></tr>
     </table>
     <canvas id="g-${nom}" height="100"></canvas>
   `;
@@ -118,7 +120,7 @@ function pageLigne(nom, zone) {
     };
 
     data[nom].push(record);
-    localStorage.setItem("syntheseData", JSON.stringify(data));
+    sauvegarder();
     pageLigne(nom, zone);
   });
 
@@ -129,7 +131,7 @@ function pageLigne(nom, zone) {
 // === TABLEAU HISTORIQUE ===
 function remplirTableau(nom) {
   const tab = document.getElementById(`tab-${nom}`);
-  const lignesHTML = data[nom].map((r, i) => `
+  const lignesHTML = data[nom].slice(-10).map((r, i) => `
     <tr>
       <td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td>
       <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td>
@@ -137,57 +139,25 @@ function remplirTableau(nom) {
     </tr>
   `).join('');
   tab.innerHTML = `
-    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt (min)</th><th>Cause</th><th>Suppr.</th></tr>
+    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th></tr>
     ${lignesHTML}
   `;
 }
 
 function suppr(nom, i) {
   data[nom].splice(i, 1);
-  localStorage.setItem("syntheseData", JSON.stringify(data));
+  sauvegarder();
   openPage(nom);
 }
 
-// === GRAPHIQUE ===
-function drawGraphique(nom) {
-  const ctx = document.getElementById(`g-${nom}`);
-  const labels = data[nom].map(r => r.date);
-  const valeurs = data[nom].map(r => r.cadence);
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Cadence (colis/h)",
-        data: valeurs,
-        borderColor: "#007bff",
-        backgroundColor: "rgba(0,123,255,0.3)",
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } }
-    }
-  });
-}
-
-// === OUTILS ===
-function calculDuree(debut, fin, arret) {
-  const [h1, m1] = debut.split(":").map(Number);
-  const [h2, m2] = fin.split(":").map(Number);
-  const duree = (h2 + m2 / 60) - (h1 + m1 / 60) - (arret / 60);
-  return duree > 0 ? duree : 0;
-}
-
-function exporterExcel(nom) {
-  const rows = data[nom];
-  if (!rows.length) return alert("Aucune donnée à exporter.");
-  const header = Object.keys(rows[0]);
-  const csv = [header.join(";"), ...rows.map(r => header.map(h => r[h]).join(";"))].join("\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `${nom}_historique.csv`;
-  link.click();
-}
+// === HISTORIQUE GLOBAL ===
+function voirHistorique(nom) {
+  const zone = document.getElementById("content");
+  const all = data[nom];
+  let html = `
+    <h2>Historique complet — ${nom}</h2>
+    <input id="filtre" placeholder="Filtrer par mot-clé ou date..." oninput="filtrerHistorique('${nom}')">
+    <table id="tab-full-${nom}">
+      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th></tr>
+  `;
+  all
