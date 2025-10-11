@@ -1,7 +1,5 @@
 const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
 let data = JSON.parse(localStorage.getItem("syntheseData") || "[]");
-let arrets = JSON.parse(localStorage.getItem("arretsData") || "[]");const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
-let data = JSON.parse(localStorage.getItem("syntheseData") || "[]");
 let arrets = JSON.parse(localStorage.getItem("arretsData") || "[]");
 
 function openPage(line) {
@@ -38,41 +36,13 @@ function renderAtelier(el) {
     type: "bar",
     data: { 
       labels: lignes, 
-      datasets: [{ label: "Cadence (colis/h
-
-function openPage(line) {
-  const content = document.getElementById("content");
-  if (line === "atelier") {
-    renderAtelier(content);
-  } else {
-    renderLigne(line, content);
-  }
-}
-
-// --- Page Atelier ---
-function renderAtelier(el) {
-  const moyennes = lignes.map(l => {
-    const filtres = data.filter(c => c.ligne === l);
-    return filtres.length ? Math.round(filtres.reduce((a,b)=>a+b.cadence,0)/filtres.length) : 0;
-  });
-
-  el.innerHTML = `
-    <div class="card">
-      <h2>Vue Atelier</h2>
-      <button class="export" onclick="exportAll()">📤 Exporter tout l'atelier</button>
-      <table>
-        <thead><tr><th>Ligne</th><th>Cadence Moyenne (colis/h)</th></tr></thead>
-        <tbody>${lignes.map((l,i)=>`<tr><td>${l}</td><td>${moyennes[i]}</td></tr>`).join("")}</tbody>
-      </table>
-      <canvas id="atelierChart" height="120"></canvas>
-    </div>
-  `;
-
-  const ctx = document.getElementById("atelierChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
-    data: { labels: lignes, datasets: [{ label: "Cadence", data: moyennes, backgroundColor: "#007bff" }] },
-    options: { scales: { y: { beginAtZero: true } } }
+      datasets: [{ label: "Cadence (colis/h)", data: moyennes, backgroundColor: "#007bff" }] 
+    },
+    options: { 
+      indexAxis: 'y',
+      responsive: true,
+      scales: { x: { beginAtZero: true } }
+    }
   });
 }
 
@@ -126,14 +96,14 @@ function saveProd(line) {
   const [hd, md] = debut.split(":").map(Number);
   const [hf, mf] = fin.split(":").map(Number);
   let duree = (hf * 60 + mf) - (hd * 60 + md);
-  if (duree <= 0) duree += 24 * 60; // si passage minuit
+  if (duree <= 0) duree += 24 * 60; // passage minuit
   const cadence = duree > 0 ? Math.round(colis / (duree / 60)) : 0;
 
   data.push({ ligne: line, debut, fin, colis, cadence, qualite, date: new Date().toLocaleString() });
   localStorage.setItem("syntheseData", JSON.stringify(data));
 
   document.getElementById(`form-${line}`).reset();
-  updateTables(line);
+  updateTables(line); // 🔥 mise à jour instantanée
 }
 
 // --- Sauvegarde Arrêts ---
@@ -171,7 +141,10 @@ function updateTables(line) {
   const ctx = document.getElementById(`chart-${line}`).getContext("2d");
   new Chart(ctx, {
     type: "line",
-    data: { labels: filtres.map(c=>c.debut), datasets:[{label:"Cadence",data:filtres.map(c=>c.cadence),borderColor:"#007bff",fill:false}] },
+    data: { 
+      labels: filtres.map(c=>c.debut), 
+      datasets:[{ label:"Cadence", data:filtres.map(c=>c.cadence), borderColor:"#007bff", fill:false, tension:0.3 }]
+    },
     options: { scales: { y: { beginAtZero: true } } }
   });
 }
