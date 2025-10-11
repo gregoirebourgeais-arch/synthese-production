@@ -2,6 +2,6 @@ services:
   - type: web
     name: synthese
     env: static
-    rootDir: .
-    staticPublishPath: public
     buildCommand: ""
+    staticPublishPath: public
+    
