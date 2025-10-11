@@ -93,14 +93,14 @@ function pageLigne(nom, zone) {
     <table id="tab-${nom}">
       <tr>
         <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
-        <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th>
+        <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>🗑</th>
       </tr>
     </table>
     <canvas id="g-${nom}" height="100"></canvas>
   `;
   zone.innerHTML = html;
 
-  // Cumul de quantité avant enregistrement
+  // Quantité cumulative
   const colisInput = document.getElementById(`colis-${nom}`);
   const temp = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
   if (temp > 0) colisInput.value = temp;
@@ -116,6 +116,7 @@ function pageLigne(nom, zone) {
     }
   });
 
+  // Enregistrement
   document.getElementById(`form-${nom}`).addEventListener("submit", e => {
     e.preventDefault();
 
@@ -129,8 +130,13 @@ function pageLigne(nom, zone) {
     const duree = calculDuree(debut, fin, arret);
     const cadence = duree > 0 ? (colis / duree).toFixed(1) : 0;
 
+    // Ajout de la date du jour (format JJ/MM/AAAA)
+    const today = new Date();
+    const dateLocale = today.toLocaleDateString("fr-FR");
+    const heure = today.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
     const record = {
-      date: new Date().toLocaleString(),
+      date: `${dateLocale} ${heure}`,
       colis,
       debut,
       fin,
@@ -157,19 +163,20 @@ function remplirTableau(nom) {
     <tr>
       <td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td>
       <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td>
-      <td><button onclick="suppr('${nom}', ${i})">❌</button></td>
+      <td><button onclick="suppr('${nom}', ${i})">🗑</button></td>
     </tr>
   `).join('');
   tab.innerHTML = `
     <tr>
       <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
-      <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>Suppr.</th>
+      <th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th><th>🗑</th>
     </tr>
     ${lignesHTML}
   `;
 }
 
 function suppr(nom, i) {
+  if (!confirm("Supprimer cet enregistrement ?")) return;
   data[nom].splice(i, 1);
   sauvegarder();
   openPage(nom);
@@ -314,4 +321,4 @@ function calculDuree(debut, fin, arret) {
   if (finMin < debutMin) finMin += 24 * 60;
   let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
-}
+                                                          }
