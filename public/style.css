@@ -1,80 +1,42 @@
-body {
-  font-family: "Inter", sans-serif;
-  background: #f5f8ff;
-  margin: 0;
-  color: #222;
-  text-align: center;
-}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lactalis — Synthèse Production</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <img src="Lactalis2023Logo.svg" class="logo" alt="Lactalis Logo" />
+    <div>
+      <h1><span class="titre-bleu">Synthèse</span> Production</h1>
+    </div>
+  </header>
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  background: #ffffff;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
+  <main>
+    <div class="menu">
+      <button onclick="openPage('atelier')">Atelier</button>
+      <button onclick="openPage('Râpé')">Râpé</button>
+      <button onclick="openPage('T2')">T2</button>
+      <button onclick="openPage('RT')">RT</button>
+      <button onclick="openPage('OMORI')">OMORI</button>
+      <button onclick="openPage('T1')">T1</button>
+      <button onclick="openPage('Sticks')">Sticks</button>
+      <button onclick="openPage('Emballage')">Emballage</button>
+      <button onclick="openPage('Dés')">Dés</button>
+      <button onclick="openPage('Filets')">Filets</button>
+      <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
+    </div>
 
-.logo {
-  height: 60px;
-}
+    <section id="content"></section>
+  </main>
 
-.titre-bleu {
-  color: #007bff;
-}
+  <footer>
+    © Lactalis — Synthèse Production
+  </footer>
 
-.menu {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 20px 10px;
-}
-
-.menu button {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.menu button:active {
-  transform: scale(0.96);
-  background: #005ecb;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 15px;
-}
-
-input, select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-button {
-  cursor: pointer;
-}
-
-.arret-group {
-  display: flex;
-  gap: 8px;
-}
-
-footer {
-  margin-top: 30px;
-  padding: 10px;
-  background: #eaf1ff;
-  color: #333;
-  font-size: 14px;
-}
+  <script src="app.js"></script>
+</body>
+</html>
