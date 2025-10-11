@@ -7,6 +7,7 @@ const lignes = [
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
+// Sauvegarde automatique
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
 }
@@ -60,6 +61,17 @@ function pageLigne(ligne, zone) {
   dessinerGraphique(ligne);
 }
 
+// === CALCUL DE LA SEMAINE ===
+function getSemaineISO(dateStr) {
+  const date = new Date(dateStr.split('/').reverse().join('-'));
+  const temp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = temp.getUTCDay() || 7;
+  temp.setUTCDate(temp.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(temp.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil((((temp - yearStart) / 86400000) + 1) / 7);
+  return weekNum;
+}
+
 // === AJOUT DONNÉE ===
 function ajouter(ligne) {
   const debut = document.getElementById("debut").value;
@@ -72,17 +84,26 @@ function ajouter(ligne) {
   const d1 = new Date(`1970-01-01T${debut}:00`);
   const d2 = new Date(`1970-01-01T${fin}:00`);
   let duree = (d2 - d1) / 60000;
-  if (duree <= 0) duree += 1440; // passage minuit
+  if (duree <= 0) duree += 1440;
 
   const cadence = duree > 0 ? (quantite / (duree / 60)).toFixed(1) : 0;
+  const date = new Date();
+  const dateStr = date.toLocaleDateString();
+  const semaine = getSemaineISO(dateStr);
 
   data[ligne].push({
-    date: new Date().toLocaleDateString(),
-    debut, fin, quantite, arret, cause, cadence
+    date: dateStr,
+    semaine,
+    debut,
+    fin,
+    quantite,
+    arret,
+    cause,
+    cadence
   });
 
   sauvegarder();
-  alert(`Enregistré ✅ (Cadence : ${cadence} u/h)`);
+  alert(`✅ Enregistré (Cadence : ${cadence} u/h, Semaine ${semaine})`);
   dessinerGraphique(ligne);
 }
 
@@ -91,22 +112,42 @@ function voirHistorique(ligne) {
   const histo = data[ligne] || [];
   if (!histo.length) return alert("Aucun enregistrement pour cette ligne.");
 
+  const semaines = [...new Set(histo.map(r => r.semaine))];
+  const mois = [...new Set(histo.map(r => new Date(r.date.split('/').reverse().join('-')).getMonth() + 1))];
+
+  let filtreHTML = `
+    <div style="margin:10px 0;">
+      <label>Filtrer par semaine :</label>
+      <select id="filtreSemaine">
+        <option value="">Toutes</option>
+        ${semaines.map(s => `<option value="${s}">Semaine ${s}</option>`).join('')}
+      </select>
+      <label>ou par mois :</label>
+      <select id="filtreMois">
+        <option value="">Tous</option>
+        ${mois.map(m => `<option value="${m}">${m}</option>`).join('')}
+      </select>
+      <button onclick="appliquerFiltre('${ligne}')">Appliquer</button>
+    </div>
+  `;
+
   let html = `
     <h3>Historique ${ligne}</h3>
+    ${filtreHTML}
     <button onclick="exporterExcel('${ligne}')">Exporter Excel</button>
     <table border="1" class="table-histo">
       <tr>
-        <th>Date</th><th>Début</th><th>Fin</th><th>Quantité</th>
-        <th>Arrêt (min)</th><th>Cause</th><th>Cadence</th><th>❌</th>
+        <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
+        <th>Quantité</th><th>Arrêt (min)</th><th>Cause</th>
+        <th>Cadence</th><th>❌</th>
       </tr>
   `;
 
   histo.forEach((r, i) => {
     html += `
       <tr>
-        <td>${r.date}</td><td>${r.debut}</td><td>${r.fin}</td>
-        <td>${r.quantite}</td><td>${r.arret}</td>
-        <td>${r.cause}</td><td>${r.cadence}</td>
+        <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
+        <td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
         <td><button onclick="supprimer('${ligne}',${i})">🗑️</button></td>
       </tr>
     `;
@@ -114,6 +155,43 @@ function voirHistorique(ligne) {
 
   html += "</table>";
   document.getElementById("content").innerHTML = html;
+}
+
+// === FILTRE HISTORIQUE ===
+function appliquerFiltre(ligne) {
+  const semaine = document.getElementById("filtreSemaine").value;
+  const mois = document.getElementById("filtreMois").value;
+  const histo = data[ligne] || [];
+
+  const filtré = histo.filter(r => {
+    const m = new Date(r.date.split('/').reverse().join('-')).getMonth() + 1;
+    return (!semaine || r.semaine == semaine) && (!mois || m == mois);
+  });
+
+  if (!filtré.length) return alert("Aucune donnée pour ce filtre.");
+
+  let html = `
+    <h3>${ligne} — Résultats filtrés</h3>
+    <button onclick="voirHistorique('${ligne}')">🔙 Retour</button>
+    <table border="1" class="table-histo">
+      <tr>
+        <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
+        <th>Quantité</th><th>Arrêt</th><th>Cause</th><th>Cadence</th>
+      </tr>
+  `;
+
+  filtré.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
+        <td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table><canvas id='chart-filtre'></canvas>";
+  document.getElementById("content").innerHTML = html;
+  dessinerGraphiqueFiltré(filtré);
 }
 
 // === SUPPRESSION D’UNE LIGNE ===
@@ -142,7 +220,7 @@ function exporterExcel(ligne) {
   a.click();
 }
 
-// === GRAPHIQUE ===
+// === GRAPHIQUES ===
 function dessinerGraphique(ligne) {
   const ctx = document.getElementById(`chart-${ligne}`);
   if (!ctx) return;
@@ -181,6 +259,26 @@ function dessinerGraphique(ligne) {
         y2: { position: "right", beginAtZero: true }
       }
     }
+  });
+}
+
+function dessinerGraphiqueFiltré(dataFiltre) {
+  const ctx = document.getElementById("chart-filtre");
+  if (!ctx) return;
+  const labels = dataFiltre.map(r => r.date);
+  const cadence = dataFiltre.map(r => parseFloat(r.cadence));
+  const arrets = dataFiltre.map(r => parseFloat(r.arret));
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "Cadence (u/h)", data: cadence, borderColor: "blue", tension: 0.3 },
+        { label: "Arrêts (min)", data: arrets, borderColor: "red", tension: 0.3 }
+      ]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 }
 
