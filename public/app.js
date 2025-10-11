@@ -46,6 +46,7 @@ function renderLigne(line, el) {
       <label>Qualité</label><input type="text" id="qualite-${line}">
       <button type="button" class="save" onclick="saveProd('${line}')">💾 Enregistrer</button>
       <button type="button" class="export" onclick="exportExcel('${line}')">📤 Export Excel</button>
+      <button type="button" class="delete" onclick="clearData('${line}')">🗑 Effacer les données</button>
     </form>
 
     <h3>Arrêts de ligne</h3>
@@ -94,6 +95,17 @@ function saveArret(line) {
   arrets.push({ ligne: line, motif, duree, date: new Date().toLocaleString() });
   localStorage.setItem("arretsData", JSON.stringify(arrets));
   updateTables(line);
+}
+
+// --- Effacement des données de la ligne ---
+function clearData(line) {
+  if (!confirm(`Effacer toutes les données de la ligne ${line} ?`)) return;
+  data = data.filter(c => c.ligne !== line);
+  arrets = arrets.filter(a => a.ligne !== line);
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  localStorage.setItem("arretsData", JSON.stringify(arrets));
+  updateTables(line);
+  alert(`🗑 Données effacées pour la ligne ${line}`);
 }
 
 // --- Mise à jour des tableaux et graphiques ---
