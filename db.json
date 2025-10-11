@@ -1,3 +1,37 @@
 {
-  "enregistrements": []
+  "lignes": [
+    { "nom": "Râpé", "cadenceMoyenne": 0 },
+    { "nom": "T2", "cadenceMoyenne": 0 },
+    { "nom": "RT", "cadenceMoyenne": 0 },
+    { "nom": "OMORI", "cadenceMoyenne": 0 },
+    { "nom": "T1", "cadenceMoyenne": 0 },
+    { "nom": "Sticks", "cadenceMoyenne": 0 },
+    { "nom": "Emballage", "cadenceMoyenne": 0 },
+    { "nom": "Dés", "cadenceMoyenne": 0 },
+    { "nom": "Filets", "cadenceMoyenne": 0 },
+    { "nom": "Prédécoupé", "cadenceMoyenne": 0 }
+  ],
+  "enregistrements": [
+    {
+      "id": 1,
+      "ligne": "Râpé",
+      "debut": "",
+      "fin": "",
+      "colis": 0,
+      "qualite": "",
+      "arret": "",
+      "tempsArret": "",
+      "commentaire": "",
+      "date": ""
+    }
+  ],
+  "arrets": [
+    {
+      "id": 1,
+      "ligne": "Râpé",
+      "motif": "",
+      "duree": "",
+      "date": ""
+    }
+  ]
 }
