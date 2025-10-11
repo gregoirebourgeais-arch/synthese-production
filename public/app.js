@@ -63,18 +63,31 @@ function pageLigne(nom, zone) {
   let html = `
     <h2>${nom}</h2>
     <form id="form-${nom}">
-      <label>Colis réalisés :</label><input id="colis-${nom}" type="number" required><br>
-      <label>Heure début :</label><input id="debut-${nom}" type="time" required><br>
-      <label>Heure fin :</label><input id="fin-${nom}" type="time" required><br>
-      <label>Qualité :</label><input id="qual-${nom}" type="text"><br>
-      <label>Arrêt (min) :</label><input id="arret-${nom}" type="number" value="0"><br>
+      <label for="colis-${nom}">📦 Colis réalisés :</label>
+      <input id="colis-${nom}" type="number" required>
+
+      <label for="debut-${nom}">🕒 Heure début :</label>
+      <input id="debut-${nom}" type="time" required>
+
+      <label for="fin-${nom}">⌛ Heure fin :</label>
+      <input id="fin-${nom}" type="time" required>
+
+      <label for="qual-${nom}">✅ Qualité :</label>
+      <input id="qual-${nom}" type="text" placeholder="ex : conforme, défaut visuel...">
+
+      <label>⛔ Arrêt :</label>
+      <div class="arret-group">
+        <input type="number" id="arretDuree-${nom}" placeholder="Durée (min)" min="0">
+        <input type="text" id="arretCause-${nom}" placeholder="Cause (ex : panne, nettoyage...)">
+      </div>
+
       <button>Enregistrer</button>
       <button type="button" onclick="exporterExcel('${nom}')">Exporter Excel</button>
     </form>
 
     <h3>Historique</h3>
     <table id="tab-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
+      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt (min)</th><th>Cause</th><th>Suppr.</th></tr>
     </table>
     <canvas id="g-${nom}" height="100"></canvas>
   `;
@@ -82,18 +95,28 @@ function pageLigne(nom, zone) {
 
   document.getElementById(`form-${nom}`).addEventListener("submit", e => {
     e.preventDefault();
+
     const colis = +document.getElementById(`colis-${nom}`).value;
     const debut = document.getElementById(`debut-${nom}`).value;
     const fin = document.getElementById(`fin-${nom}`).value;
     const qual = document.getElementById(`qual-${nom}`).value;
-    const arret = +document.getElementById(`arret-${nom}`).value;
+    const arret = +document.getElementById(`arretDuree-${nom}`).value || 0;
+    const cause = document.getElementById(`arretCause-${nom}`).value || "";
 
     const duree = calculDuree(debut, fin, arret);
     const cadence = duree > 0 ? (colis / duree).toFixed(1) : 0;
+
     const record = {
       date: new Date().toLocaleString(),
-      colis, debut, fin, cadence: +cadence, qualite: qual, arret
+      colis,
+      debut,
+      fin,
+      cadence: +cadence,
+      qualite: qual,
+      arret,
+      cause
     };
+
     data[nom].push(record);
     localStorage.setItem("syntheseData", JSON.stringify(data));
     pageLigne(nom, zone);
@@ -103,18 +126,18 @@ function pageLigne(nom, zone) {
   drawGraphique(nom);
 }
 
-// === TABLEAU ===
+// === TABLEAU HISTORIQUE ===
 function remplirTableau(nom) {
   const tab = document.getElementById(`tab-${nom}`);
   const lignesHTML = data[nom].map((r, i) => `
     <tr>
       <td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td>
-      <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td>
+      <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td>
       <td><button onclick="suppr('${nom}', ${i})">❌</button></td>
     </tr>
   `).join('');
   tab.innerHTML = `
-    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
+    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt (min)</th><th>Cause</th><th>Suppr.</th></tr>
     ${lignesHTML}
   `;
 }
