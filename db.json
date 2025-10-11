@@ -35,3 +35,21 @@
     }
   ]
 }
+// --- Sauvegarde persistante sur le fichier JSON ---
+async function syncToServer() {
+  try {
+    await fetch('db.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error("Erreur de sauvegarde sur le serveur:", e);
+  }
+}
+
+// On appelle cette fonction à chaque sauvegarde
+function sauvegarderDonnees(d) {
+  localStorage.setItem(stockageCle, JSON.stringify(d));
+  syncToServer(); // nouvelle ligne
+}
