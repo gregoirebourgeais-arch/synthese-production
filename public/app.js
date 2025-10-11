@@ -85,10 +85,11 @@ function saveProd(line) {
 
   if (!debut || !fin || !colis) return alert("⚠️ Remplis tous les champs nécessaires.");
 
-  const t1 = new Date(`1970-01-01T${debut}`);
-  const t2 = new Date(`1970-01-01T${fin}`);
-  const h = (t2 - t1) / 3600000;
-  const cadence = h > 0 ? Math.round(colis / h) : 0;
+  const [hd, md] = debut.split(":").map(Number);
+  const [hf, mf] = fin.split(":").map(Number);
+  let duree = (hf * 60 + mf) - (hd * 60 + md);
+  if (duree <= 0) duree += 24 * 60; // si passage minuit
+  const cadence = duree > 0 ? Math.round(colis / (duree / 60)) : 0;
 
   data.push({ ligne: line, debut, fin, colis, cadence, qualite, date: new Date().toLocaleString() });
   localStorage.setItem("syntheseData", JSON.stringify(data));
