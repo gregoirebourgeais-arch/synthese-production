@@ -2,4 +2,4 @@ services:
   - type: web
     name: synthese
     env: static
-    staticPublishPath: public
+    staticPublishPath: ./public
