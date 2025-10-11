@@ -3,5 +3,4 @@ services:
     name: synthese-production
     env: static
     buildCommand: ""
-    staticPublishPath: public
-    rootDir: .
+    staticPublishPath: ./public
