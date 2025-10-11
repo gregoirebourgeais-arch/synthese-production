@@ -5,19 +5,22 @@ const lignes = [
 ];
 
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {}; 
-let dernieresCadences = JSON.parse(localStorage.getItem("dernieresCadences")) || {}; 
+let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {};
+let dernieresCadences = JSON.parse(localStorage.getItem("dernieresCadences")) || {};
+let saisiesEnCours = JSON.parse(localStorage.getItem("saisiesEnCours")) || {}; // nouvelle mémoire pour champ actif
 
 lignes.forEach(l => {
   if (!Array.isArray(data[l])) data[l] = [];
   if (!quantitesTemp[l]) quantitesTemp[l] = 0;
   if (!dernieresCadences[l]) dernieresCadences[l] = 0;
+  if (!saisiesEnCours[l]) saisiesEnCours[l] = "";
 });
 
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
   localStorage.setItem("quantitesTemp", JSON.stringify(quantitesTemp));
   localStorage.setItem("dernieresCadences", JSON.stringify(dernieresCadences));
+  localStorage.setItem("saisiesEnCours", JSON.stringify(saisiesEnCours));
 }
 setInterval(sauvegarder, 120000);
 window.addEventListener("beforeunload", sauvegarder);
@@ -42,6 +45,7 @@ function pageAtelier(zone) {
 function pageLigne(ligne, zone) {
   const qTemp = quantitesTemp[ligne] || 0;
   const lastCadence = dernieresCadences[ligne] || 0;
+  const saisie = saisiesEnCours[ligne] || "";
 
   zone.innerHTML = `
     <h2>Ligne ${ligne}</h2>
@@ -53,7 +57,7 @@ function pageLigne(ligne, zone) {
       <input type="time" id="fin"><br>
 
       <label>Quantité produite (total actuel : ${qTemp}) :</label>
-      <input type="number" id="quantite" min="0" value=""><br>
+      <input type="number" id="quantite" min="0" value="${saisie}"><br>
 
       <label>Arrêt (minutes) :</label>
       <input type="number" id="arret" min="0"><br>
@@ -62,6 +66,7 @@ function pageLigne(ligne, zone) {
       <input type="text" id="cause" placeholder="Ex : panne, nettoyage..."><br>
 
       <button type="button" onclick="ajouter('${ligne}')">Enregistrer</button>
+      <button type="button" onclick="annulerDernier('${ligne}')">Annuler dernier</button>
       <button type="button" onclick="voirHistorique('${ligne}')">Historique</button>
     </form>
 
@@ -73,6 +78,12 @@ function pageLigne(ligne, zone) {
       <p><strong>Dernière cadence :</strong> <span id="cadence-${ligne}">${lastCadence}</span> u/h</p>
     </div>
   `;
+
+  // Sauvegarde saisie en direct
+  document.getElementById("quantite").addEventListener("input", (e) => {
+    saisiesEnCours[ligne] = e.target.value;
+    sauvegarder();
+  });
 
   dessinerGraphique(ligne);
 }
@@ -97,7 +108,6 @@ function ajouter(ligne) {
   const cause = document.getElementById("cause").value || "";
   if (!debut || !fin || isNaN(quantiteInput)) return alert("Champs incomplets !");
 
-  // cumul quantité temporaire
   quantitesTemp[ligne] = (quantitesTemp[ligne] || 0) + quantiteInput;
   const quantiteTotale = quantitesTemp[ligne];
 
@@ -111,7 +121,6 @@ function ajouter(ligne) {
   const dateStr = date.toLocaleDateString();
   const semaine = getSemaineISO(dateStr);
 
-  // mise à jour de la dernière cadence
   dernieresCadences[ligne] = cadence;
 
   data[ligne].push({
@@ -126,14 +135,29 @@ function ajouter(ligne) {
     cadence
   });
 
+  // Efface la saisie du champ (mais conserve total)
+  saisiesEnCours[ligne] = "";
   sauvegarder();
 
-  // mise à jour du résumé
+  // Mise à jour visuelle
   document.getElementById(`total-${ligne}`).textContent = quantiteTotale;
   document.getElementById(`cadence-${ligne}`).textContent = cadence;
+  document.getElementById("quantite").value = "";
 
   alert(`✅ ${quantiteInput} ajoutée (total ${quantiteTotale}) — cadence ${cadence} u/h`);
   dessinerGraphique(ligne);
+}
+
+// === ANNULER DERNIER ENREGISTREMENT ===
+function annulerDernier(ligne) {
+  const histo = data[ligne];
+  if (!histo.length) return alert("Aucun enregistrement à annuler.");
+  const dernier = histo.pop();
+  quantitesTemp[ligne] -= dernier.quantite;
+  if (quantitesTemp[ligne] < 0) quantitesTemp[ligne] = 0;
+  sauvegarder();
+  alert(`⛔ Dernier enregistrement annulé (${dernier.quantite} retirée).`);
+  pageLigne(ligne, document.getElementById("content"));
 }
 
 // === HISTORIQUE ===
@@ -141,41 +165,20 @@ function voirHistorique(ligne) {
   const histo = data[ligne] || [];
   if (!histo.length) return alert("Aucun enregistrement pour cette ligne.");
 
-  const semaines = [...new Set(histo.map(r => r.semaine))];
-  const mois = [...new Set(histo.map(r => new Date(r.date.split('/').reverse().join('-')).getMonth() + 1))];
-
-  let filtreHTML = `
-    <div style="margin:10px 0;">
-      <label>Filtrer par semaine :</label>
-      <select id="filtreSemaine">
-        <option value="">Toutes</option>
-        ${semaines.map(s => `<option value="${s}">Semaine ${s}</option>`).join('')}
-      </select>
-      <label>ou par mois :</label>
-      <select id="filtreMois">
-        <option value="">Tous</option>
-        ${mois.map(m => `<option value="${m}">${m}</option>`).join('')}
-      </select>
-      <button onclick="appliquerFiltre('${ligne}')">Appliquer</button>
-    </div>
-  `;
-
   let html = `
     <h3>Historique ${ligne}</h3>
-    ${filtreHTML}
     <button onclick="exporterExcel('${ligne}')">Exporter Excel</button>
     <table border="1" class="table-histo">
       <tr>
-        <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
-        <th>Quantité</th><th>Total</th><th>Arrêt (min)</th><th>Cause</th>
-        <th>Cadence</th><th>❌</th>
+        <th>Date</th><th>Début</th><th>Fin</th>
+        <th>Quantité</th><th>Total</th><th>Arrêt</th><th>Cause</th><th>Cadence</th><th>❌</th>
       </tr>
   `;
 
   histo.forEach((r, i) => {
     html += `
       <tr>
-        <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
+        <td>${r.date}</td><td>${r.debut}</td><td>${r.fin}</td>
         <td>${r.quantite}</td><td>${r.total}</td>
         <td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
         <td><button onclick="supprimer('${ligne}',${i})">🗑️</button></td>
