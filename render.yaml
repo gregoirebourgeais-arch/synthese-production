@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: synthese-production
-    env: static
-    buildCommand: ""
-    staticPublishPath: public
