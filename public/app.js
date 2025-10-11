@@ -160,4 +160,48 @@ function voirHistorique(nom) {
     <table id="tab-full-${nom}">
       <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Durée arrêt</th><th>Cause</th></tr>
   `;
-  all
+  all.forEach(r => {
+    html += `<tr><td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td><td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td><td>${r.cause}</td></tr>`;
+  });
+  html += `</table><button onclick="openPage('${nom}')">⬅️ Retour</button>`;
+  zone.innerHTML = html;
+}
+
+function filtrerHistorique(nom) {
+  const valeur = document.getElementById("filtre").value.toLowerCase();
+  const tab = document.getElementById(`tab-full-${nom}`);
+  const lignesTab = tab.getElementsByTagName("tr");
+  for (let i = 1; i < lignesTab.length; i++) {
+    const ligneTexte = lignesTab[i].textContent.toLowerCase();
+    lignesTab[i].style.display = ligneTexte.includes(valeur) ? "" : "none";
+  }
+}
+
+// === GRAPHIQUE ===
+function drawGraphique(nom) {
+  const ctx = document.getElementById(`g-${nom}`);
+  const labels = data[nom].map(r => r.date);
+  const valeurs = data[nom].map(r => r.cadence);
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Cadence (colis/h)",
+        data: valeurs,
+        borderColor: "#007bff",
+        backgroundColor: "rgba(0,123,255,0.3)",
+        fill: true
+      }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+// === OUTILS ===
+function calculDuree(debut, fin, arret) {
+  const [h1, m1] = debut.split(":").map(Number);
+  const [h2, m2] = fin.split(":").map(Number);
+  const duree = (h2 + m2 / 60) - (h1 + m1 / 60) - (arret / 60);
+  return duree > 0 ? duree : 0;
+}
