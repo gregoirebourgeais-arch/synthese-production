@@ -1,102 +1,265 @@
-body {
-  font-family: "Inter", sans-serif;
-  background: #f5f8ff;
-  margin: 0;
-  color: #222;
-  text-align: center;
+/* === GLOBAL === */
+* {
+  box-sizing: border-box;
 }
 
+html, body {
+  font-family: "Inter", "Roboto", sans-serif;
+  background: #f4f7fe;
+  margin: 0;
+  padding: 0;
+  color: #222;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* === HEADER === */
 header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: #ffffff;
-  padding: 10px;
+  padding: 8px 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  height: 60px;
+  height: 55px;
 }
 
 .titre-bleu {
   color: #007bff;
+  font-weight: 700;
 }
 
+header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* === MENU === */
 .menu {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin: 20px 10px;
+  padding: 15px 10px;
+  background: #eaf2ff;
+  border-bottom: 1px solid #d0e0ff;
 }
 
 .menu button {
-  background: #007bff;
+  background: linear-gradient(135deg, #007bff, #005ecb);
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
+  padding: 10px 18px;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transition: 0.1s;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
 }
 
 .menu button:active {
-  transform: scale(0.96);
-  background: #005ecb;
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
+/* === MAIN === */
+main {
+  max-width: 950px;
+  margin: auto;
+  padding: 10px;
+}
+
+section#content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin: 15px 0;
+  overflow-x: auto;
+}
+
+/* === FORM === */
 form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 15px;
+  gap: 12px;
+  margin: 10px 0 20px 0;
+}
+
+form label {
+  font-weight: 600;
+  text-align: left;
 }
 
 input, select {
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
+  width: 100%;
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.arret-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 button {
   cursor: pointer;
 }
 
-.arret-group {
-  display: flex;
-  gap: 8px;
+form button {
+  background: linear-gradient(135deg, #007bff, #005ecb);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
 }
 
+form button:hover {
+  transform: scale(1.02);
+}
+
+/* === TABLES === */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  font-size: 14px;
 }
 
 th, td {
-  border-bottom: 1px solid #ddd;
-  padding: 6px;
-  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 5px;
+  text-align: center;
 }
 
 th {
   background: #007bff;
   color: white;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
+tr:nth-child(even) {
+  background-color: #f8fbff;
+}
+
+tr:hover td {
+  background-color: #eef5ff;
+}
+
+/* Boutons dans tableaux */
+table button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #c60000;
+  transition: 0.15s;
+}
+
+table button:hover {
+  transform: scale(1.2);
+}
+
+/* === GRAPHIQUES === */
 canvas {
-  margin-top: 15px;
+  margin-top: 20px;
+  max-width: 100%;
 }
 
-footer {
-  margin-top: 30px;
+/* === FILTRES === */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 15px;
+}
+
+.filters select,
+.filters input {
+  flex: 1 1 160px;
+  max-width: 280px;
   padding: 10px;
-  background: #eaf1ff;
-  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
   font-size: 14px;
 }
+
+/* === FOOTER === */
+footer {
+  text-align: center;
+  font-size: 14px;
+  padding: 12px;
+  margin-top: 25px;
+  background: #eaf1ff;
+  color: #333;
+  border-top: 1px solid #d8e5ff;
+  border-radius: 12px 12px 0 0;
+}
+
+/* === SCROLLBAR CUSTOM === */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f4f7fe;
+}
+::-webkit-scrollbar-thumb {
+  background: #007bff;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #005ecb;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 1.1rem;
+  }
+
+  .menu button {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  form button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  input, select {
+    font-size: 14px;
+  }
+  }
