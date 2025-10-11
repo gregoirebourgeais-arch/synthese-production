@@ -1,37 +1,13 @@
 // === CONFIG ===
 const lignes = ['Râpé', 'T2', 'RT', 'OMORI', 'T1', 'Sticks', 'Emballage', 'Dés', 'Filets', 'Prédécoupé'];
-const API_URL = '/api/data';
-let data = {};
+let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
+lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
-// === FONCTIONS API ===
-async function chargerData() {
-  try {
-    const res = await fetch(API_URL);
-    const json = await res.json();
-    data = json || {};
-    lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
-  } catch (err) {
-    console.error("Erreur chargement données:", err);
-    data = {};
-    lignes.forEach(l => data[l] = []);
-  }
-}
-
-async function sauvegarderData() {
-  try {
-    await fetch(API_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-  } catch (err) {
-    console.error("Erreur sauvegarde:", err);
-  }
-}
+// Sauvegarde automatique toutes les 2 min
+setInterval(() => localStorage.setItem("syntheseData", JSON.stringify(data)), 120000);
 
 // === INITIALISATION ===
-document.addEventListener("DOMContentLoaded", async () => {
-  await chargerData();
+document.addEventListener("DOMContentLoaded", () => {
   openPage("atelier");
 });
 
@@ -40,6 +16,7 @@ function openPage(page) {
   const content = document.getElementById("content");
   if (page === "atelier") pageAtelier(content);
   else pageLigne(page, content);
+  localStorage.setItem("currentPage", page);
 }
 
 // === PAGE ATELIER ===
@@ -47,7 +24,7 @@ function pageAtelier(zone) {
   let html = `
     <h2>Vue Atelier</h2>
     <table>
-      <tr><th>Ligne</th><th>Cadence moyenne</th><th>Nb Enregistrements</th></tr>
+      <tr><th>Ligne</th><th>Cadence Moyenne</th><th>Nb Enregistrements</th></tr>
   `;
   const moyennes = [];
 
@@ -63,7 +40,6 @@ function pageAtelier(zone) {
   html += `</table><canvas id="gAtelier" height="100"></canvas>`;
   zone.innerHTML = html;
 
-  // graphique horizontal
   const ctx = document.getElementById("gAtelier");
   new Chart(ctx, {
     type: "bar",
@@ -98,10 +74,7 @@ function pageLigne(nom, zone) {
 
     <h3>Historique</h3>
     <table id="tab-${nom}">
-      <tr>
-        <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
-        <th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th>
-      </tr>
+      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
     </table>
     <canvas id="g-${nom}" height="100"></canvas>
   `;
@@ -122,7 +95,7 @@ function pageLigne(nom, zone) {
       colis, debut, fin, cadence: +cadence, qualite: qual, arret
     };
     data[nom].push(record);
-    sauvegarderData();
+    localStorage.setItem("syntheseData", JSON.stringify(data));
     pageLigne(nom, zone);
   });
 
@@ -148,7 +121,7 @@ function remplirTableau(nom) {
 
 function suppr(nom, i) {
   data[nom].splice(i, 1);
-  sauvegarderData();
+  localStorage.setItem("syntheseData", JSON.stringify(data));
   openPage(nom);
 }
 
