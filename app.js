@@ -14,11 +14,6 @@ function sauvegarder() {
 setInterval(sauvegarder, 120000);
 window.addEventListener("beforeunload", sauvegarder);
 
-// === INITIALISATION ===
-document.addEventListener("DOMContentLoaded", () => {
-  openPage("atelier");
-});
-
 // === NAVIGATION ===
 function openPage(page) {
   const content = document.getElementById("content");
@@ -30,81 +25,56 @@ function openPage(page) {
 // === PAGE ATELIER ===
 function pageAtelier(zone) {
   zone.innerHTML = `
-    <h2>Atelier</h2>
-    <p>Sélectionnez une ligne pour consulter ou saisir les données de production.</p>
+    <h2>Tableau de Synthèse</h2>
+    <p>Choisissez une ligne pour consulter ou saisir les données.</p>
   `;
 }
 
 // === PAGE LIGNE ===
-function pageLigne(nom, zone) {
-  const historique = data[nom];
+function pageLigne(ligne, zone) {
   zone.innerHTML = `
-    <h2>${nom}</h2>
-    <label>Colis réalisés : <input id="colis" type="number"></label>
-    <label>Heure début : <input id="debut" type="time"></label>
-    <label>Heure fin : <input id="fin" type="time"></label>
-    <label>Qualité : <input id="qualite" type="text"></label>
-    <label>Arrêt (min) : <input id="arret" type="number" value="0"></label>
-    <button onclick="enregistrer('${nom}')">Enregistrer</button>
-    <h3>Historique</h3>
-    <table id="table-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th></tr>
-      ${historique.map(e => `
-        <tr>
-          <td>${e.date}</td><td>${e.colis}</td><td>${e.debut}</td>
-          <td>${e.fin}</td><td>${e.cadence}</td><td>${e.qualite}</td><td>${e.arret}</td>
-        </tr>`).join("")}
-    </table>
+    <h2>Ligne ${ligne}</h2>
+    <form id="form-${ligne}">
+      <label>Heure début :</label>
+      <input type="time" id="debut"><br>
+      <label>Heure fin :</label>
+      <input type="time" id="fin"><br>
+      <label>Quantité :</label>
+      <input type="number" id="quantite" min="0"><br>
+      <label>Arrêt (min) :</label>
+      <input type="number" id="arret" min="0"><br>
+      <button type="button" onclick="ajouter('${ligne}')">Enregistrer</button>
+      <button type="button" onclick="voirHistorique('${ligne}')">Historique</button>
+    </form>
+    <div id="result-${ligne}"></div>
   `;
 }
 
-// === ENREGISTREMENT ===
-function enregistrer(nom) {
-  const colis = parseInt(document.getElementById("colis").value || 0);
+// === AJOUT DONNÉE ===
+function ajouter(ligne) {
   const debut = document.getElementById("debut").value;
   const fin = document.getElementById("fin").value;
-  const qualite = document.getElementById("qualite").value;
-  const arret = parseInt(document.getElementById("arret").value || 0);
-
-  // Calcul cadence
-  const d1 = new Date(`1970-01-01T${debut}:00`);
-  let d2 = new Date(`1970-01-01T${fin}:00`);
-  if (d2 < d1) d2.setDate(d2.getDate() + 1);
-  const heures = (d2 - d1) / 3600000;
-  const cadence = heures > 0 ? (colis / heures).toFixed(1) : 0;
-
-  data[nom].push({
-    date: new Date().toLocaleString(),
-    colis, debut, fin, cadence, qualite, arret
-  });
-
+  const quantite = parseFloat(document.getElementById("quantite").value);
+  const arret = parseFloat(document.getElementById("arret").value);
+  if (!debut || !fin || isNaN(quantite)) return alert("Champs incomplets !");
+  data[ligne].push({ debut, fin, quantite, arret, date: new Date().toLocaleDateString() });
   sauvegarder();
-  openPage(nom);
-}ate);
-  const valeurs = data[nom].map(r => r.cadence);
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Cadence (colis/h)",
-        data: valeurs,
-        borderColor: "#007bff",
-        backgroundColor: "rgba(0,123,255,0.3)",
-        fill: true
-      }]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
-  });
+  alert("Donnée enregistrée !");
 }
 
-// === CALCUL DUREE (passage minuit géré) ===
-function calculDuree(debut, fin, arret) {
-  const [h1, m1] = debut.split(":").map(Number);
-  const [h2, m2] = fin.split(":").map(Number);
-  let debutMin = h1 * 60 + m1;
-  let finMin = h2 * 60 + m2;
-  if (finMin < debutMin) finMin += 24 * 60;
-  let duree = (finMin - debutMin - (arret || 0)) / 60;
-  return duree > 0 ? duree : 0;
-          }                          }
+// === HISTORIQUE ===
+function voirHistorique(ligne) {
+  const histo = data[ligne] || [];
+  let html = `<h3>Historique ${ligne}</h3><table border="1"><tr><th>Date</th><th>Début</th><th>Fin</th><th>Quantité</th><th>Arrêt</th></tr>`;
+  histo.forEach(r => {
+    html += `<tr><td>${r.date}</td><td>${r.debut}</td><td>${r.fin}</td><td>${r.quantite}</td><td>${r.arret || 0}</td></tr>`;
+  });
+  html += "</table>";
+  document.getElementById("content").innerHTML = html;
+}
+
+// === INITIALISATION ===
+document.addEventListener("DOMContentLoaded", () => {
+  const savedPage = localStorage.getItem("currentPage") || "atelier";
+  openPage(savedPage);
+});
