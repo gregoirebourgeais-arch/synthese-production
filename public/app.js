@@ -1,166 +1,197 @@
-// --- Initialisation ---
-const lignes = ['Râpé','T2','RT','OMORI','T1','Sticks','Emballage','Dés','Filets','Prédécoupé'];
-const stockageCle = "syntheseData";
+// === CONFIG ===
+const lignes = ['Râpé', 'T2', 'RT', 'OMORI', 'T1', 'Sticks', 'Emballage', 'Dés', 'Filets', 'Prédécoupé'];
+const API_URL = '/api/data';
+let data = {};
 
-// Charger les données si elles existent déjà
-function chargerDonnees() {
-  let saved = localStorage.getItem(stockageCle);
-  let parsed = {};
+// === FONCTIONS API ===
+async function chargerData() {
   try {
-    parsed = saved ? JSON.parse(saved) : {};
-  } catch {
-    parsed = {};
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    data = json || {};
+    lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
+  } catch (err) {
+    console.error("Erreur chargement données:", err);
+    data = {};
+    lignes.forEach(l => data[l] = []);
   }
-  lignes.forEach(l => { if (!Array.isArray(parsed[l])) parsed[l] = []; });
-  return parsed;
 }
 
-// Sauvegarder les données
-function sauvegarderDonnees(d) {
-  localStorage.setItem(stockageCle, JSON.stringify(d));
+async function sauvegarderData() {
+  try {
+    await fetch(API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+  } catch (err) {
+    console.error("Erreur sauvegarde:", err);
+  }
 }
 
-// Données globales
-let data = chargerDonnees();
-
-// --- Charger page par défaut ---
-document.addEventListener("DOMContentLoaded", () => {
+// === INITIALISATION ===
+document.addEventListener("DOMContentLoaded", async () => {
+  await chargerData();
   openPage("atelier");
 });
 
-// --- Navigation ---
+// === NAVIGATION ===
 function openPage(page) {
-  const contenu = document.getElementById("content");
-  data = chargerDonnees(); // recharge les données à chaque changement
-  if (page === "atelier") afficherAtelier(contenu);
-  else afficherLigne(page, contenu);
+  const content = document.getElementById("content");
+  if (page === "atelier") pageAtelier(content);
+  else pageLigne(page, content);
 }
 
-// --- PAGE ATELIER ---
-function afficherAtelier(zone) {
-  let html = `<h2>Vue d'ensemble Atelier</h2>
-              <table><tr><th>Ligne</th><th>Cadence Moyenne</th></tr>`;
-  let moyennes = [];
+// === PAGE ATELIER ===
+function pageAtelier(zone) {
+  let html = `
+    <h2>Vue Atelier</h2>
+    <table>
+      <tr><th>Ligne</th><th>Cadence moyenne</th><th>Nb Enregistrements</th></tr>
+  `;
+  const moyennes = [];
 
   lignes.forEach(l => {
-    const items = data[l];
-    const moy = items.length ? (items.reduce((a,b)=>a+b.cadence,0)/items.length).toFixed(1) : 0;
-    moyennes.push({ligne:l, cadence:moy});
-    html += `<tr><td>${l}</td><td>${moy}</td></tr>`;
+    const list = data[l];
+    const moyenne = list.length
+      ? (list.reduce((a, b) => a + (b.cadence || 0), 0) / list.length).toFixed(1)
+      : 0;
+    moyennes.push({ ligne: l, cadence: moyenne });
+    html += `<tr><td>${l}</td><td>${moyenne}</td><td>${list.length}</td></tr>`;
   });
 
-  html += `</table><canvas id="graphAtelier"></canvas>`;
+  html += `</table><canvas id="gAtelier" height="100"></canvas>`;
   zone.innerHTML = html;
-  dessinerGraphique('graphAtelier', moyennes.map(m=>m.ligne), moyennes.map(m=>m.cadence), "Cadence Moyenne (colis/h)", "bar");
+
+  // graphique horizontal
+  const ctx = document.getElementById("gAtelier");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: moyennes.map(m => m.ligne),
+      datasets: [{
+        label: "Cadence moyenne (colis/h)",
+        data: moyennes.map(m => m.cadence),
+        backgroundColor: "rgba(0,123,255,0.6)"
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      scales: { x: { beginAtZero: true } }
+    }
+  });
 }
 
-// --- PAGE LIGNE ---
-function afficherLigne(nom, zone) {
-  const historiques = data[nom];
-
+// === PAGE LIGNE ===
+function pageLigne(nom, zone) {
   let html = `
     <h2>${nom}</h2>
     <form id="form-${nom}">
-      <label>Colis réalisés :</label><input type="number" id="colis-${nom}" required><br>
-      <label>Heure début :</label><input type="time" id="debut-${nom}" required><br>
-      <label>Heure fin :</label><input type="time" id="fin-${nom}" required><br>
-      <label>Qualité :</label><input type="text" id="qualite-${nom}"><br>
-      <label>Arrêt (min) :</label><input type="number" id="arret-${nom}" value="0"><br>
-      <button type="submit">Enregistrer</button>
+      <label>Colis réalisés :</label><input id="colis-${nom}" type="number" required><br>
+      <label>Heure début :</label><input id="debut-${nom}" type="time" required><br>
+      <label>Heure fin :</label><input id="fin-${nom}" type="time" required><br>
+      <label>Qualité :</label><input id="qual-${nom}" type="text"><br>
+      <label>Arrêt (min) :</label><input id="arret-${nom}" type="number" value="0"><br>
+      <button>Enregistrer</button>
       <button type="button" onclick="exporterExcel('${nom}')">Exporter Excel</button>
     </form>
+
     <h3>Historique</h3>
-    <table id="table-${nom}">
-      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
+    <table id="tab-${nom}">
+      <tr>
+        <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
+        <th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th>
+      </tr>
     </table>
-    <canvas id="graph-${nom}"></canvas>
+    <canvas id="g-${nom}" height="100"></canvas>
   `;
-
   zone.innerHTML = html;
-  const form = document.getElementById(`form-${nom}`);
-  const table = document.getElementById(`table-${nom}`);
 
-  form.addEventListener("submit", e => {
+  document.getElementById(`form-${nom}`).addEventListener("submit", e => {
     e.preventDefault();
     const colis = +document.getElementById(`colis-${nom}`).value;
     const debut = document.getElementById(`debut-${nom}`).value;
     const fin = document.getElementById(`fin-${nom}`).value;
-    const qualite = document.getElementById(`qualite-${nom}`).value;
+    const qual = document.getElementById(`qual-${nom}`).value;
     const arret = +document.getElementById(`arret-${nom}`).value;
 
-    const hDebut = convertirHeure(debut);
-    const hFin = convertirHeure(fin);
-    const duree = (hFin - hDebut - arret/60);
-    const cadence = duree>0 ? (colis / duree).toFixed(1) : 0;
-
-    const enregistrement = { date:new Date().toLocaleString(), colis, debut, fin, cadence:+cadence, qualite, arret };
-    data[nom].push(enregistrement);
-
-    sauvegarderDonnees(data);
-    form.reset();
-
-    afficherHistorique(nom, table, data[nom]);
-    dessinerGraphique(`graph-${nom}`, data[nom].map(i=>i.date), data[nom].map(i=>i.cadence), "Cadence (colis/h)", "line");
+    const duree = calculDuree(debut, fin, arret);
+    const cadence = duree > 0 ? (colis / duree).toFixed(1) : 0;
+    const record = {
+      date: new Date().toLocaleString(),
+      colis, debut, fin, cadence: +cadence, qualite: qual, arret
+    };
+    data[nom].push(record);
+    sauvegarderData();
+    pageLigne(nom, zone);
   });
 
-  afficherHistorique(nom, table, historiques);
-  dessinerGraphique(`graph-${nom}`, historiques.map(i=>i.date), historiques.map(i=>i.cadence), "Cadence (colis/h)", "line");
+  remplirTableau(nom);
+  drawGraphique(nom);
 }
 
-// --- AFFICHAGE HISTORIQUE ---
-function afficherHistorique(nom, table, liste) {
-  table.innerHTML = `<tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>`;
-  liste.forEach((item, index) => {
-    table.innerHTML += `<tr>
-      <td>${item.date}</td>
-      <td>${item.colis}</td>
-      <td>${item.debut}</td>
-      <td>${item.fin}</td>
-      <td>${item.cadence}</td>
-      <td>${item.qualite}</td>
-      <td>${item.arret}</td>
-      <td><button class="suppr" onclick="supprimerLigne('${nom}',${index})">❌</button></td>
-    </tr>`;
-  });
+// === TABLEAU ===
+function remplirTableau(nom) {
+  const tab = document.getElementById(`tab-${nom}`);
+  const lignesHTML = data[nom].map((r, i) => `
+    <tr>
+      <td>${r.date}</td><td>${r.colis}</td><td>${r.debut}</td><td>${r.fin}</td>
+      <td>${r.cadence}</td><td>${r.qualite}</td><td>${r.arret}</td>
+      <td><button onclick="suppr('${nom}', ${i})">❌</button></td>
+    </tr>
+  `).join('');
+  tab.innerHTML = `
+    <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
+    ${lignesHTML}
+  `;
 }
 
-// --- SUPPRIMER UNE LIGNE ---
-function supprimerLigne(nom, index) {
-  if (!confirm("Supprimer cette ligne ?")) return;
-  data[nom].splice(index,1);
-  sauvegarderDonnees(data);
+function suppr(nom, i) {
+  data[nom].splice(i, 1);
+  sauvegarderData();
   openPage(nom);
 }
 
-// --- EXPORT EXCEL ---
-function exporterExcel(nom) {
-  const items = data[nom];
-  if (!items.length) return alert("Aucune donnée à exporter !");
-  const csv = [
-    ["Date","Colis","Début","Fin","Cadence","Qualité","Arrêt"],
-    ...items.map(d=>[d.date,d.colis,d.debut,d.fin,d.cadence,d.qualite,d.arret])
-  ].map(e=>e.join(",")).join("\n");
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${nom}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// --- GRAPHIQUE ---
-function dessinerGraphique(id, labels, data, label, type="line") {
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
+// === GRAPHIQUE ===
+function drawGraphique(nom) {
+  const ctx = document.getElementById(`g-${nom}`);
+  const labels = data[nom].map(r => r.date);
+  const valeurs = data[nom].map(r => r.cadence);
   new Chart(ctx, {
-    type,
-    data: { labels, datasets: [{ label, data, borderWidth:2, backgroundColor:"rgba(0,100,255,0.4)", borderColor:"#007bff" }] },
-    options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Cadence (colis/h)",
+        data: valeurs,
+        borderColor: "#007bff",
+        backgroundColor: "rgba(0,123,255,0.3)",
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
-function convertirHeure(h) {
-  const [H,M] = h.split(":").map(Number);
-  return H + M/60;
+// === OUTILS ===
+function calculDuree(debut, fin, arret) {
+  const [h1, m1] = debut.split(":").map(Number);
+  const [h2, m2] = fin.split(":").map(Number);
+  const duree = (h2 + m2 / 60) - (h1 + m1 / 60) - (arret / 60);
+  return duree > 0 ? duree : 0;
+}
+
+function exporterExcel(nom) {
+  const rows = data[nom];
+  if (!rows.length) return alert("Aucune donnée à exporter.");
+  const header = Object.keys(rows[0]);
+  const csv = [header.join(";"), ...rows.map(r => header.map(h => r[h]).join(";"))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${nom}_historique.csv`;
+  link.click();
 }
