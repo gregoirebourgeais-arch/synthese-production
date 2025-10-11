@@ -1,3 +1,20 @@
+window.addEventListener("DOMContentLoaded", () => {
+  initApp();
+});
+
+async function initApp() {
+  const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
+  const API_URL = "/api/consignes";
+  const app = document.getElementById("app");
+  const menu = document.getElementById("menu");
+
+  menu.innerHTML = `
+    <button onclick="renderAtelier()">🏭 Atelier</button>
+    ${lignes.map(l => `<button onclick="openLigne('${l}')">${l}</button>`).join("")}
+  `;
+
+  renderAtelier();
+}
 const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
 const API_URL = "/api/consignes";
 const app = document.getElementById("app");
