@@ -6,9 +6,9 @@ function openPage(line) {
   const content = document.getElementById("content");
   if (line === "atelier") {
     renderAtelier(content);
-    return;
+  } else {
+    renderLigne(line, content);
   }
-  renderLigne(line, content);
 }
 
 // --- Page Atelier ---
@@ -19,12 +19,15 @@ function renderAtelier(el) {
   });
 
   el.innerHTML = `
-    <h2>Vue Atelier</h2>
-    <table>
-      <thead><tr><th>Ligne</th><th>Cadence Moyenne (colis/h)</th></tr></thead>
-      <tbody>${lignes.map((l,i)=>`<tr><td>${l}</td><td>${moyennes[i]}</td></tr>`).join("")}</tbody>
-    </table>
-    <canvas id="atelierChart" height="120"></canvas>
+    <div class="card">
+      <h2>Vue Atelier</h2>
+      <button class="export" onclick="exportAll()">📤 Exporter tout l'atelier</button>
+      <table>
+        <thead><tr><th>Ligne</th><th>Cadence Moyenne (colis/h)</th></tr></thead>
+        <tbody>${lignes.map((l,i)=>`<tr><td>${l}</td><td>${moyennes[i]}</td></tr>`).join("")}</tbody>
+      </table>
+      <canvas id="atelierChart" height="120"></canvas>
+    </div>
   `;
 
   const ctx = document.getElementById("atelierChart").getContext("2d");
@@ -38,36 +41,37 @@ function renderAtelier(el) {
 // --- Page Ligne ---
 function renderLigne(line, el) {
   el.innerHTML = `
-    <h2>Ligne ${line}</h2>
-    <form id="form-${line}">
-      <label>Heure de début</label><input type="time" id="debut-${line}">
-      <label>Heure de fin</label><input type="time" id="fin-${line}">
-      <label>Colis réalisés</label><input type="number" id="colis-${line}">
-      <label>Qualité</label><input type="text" id="qualite-${line}">
-      <button type="button" class="save" onclick="saveProd('${line}')">💾 Enregistrer</button>
-      <button type="button" class="export" onclick="exportExcel('${line}')">📤 Export Excel</button>
-      <button type="button" class="delete" onclick="clearData('${line}')">🗑 Effacer les données</button>
-    </form>
+    <div class="card">
+      <h2>Ligne ${line}</h2>
+      <form id="form-${line}">
+        <label>Heure de début</label><input type="time" id="debut-${line}">
+        <label>Heure de fin</label><input type="time" id="fin-${line}">
+        <label>Colis réalisés</label><input type="number" id="colis-${line}">
+        <label>Qualité</label><input type="text" id="qualite-${line}">
+        <button type="button" class="save" onclick="saveProd('${line}')">💾 Enregistrer</button>
+        <button type="button" class="export" onclick="exportExcel('${line}')">📤 Export Excel</button>
+        <button type="button" class="delete" onclick="clearData('${line}')">🗑 Effacer</button>
+      </form>
 
-    <h3>Arrêts de ligne</h3>
-    <form id="arret-${line}">
-      <label>Motif d'arrêt</label><input type="text" id="motif-${line}">
-      <label>Durée (min)</label><input type="number" id="duree-${line}">
-      <button type="button" class="save" onclick="saveArret('${line}')">➕ Ajouter arrêt</button>
-    </form>
+      <form id="arret-${line}">
+        <label>Motif d'arrêt</label><input type="text" id="motif-${line}">
+        <label>Durée (min)</label><input type="number" id="duree-${line}">
+        <button type="button" class="save" onclick="saveArret('${line}')">➕ Ajouter arrêt</button>
+      </form>
 
-    <table id="tab-${line}">
-      <thead><tr><th>Début</th><th>Fin</th><th>Colis</th><th>Cadence</th><th>Qualité</th></tr></thead>
-      <tbody></tbody>
-    </table>
+      <table id="tab-${line}">
+        <thead><tr><th>Début</th><th>Fin</th><th>Colis</th><th>Cadence</th><th>Qualité</th></tr></thead>
+        <tbody></tbody>
+      </table>
 
-    <h4>Historique des arrêts</h4>
-    <table id="arrets-${line}">
-      <thead><tr><th>Motif</th><th>Durée (min)</th></tr></thead>
-      <tbody></tbody>
-    </table>
+      <h4>Historique des arrêts</h4>
+      <table id="arrets-${line}">
+        <thead><tr><th>Motif</th><th>Durée (min)</th></tr></thead>
+        <tbody></tbody>
+      </table>
 
-    <canvas id="chart-${line}" height="100"></canvas>
+      <canvas id="chart-${line}" height="100"></canvas>
+    </div>
   `;
   updateTables(line);
 }
@@ -78,6 +82,9 @@ function saveProd(line) {
   const fin = document.getElementById(`fin-${line}`).value;
   const colis = Number(document.getElementById(`colis-${line}`).value);
   const qualite = document.getElementById(`qualite-${line}`).value;
+
+  if (!debut || !fin || !colis) return alert("⚠️ Remplis tous les champs nécessaires.");
+
   const t1 = new Date(`1970-01-01T${debut}`);
   const t2 = new Date(`1970-01-01T${fin}`);
   const h = (t2 - t1) / 3600000;
@@ -85,6 +92,8 @@ function saveProd(line) {
 
   data.push({ ligne: line, debut, fin, colis, cadence, qualite, date: new Date().toLocaleString() });
   localStorage.setItem("syntheseData", JSON.stringify(data));
+
+  document.getElementById(`form-${line}`).reset();
   updateTables(line);
 }
 
@@ -92,23 +101,25 @@ function saveProd(line) {
 function saveArret(line) {
   const motif = document.getElementById(`motif-${line}`).value;
   const duree = Number(document.getElementById(`duree-${line}`).value);
+  if (!motif || !duree) return alert("⚠️ Motif et durée requis.");
   arrets.push({ ligne: line, motif, duree, date: new Date().toLocaleString() });
   localStorage.setItem("arretsData", JSON.stringify(arrets));
+  document.getElementById(`arret-${line}`).reset();
   updateTables(line);
 }
 
-// --- Effacement des données de la ligne ---
+// --- Effacement ---
 function clearData(line) {
-  if (!confirm(`Effacer toutes les données de la ligne ${line} ?`)) return;
+  if (!confirm(`Effacer toutes les données de ${line} ?`)) return;
   data = data.filter(c => c.ligne !== line);
   arrets = arrets.filter(a => a.ligne !== line);
   localStorage.setItem("syntheseData", JSON.stringify(data));
   localStorage.setItem("arretsData", JSON.stringify(arrets));
   updateTables(line);
-  alert(`🗑 Données effacées pour la ligne ${line}`);
+  alert(`🗑 Données effacées pour ${line}`);
 }
 
-// --- Mise à jour des tableaux et graphiques ---
+// --- Tableaux + Graphiques ---
 function updateTables(line) {
   const filtres = data.filter(c => c.ligne === line);
   document.querySelector(`#tab-${line} tbody`).innerHTML =
@@ -126,7 +137,7 @@ function updateTables(line) {
   });
 }
 
-// --- Export Excel ---
+// --- Export Excel par ligne ---
 function exportExcel(line) {
   const filtres = data.filter(c => c.ligne === line);
   const wb = XLSX.utils.book_new();
@@ -135,9 +146,17 @@ function exportExcel(line) {
   XLSX.writeFile(wb, `Synthese_${line}.xlsx`);
 }
 
-// Sauvegarde auto locale toutes les 2h
+// --- Export global atelier ---
+function exportAll() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Atelier complet");
+  XLSX.writeFile(wb, "Synthese_Atelier.xlsx");
+}
+
+// --- Sauvegarde auto locale ---
 setInterval(() => {
   localStorage.setItem("syntheseData", JSON.stringify(data));
   localStorage.setItem("arretsData", JSON.stringify(arrets));
-  console.log("💾 Sauvegarde automatique effectuée");
+  console.log("💾 Sauvegarde auto effectuée");
 }, 2 * 60 * 60 * 1000);
