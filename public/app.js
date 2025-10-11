@@ -1,174 +1,153 @@
-const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
-let data = JSON.parse(localStorage.getItem("syntheseData") || "[]");
-let arrets = JSON.parse(localStorage.getItem("arretsData") || "[]");
+// --- Initialisation ---
+const lignes = ['Râpé','T2','RT','OMORI','T1','Sticks','Emballage','Dés','Filets','Prédécoupé'];
+const stockageCle = "syntheseData";
 
-function openPage(line) {
-  const content = document.getElementById("content");
-  if (line === "atelier") {
-    renderAtelier(content);
+// Charger page par défaut
+document.addEventListener("DOMContentLoaded", () => {
+  openPage("atelier");
+});
+
+// --- Gestion de navigation ---
+function openPage(page) {
+  const contenu = document.getElementById("content");
+  if (page === "atelier") {
+    afficherAtelier(contenu);
   } else {
-    renderLigne(line, content);
+    afficherLigne(page, contenu);
   }
 }
 
-// --- Page Atelier ---
-function renderAtelier(el) {
-  const moyennes = lignes.map(l => {
-    const filtres = data.filter(c => c.ligne === l);
-    const moyenne = filtres.length ? filtres.reduce((a,b)=>a+b.cadence,0)/filtres.length : 0;
-    return isNaN(moyenne) ? 0 : Math.round(moyenne);
-  });
+// --- PAGE ATELIER ---
+function afficherAtelier(zone) {
+  let data = chargerDonnees();
+  let html = `<h2>Vue d'ensemble Atelier</h2>
+              <table><tr><th>Ligne</th><th>Cadence Moyenne</th></tr>`;
+  let moyennes = [];
 
-  el.innerHTML = `
-    <div class="card">
-      <h2>Vue Atelier</h2>
-      <button class="export" onclick="exportAll()">📤 Exporter tout l'atelier</button>
-      <table>
-        <thead><tr><th>Ligne</th><th>Cadence Moyenne (colis/h)</th></tr></thead>
-        <tbody>${lignes.map((l,i)=>`<tr><td>${l}</td><td>${moyennes[i]}</td></tr>`).join("")}</tbody>
-      </table>
-      <canvas id="atelierChart" height="200"></canvas>
-    </div>
+  lignes.forEach(l => {
+    const items = data[l] || [];
+    const moy = items.length ? (items.reduce((a,b)=>a+b.cadence,0)/items.length).toFixed(1) : 0;
+    moyennes.push({ligne:l, cadence:moy});
+    html += `<tr><td>${l}</td><td>${moy}</td></tr>`;
+  });
+  html += `</table><canvas id="graphAtelier"></canvas>`;
+  zone.innerHTML = html;
+  dessinerGraphique('graphAtelier', moyennes.map(m=>m.ligne), moyennes.map(m=>m.cadence), "Cadence Moyenne (colis/h)", "bar");
+}
+
+// --- PAGE LIGNE ---
+function afficherLigne(nom, zone) {
+  let data = chargerDonnees();
+  let historiques = data[nom] || [];
+
+  let html = `
+    <h2>${nom}</h2>
+    <form id="form-${nom}">
+      <label>Colis réalisés :</label><input type="number" id="colis-${nom}" required><br>
+      <label>Heure début :</label><input type="time" id="debut-${nom}" required><br>
+      <label>Heure fin :</label><input type="time" id="fin-${nom}" required><br>
+      <label>Qualité :</label><input type="text" id="qualite-${nom}"><br>
+      <label>Arrêt (min) :</label><input type="number" id="arret-${nom}" value="0"><br>
+      <button type="submit">Enregistrer</button>
+      <button type="button" onclick="exporterExcel('${nom}')">Exporter Excel</button>
+    </form>
+    <h3>Historique</h3>
+    <table id="table-${nom}">
+      <tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>
+    </table>
+    <canvas id="graph-${nom}"></canvas>
   `;
 
-  const ctx = document.getElementById("atelierChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
-    data: { 
-      labels: lignes, 
-      datasets: [{ label: "Cadence (colis/h)", data: moyennes, backgroundColor: "#007bff" }] 
-    },
-    options: { 
-      indexAxis: 'y',
-      responsive: true,
-      scales: { x: { beginAtZero: true } }
-    }
+  zone.innerHTML = html;
+
+  const form = document.getElementById(`form-${nom}`);
+  const table = document.getElementById(`table-${nom}`);
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const colis = +document.getElementById(`colis-${nom}`).value;
+    const debut = document.getElementById(`debut-${nom}`).value;
+    const fin = document.getElementById(`fin-${nom}`).value;
+    const qualite = document.getElementById(`qualite-${nom}`).value;
+    const arret = +document.getElementById(`arret-${nom}`).value;
+
+    const hDebut = convertirHeure(debut);
+    const hFin = convertirHeure(fin);
+    const duree = (hFin - hDebut - arret/60);
+    const cadence = duree>0 ? (colis / duree).toFixed(1) : 0;
+
+    const enregistrement = { date:new Date().toLocaleString(), colis, debut, fin, cadence:+cadence, qualite, arret };
+    historiques.push(enregistrement);
+    data[nom] = historiques;
+    localStorage.setItem(stockageCle, JSON.stringify(data));
+
+    form.reset();
+    afficherHistorique(nom, table, historiques);
+    dessinerGraphique(`graph-${nom}`, historiques.map(i=>i.date), historiques.map(i=>i.cadence), "Cadence (colis/h)", "line");
+  });
+
+  afficherHistorique(nom, table, historiques);
+  dessinerGraphique(`graph-${nom}`, historiques.map(i=>i.date), historiques.map(i=>i.cadence), "Cadence (colis/h)", "line");
+}
+
+// --- AFFICHAGE HISTORIQUE ---
+function afficherHistorique(nom, table, data) {
+  table.innerHTML = `<tr><th>Date</th><th>Colis</th><th>Début</th><th>Fin</th><th>Cadence</th><th>Qualité</th><th>Arrêt</th><th>Suppr.</th></tr>`;
+  data.forEach((item, index) => {
+    table.innerHTML += `<tr>
+      <td>${item.date}</td>
+      <td>${item.colis}</td>
+      <td>${item.debut}</td>
+      <td>${item.fin}</td>
+      <td>${item.cadence}</td>
+      <td>${item.qualite}</td>
+      <td>${item.arret}</td>
+      <td><button class="suppr" onclick="supprimerLigne('${nom}',${index})">❌</button></td>
+    </tr>`;
   });
 }
 
-// --- Page Ligne ---
-function renderLigne(line, el) {
-  el.innerHTML = `
-    <div class="card">
-      <h2>Ligne ${line}</h2>
-      <form id="form-${line}">
-        <label>Heure de début</label><input type="time" id="debut-${line}">
-        <label>Heure de fin</label><input type="time" id="fin-${line}">
-        <label>Colis réalisés</label><input type="number" id="colis-${line}">
-        <label>Qualité</label><input type="text" id="qualite-${line}">
-        <button type="button" class="save" onclick="saveProd('${line}')">💾 Enregistrer</button>
-        <button type="button" class="export" onclick="exportExcel('${line}')">📤 Export Excel</button>
-        <button type="button" class="delete" onclick="clearData('${line}')">🗑 Effacer</button>
-      </form>
-
-      <form id="arret-${line}">
-        <label>Motif d'arrêt</label><input type="text" id="motif-${line}">
-        <label>Durée (min)</label><input type="number" id="duree-${line}">
-        <button type="button" class="save" onclick="saveArret('${line}')">➕ Ajouter arrêt</button>
-      </form>
-
-      <table id="tab-${line}">
-        <thead><tr><th>Début</th><th>Fin</th><th>Colis</th><th>Cadence</th><th>Qualité</th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <h4>Historique des arrêts</h4>
-      <table id="arrets-${line}">
-        <thead><tr><th>Motif</th><th>Durée (min)</th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <canvas id="chart-${line}" height="100"></canvas>
-    </div>
-  `;
-  updateTables(line);
+// --- SUPPRESSION ---
+function supprimerLigne(nom, index) {
+  let data = chargerDonnees();
+  if (!data[nom]) return;
+  data[nom].splice(index,1);
+  localStorage.setItem(stockageCle, JSON.stringify(data));
+  openPage(nom);
 }
 
-// --- Sauvegarde Production ---
-function saveProd(line) {
-  const debut = document.getElementById(`debut-${line}`).value;
-  const fin = document.getElementById(`fin-${line}`).value;
-  const colis = Number(document.getElementById(`colis-${line}`).value);
-  const qualite = document.getElementById(`qualite-${line}`).value;
-
-  if (!debut || !fin || !colis) return alert("⚠️ Remplis tous les champs nécessaires.");
-
-  const [hd, md] = debut.split(":").map(Number);
-  const [hf, mf] = fin.split(":").map(Number);
-  let duree = (hf * 60 + mf) - (hd * 60 + md);
-  if (duree <= 0) duree += 24 * 60; // passage minuit
-  const cadence = duree > 0 ? Math.round(colis / (duree / 60)) : 0;
-
-  data.push({ ligne: line, debut, fin, colis, cadence, qualite, date: new Date().toLocaleString() });
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-
-  document.getElementById(`form-${line}`).reset();
-  updateTables(line); // 🔥 mise à jour instantanée
+// --- EXPORT EXCEL ---
+function exporterExcel(nom) {
+  let data = chargerDonnees()[nom] || [];
+  if (!data.length) return alert("Aucune donnée à exporter !");
+  const csv = [
+    ["Date","Colis","Début","Fin","Cadence","Qualité","Arrêt"],
+    ...data.map(d=>[d.date,d.colis,d.debut,d.fin,d.cadence,d.qualite,d.arret])
+  ].map(e=>e.join(",")).join("\n");
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${nom}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-// --- Sauvegarde Arrêts ---
-function saveArret(line) {
-  const motif = document.getElementById(`motif-${line}`).value;
-  const duree = Number(document.getElementById(`duree-${line}`).value);
-  if (!motif || !duree) return alert("⚠️ Motif et durée requis.");
-  arrets.push({ ligne: line, motif, duree, date: new Date().toLocaleString() });
-  localStorage.setItem("arretsData", JSON.stringify(arrets));
-  document.getElementById(`arret-${line}`).reset();
-  updateTables(line);
-}
-
-// --- Effacement ---
-function clearData(line) {
-  if (!confirm(`Effacer toutes les données de ${line} ?`)) return;
-  data = data.filter(c => c.ligne !== line);
-  arrets = arrets.filter(a => a.ligne !== line);
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-  localStorage.setItem("arretsData", JSON.stringify(arrets));
-  updateTables(line);
-  alert(`🗑 Données effacées pour ${line}`);
-}
-
-// --- Tableaux + Graphiques ---
-function updateTables(line) {
-  const filtres = data.filter(c => c.ligne === line);
-  document.querySelector(`#tab-${line} tbody`).innerHTML =
-    filtres.map(c => `<tr><td>${c.debut}</td><td>${c.fin}</td><td>${c.colis}</td><td>${c.cadence}</td><td>${c.qualite}</td></tr>`).join("");
-
-  const arr = arrets.filter(a => a.ligne === line);
-  document.querySelector(`#arrets-${line} tbody`).innerHTML =
-    arr.map(a => `<tr><td>${a.motif}</td><td>${a.duree}</td></tr>`).join("");
-
-  const ctx = document.getElementById(`chart-${line}`).getContext("2d");
+// --- OUTILS ---
+function dessinerGraphique(id, labels, data, label, type="line") {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
   new Chart(ctx, {
-    type: "line",
-    data: { 
-      labels: filtres.map(c=>c.debut), 
-      datasets:[{ label:"Cadence", data:filtres.map(c=>c.cadence), borderColor:"#007bff", fill:false, tension:0.3 }]
-    },
-    options: { scales: { y: { beginAtZero: true } } }
+    type,
+    data: { labels, datasets: [{ label, data, borderWidth:2, backgroundColor:"rgba(0,100,255,0.4)", borderColor:"#007bff" }] },
+    options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
   });
 }
 
-// --- Export Excel par ligne ---
-function exportExcel(line) {
-  const filtres = data.filter(c => c.ligne === line);
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(filtres);
-  XLSX.utils.book_append_sheet(wb, ws, "Production");
-  XLSX.writeFile(wb, `Synthese_${line}.xlsx`);
+function chargerDonnees() {
+  return JSON.parse(localStorage.getItem(stockageCle) || "{}");
 }
 
-// --- Export global atelier ---
-function exportAll() {
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(data);
-  XLSX.utils.book_append_sheet(wb, ws, "Atelier complet");
-  XLSX.writeFile(wb, "Synthese_Atelier.xlsx");
+function convertirHeure(h) {
+  const [H,M] = h.split(":").map(Number);
+  return H + M/60;
 }
-
-// --- Sauvegarde auto locale ---
-setInterval(() => {
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-  localStorage.setItem("arretsData", JSON.stringify(arrets));
-  console.log("💾 Sauvegarde auto effectuée");
-}, 2 * 60 * 60 * 1000);
