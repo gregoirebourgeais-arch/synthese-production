@@ -130,10 +130,10 @@ function pageLigne(nom, zone) {
     const duree = calculDuree(debut, fin, arret);
     const cadence = duree > 0 ? (colis / duree).toFixed(1) : 0;
 
-    // Ajout de la date du jour (format JJ/MM/AAAA)
-    const today = new Date();
-    const dateLocale = today.toLocaleDateString("fr-FR");
-    const heure = today.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    // Ajout de la date du jour (JJ/MM/AAAA hh:mm)
+    const now = new Date();
+    const dateLocale = now.toLocaleDateString("fr-FR");
+    const heure = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
     const record = {
       date: `${dateLocale} ${heure}`,
@@ -182,14 +182,21 @@ function suppr(nom, i) {
   openPage(nom);
 }
 
-// === HISTORIQUE COMPLET AVEC GRAPHIQUE ===
+// === HISTORIQUE COMPLET AVEC FILTRE TEMPOREL ===
 function voirHistorique(nom) {
   const zone = document.getElementById("content");
   const all = data[nom];
 
   let html = `
     <h2>Historique complet — ${nom}</h2>
-    <input id="filtre" placeholder="Filtrer par mot-clé ou date..." oninput="filtrerHistorique('${nom}')">
+    <div class="filters">
+      <select id="periode" onchange="filtrerHistorique('${nom}')">
+        <option value="all">Tout afficher</option>
+        <option value="week">Cette semaine</option>
+        <option value="month">Ce mois</option>
+      </select>
+      <input id="filtre" placeholder="Filtrer par mot-clé ou date..." oninput="filtrerHistorique('${nom}')">
+    </div>
     <table id="tab-full-${nom}">
       <tr>
         <th>Date</th><th>Colis</th><th>Début</th><th>Fin</th>
@@ -212,26 +219,42 @@ function voirHistorique(nom) {
   drawHistoriqueGraph(nom, all);
 }
 
+// === FILTRAGE (texte + période) ===
 function filtrerHistorique(nom) {
   const valeur = document.getElementById("filtre").value.toLowerCase();
+  const periode = document.getElementById("periode").value;
   const tab = document.getElementById(`tab-full-${nom}`);
   const lignesTab = tab.getElementsByTagName("tr");
   const newData = [];
 
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay() + 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
   for (let i = 1; i < lignesTab.length; i++) {
+    const cells = lignesTab[i].getElementsByTagName("td");
+    if (cells.length < 8) continue;
+
+    const dateTexte = cells[0].innerText.split(" ")[0];
+    const [jour, mois, annee] = dateTexte.split("/").map(Number);
+    const dateCell = new Date(annee, mois - 1, jour);
+
+    let visible = true;
+    if (periode === "week" && dateCell < startOfWeek) visible = false;
+    if (periode === "month" && dateCell < startOfMonth) visible = false;
+
     const ligneTexte = lignesTab[i].textContent.toLowerCase();
-    const visible = ligneTexte.includes(valeur);
+    if (!ligneTexte.includes(valeur)) visible = false;
+
     lignesTab[i].style.display = visible ? "" : "none";
 
     if (visible) {
-      const cells = lignesTab[i].getElementsByTagName("td");
-      if (cells.length >= 8) {
-        newData.push({
-          date: cells[0].innerText,
-          cadence: parseFloat(cells[4].innerText) || 0,
-          arret: parseFloat(cells[6].innerText) || 0
-        });
-      }
+      newData.push({
+        date: cells[0].innerText,
+        cadence: parseFloat(cells[4].innerText) || 0,
+        arret: parseFloat(cells[6].innerText) || 0
+      });
     }
   }
 
@@ -242,7 +265,6 @@ function filtrerHistorique(nom) {
 function drawHistoriqueGraph(nom, dataset) {
   const ctx = document.getElementById(`chart-histo-${nom}`);
   if (!ctx) return;
-
   if (window[`chart_${nom}`]) window[`chart_${nom}`].destroy();
 
   const labels = dataset.map(d => d.date);
@@ -275,8 +297,8 @@ function drawHistoriqueGraph(nom, dataset) {
       responsive: true,
       interaction: { mode: "index", intersect: false },
       scales: {
-        y: { beginAtZero: true, position: "left", title: { display: true, text: "Cadence (colis/h)" } },
-        y1: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Arrêt (min)" } }
+        y: { beginAtZero: true, position: "left" },
+        y1: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false } }
       }
     }
   });
@@ -321,4 +343,4 @@ function calculDuree(debut, fin, arret) {
   if (finMin < debutMin) finMin += 24 * 60;
   let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
-                                                          }
+          }                          }
