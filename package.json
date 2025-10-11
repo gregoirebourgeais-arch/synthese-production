@@ -1,0 +1,19 @@
+{
+  "name": "synthese-production",
+  "version": "1.0.0",
+  "description": "Application Synthèse Production - suivi des lignes",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "lowdb": "^6.0.1"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
