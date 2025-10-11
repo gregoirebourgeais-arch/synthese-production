@@ -3,46 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synthèse Production</title>
-
+  <title>Application Synthèse Production</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#007bff">
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script defer src="app.js"></script>
 </head>
 <body>
-
   <header>
-    <img src="Lactalis2023Logo.svg" alt="Lactalis">
-    <h1><span>Synthèse</span> Production</h1>
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
+    <div class="titre">
+      <h1><span class="titre-bleu">Synthèse</span><br>Production</h1>
+    </div>
   </header>
 
-  <nav class="nav">
-    <button onclick="openPage('atelier')">Atelier</button>
-    <button onclick="openPage('Râpé')">Râpé</button>
-    <button onclick="openPage('T2')">T2</button>
-    <button onclick="openPage('RT')">RT</button>
-    <button onclick="openPage('OMORI')">OMORI</button>
-    <button onclick="openPage('T1')">T1</button>
-    <button onclick="openPage('Sticks')">Sticks</button>
-    <button onclick="openPage('Emballage')">Emballage</button>
-    <button onclick="openPage('Dés')">Dés</button>
-    <button onclick="openPage('Filets')">Filets</button>
-    <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
-  </nav>
+  <main>
+    <div class="menu">
+      <button onclick="openPage('atelier')">Atelier</button>
+      <button onclick="openPage('Râpé')">Râpé</button>
+      <button onclick="openPage('T2')">T2</button>
+      <button onclick="openPage('RT')">RT</button>
+      <button onclick="openPage('OMORI')">OMORI</button>
+      <button onclick="openPage('T1')">T1</button>
+      <button onclick="openPage('Sticks')">Sticks</button>
+      <button onclick="openPage('Emballage')">Emballage</button>
+      <button onclick="openPage('Dés')">Dés</button>
+      <button onclick="openPage('Filets')">Filets</button>
+      <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
+    </div>
 
-  <main id="content"></main>
+    <!-- C’est ici que les pages s’affichent -->
+    <section id="content"></section>
+  </main>
 
-  <footer>© Lactalis — Synthèse Production</footer>
+  <footer>
+    © Lactalis — Synthèse Production
+  </footer>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker actif'))
-        .catch(err => console.log('Erreur SW', err));
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
