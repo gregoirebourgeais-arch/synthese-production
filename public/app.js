@@ -101,17 +101,25 @@ function pageLigne(nom, zone) {
   `;
   zone.innerHTML = html;
 
-  // 🔹 Récupération du champ colis temporaire
-  const colisTemp = localStorage.getItem(`colisTemp-${nom}`);
-  if (colisTemp) document.getElementById(`colis-${nom}`).value = colisTemp;
-
-  // 🔹 Mémorisation automatique de la valeur saisie
+  // Récupération du champ colis temporaire
   const colisInput = document.getElementById(`colis-${nom}`);
+  const temp = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
+  if (temp > 0) colisInput.value = temp;
+
+  // Quand on tape un nombre, on additionne à l’existant sans effacer
   colisInput.addEventListener("input", () => {
-    localStorage.setItem(`colisTemp-${nom}`, colisInput.value);
+    const oldVal = parseInt(localStorage.getItem(`colisTemp-${nom}`) || "0");
+    const newVal = parseInt(colisInput.value || "0");
+    // Si on tape un chiffre supérieur au précédent → somme automatique
+    if (newVal !== oldVal && newVal > 0 && oldVal > 0) {
+      localStorage.setItem(`colisTemp-${nom}`, oldVal + newVal);
+      colisInput.value = oldVal + newVal;
+    } else {
+      localStorage.setItem(`colisTemp-${nom}`, newVal);
+    }
   });
 
-  // 🔹 Enregistrement
+  // Enregistrement
   document.getElementById(`form-${nom}`).addEventListener("submit", e => {
     e.preventDefault();
 
@@ -138,10 +146,7 @@ function pageLigne(nom, zone) {
 
     data[nom].push(record);
     sauvegarder();
-
-    // 🔹 Une fois enregistré → on réinitialise la valeur temporaire
-    localStorage.removeItem(`colisTemp-${nom}`);
-
+    localStorage.removeItem(`colisTemp-${nom}`); // reset après enregistrement
     pageLigne(nom, zone);
   });
 
@@ -228,16 +233,13 @@ function drawGraphique(nom) {
   });
 }
 
-// === CALCUL DE DUREE (corrigé passage minuit) ===
+// === CALCUL DUREE (gère passage minuit) ===
 function calculDuree(debut, fin, arret) {
   const [h1, m1] = debut.split(":").map(Number);
   const [h2, m2] = fin.split(":").map(Number);
-
   let debutMin = h1 * 60 + m1;
   let finMin = h2 * 60 + m2;
-
   if (finMin < debutMin) finMin += 24 * 60;
-
   let duree = (finMin - debutMin - (arret || 0)) / 60;
   return duree > 0 ? duree : 0;
-    }
+}
