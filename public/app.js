@@ -1,6 +1,44 @@
 const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
 let data = JSON.parse(localStorage.getItem("syntheseData") || "[]");
+let arrets = JSON.parse(localStorage.getItem("arretsData") || "[]");const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
+let data = JSON.parse(localStorage.getItem("syntheseData") || "[]");
 let arrets = JSON.parse(localStorage.getItem("arretsData") || "[]");
+
+function openPage(line) {
+  const content = document.getElementById("content");
+  if (line === "atelier") {
+    renderAtelier(content);
+  } else {
+    renderLigne(line, content);
+  }
+}
+
+// --- Page Atelier ---
+function renderAtelier(el) {
+  const moyennes = lignes.map(l => {
+    const filtres = data.filter(c => c.ligne === l);
+    const moyenne = filtres.length ? filtres.reduce((a,b)=>a+b.cadence,0)/filtres.length : 0;
+    return isNaN(moyenne) ? 0 : Math.round(moyenne);
+  });
+
+  el.innerHTML = `
+    <div class="card">
+      <h2>Vue Atelier</h2>
+      <button class="export" onclick="exportAll()">📤 Exporter tout l'atelier</button>
+      <table>
+        <thead><tr><th>Ligne</th><th>Cadence Moyenne (colis/h)</th></tr></thead>
+        <tbody>${lignes.map((l,i)=>`<tr><td>${l}</td><td>${moyennes[i]}</td></tr>`).join("")}</tbody>
+      </table>
+      <canvas id="atelierChart" height="200"></canvas>
+    </div>
+  `;
+
+  const ctx = document.getElementById("atelierChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: { 
+      labels: lignes, 
+      datasets: [{ label: "Cadence (colis/h
 
 function openPage(line) {
   const content = document.getElementById("content");
