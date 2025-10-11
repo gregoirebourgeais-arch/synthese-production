@@ -5,11 +5,16 @@ const lignes = [
 ];
 
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
+let quantitesTemp = JSON.parse(localStorage.getItem("quantitesTemp")) || {}; // nouvelle mémoire temporaire
 
-// Sauvegarde automatique
+lignes.forEach(l => {
+  if (!Array.isArray(data[l])) data[l] = [];
+  if (!quantitesTemp[l]) quantitesTemp[l] = 0;
+});
+
 function sauvegarder() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
+  localStorage.setItem("quantitesTemp", JSON.stringify(quantitesTemp));
 }
 setInterval(sauvegarder, 120000);
 window.addEventListener("beforeunload", sauvegarder);
@@ -32,6 +37,7 @@ function pageAtelier(zone) {
 
 // === PAGE LIGNE ===
 function pageLigne(ligne, zone) {
+  const qTemp = quantitesTemp[ligne] || 0;
   zone.innerHTML = `
     <h2>Ligne ${ligne}</h2>
     <form id="form-${ligne}" class="form-ligne">
@@ -41,8 +47,8 @@ function pageLigne(ligne, zone) {
       <label>Heure fin :</label>
       <input type="time" id="fin"><br>
 
-      <label>Quantité produite :</label>
-      <input type="number" id="quantite" min="0"><br>
+      <label>Quantité produite (total actuel : ${qTemp}) :</label>
+      <input type="number" id="quantite" min="0" value=""><br>
 
       <label>Arrêt (minutes) :</label>
       <input type="number" id="arret" min="0"><br>
@@ -76,17 +82,21 @@ function getSemaineISO(dateStr) {
 function ajouter(ligne) {
   const debut = document.getElementById("debut").value;
   const fin = document.getElementById("fin").value;
-  const quantite = parseFloat(document.getElementById("quantite").value);
+  const quantiteInput = parseFloat(document.getElementById("quantite").value) || 0;
   const arret = parseFloat(document.getElementById("arret").value) || 0;
   const cause = document.getElementById("cause").value || "";
-  if (!debut || !fin || isNaN(quantite)) return alert("Champs incomplets !");
+  if (!debut || !fin || isNaN(quantiteInput)) return alert("Champs incomplets !");
+
+  // cumul quantité temporaire
+  quantitesTemp[ligne] = (quantitesTemp[ligne] || 0) + quantiteInput;
+  const quantiteTotale = quantitesTemp[ligne];
 
   const d1 = new Date(`1970-01-01T${debut}:00`);
   const d2 = new Date(`1970-01-01T${fin}:00`);
   let duree = (d2 - d1) / 60000;
   if (duree <= 0) duree += 1440;
 
-  const cadence = duree > 0 ? (quantite / (duree / 60)).toFixed(1) : 0;
+  const cadence = duree > 0 ? (quantiteInput / (duree / 60)).toFixed(1) : 0;
   const date = new Date();
   const dateStr = date.toLocaleDateString();
   const semaine = getSemaineISO(dateStr);
@@ -96,15 +106,16 @@ function ajouter(ligne) {
     semaine,
     debut,
     fin,
-    quantite,
+    quantite: quantiteInput,
+    total: quantiteTotale,
     arret,
     cause,
     cadence
   });
 
   sauvegarder();
-  alert(`✅ Enregistré (Cadence : ${cadence} u/h, Semaine ${semaine})`);
-  dessinerGraphique(ligne);
+  alert(`✅ ${quantiteInput} ajoutée (total ${quantiteTotale}) — cadence ${cadence} u/h`);
+  pageLigne(ligne, document.getElementById("content"));
 }
 
 // === HISTORIQUE ===
@@ -138,7 +149,7 @@ function voirHistorique(ligne) {
     <table border="1" class="table-histo">
       <tr>
         <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
-        <th>Quantité</th><th>Arrêt (min)</th><th>Cause</th>
+        <th>Quantité</th><th>Total</th><th>Arrêt (min)</th><th>Cause</th>
         <th>Cadence</th><th>❌</th>
       </tr>
   `;
@@ -147,7 +158,8 @@ function voirHistorique(ligne) {
     html += `
       <tr>
         <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
-        <td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
+        <td>${r.quantite}</td><td>${r.total}</td>
+        <td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
         <td><button onclick="supprimer('${ligne}',${i})">🗑️</button></td>
       </tr>
     `;
@@ -176,7 +188,7 @@ function appliquerFiltre(ligne) {
     <table border="1" class="table-histo">
       <tr>
         <th>Date</th><th>Semaine</th><th>Début</th><th>Fin</th>
-        <th>Quantité</th><th>Arrêt</th><th>Cause</th><th>Cadence</th>
+        <th>Quantité</th><th>Total</th><th>Arrêt</th><th>Cause</th><th>Cadence</th>
       </tr>
   `;
 
@@ -184,7 +196,8 @@ function appliquerFiltre(ligne) {
     html += `
       <tr>
         <td>${r.date}</td><td>${r.semaine}</td><td>${r.debut}</td><td>${r.fin}</td>
-        <td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
+        <td>${r.quantite}</td><td>${r.total}</td>
+        <td>${r.arret}</td><td>${r.cause}</td><td>${r.cadence}</td>
       </tr>
     `;
   });
@@ -236,29 +249,11 @@ function dessinerGraphique(ligne) {
     data: {
       labels,
       datasets: [
-        {
-          label: "Cadence (u/h)",
-          data: cadence,
-          borderColor: "blue",
-          tension: 0.3,
-          yAxisID: "y1"
-        },
-        {
-          label: "Arrêts (min)",
-          data: arrets,
-          borderColor: "red",
-          tension: 0.3,
-          yAxisID: "y2"
-        }
+        { label: "Cadence (u/h)", data: cadence, borderColor: "blue", tension: 0.3 },
+        { label: "Arrêts (min)", data: arrets, borderColor: "red", tension: 0.3 }
       ]
     },
-    options: {
-      responsive: true,
-      scales: {
-        y1: { position: "left", beginAtZero: true },
-        y2: { position: "right", beginAtZero: true }
-      }
-    }
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 }
 
