@@ -1,268 +1,247 @@
-/* === Synthèse Production Lactalis - Style V15.3 === */
-
-/* Variables globales */
-:root {
-  --blue: #007aff;
-  --blue-dark: #005fcc;
-  --light: #f4f7ff;
-  --text: #1a1a1a;
-  --radius: 16px;
-  --shadow: 0 3px 6px rgba(0,0,0,0.15);
-}
-
-/* Corps de page */
+/* === Style général === */
 body {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background: var(--light);
-  color: var(--text);
   margin: 0;
-  padding: 0;
-  text-align: center;
+  background: #f4f8ff;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Header */
-header, .site-header {
-  background: linear-gradient(to bottom, #007aff, #5aa9ff);
+h1, h2 {
+  text-align: center;
+  color: #003b8e;
+  margin: 0.6em 0;
+}
+
+.titre-bleu { color: #007bff; }
+.titre-noir { color: #222; }
+
+/* === Header === */
+header.site-header {
+  background: linear-gradient(90deg, #007bff, #009eff);
   color: white;
   text-align: center;
-  padding: 1.5rem 1rem;
-  box-shadow: var(--shadow);
-}
-header img {
-  height: 60px;
-  margin-bottom: 10px;
-}
-h1 {
-  font-size: 1.8rem;
-  margin: 0;
-}
-h2 {
-  color: var(--blue-dark);
-  font-size: 1.6rem;
-  margin: 1.2rem 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
-/* Section principale */
+header .logo-lactalis {
+  width: 100px;
+  margin-bottom: 0.4rem;
+}
+
+.top-clock {
+  font-size: 0.9rem;
+  margin-top: 0.4rem;
+  color: #e9f3ff;
+}
+
+/* === Contenu principal === */
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
 .page {
   background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  margin: 1rem auto;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   padding: 1.2rem;
-  width: 90%;
-  max-width: 600px;
-}
-
-/* Menu */
-.menu button {
+  max-width: 500px;
   width: 100%;
-  margin: 0.5rem 0;
-  padding: 0.9rem;
-  background: var(--blue);
-  color: white;
-  font-weight: 600;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-}
-.menu button:hover {
-  background: var(--blue-dark);
-  transform: scale(1.02);
+  animation: fadeIn 0.4s ease-in-out;
 }
 
-/* Champs */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-lignes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.menu-lignes button {
+  background: #007bff;
+  border: none;
+  color: white;
+  padding: 0.8rem;
+  border-radius: 15px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.menu-lignes button:hover {
+  transform: translateY(-2px);
+  background: #0065d8;
+}
+
+/* === Champs et boutons === */
 label {
   display: block;
-  text-align: left;
+  margin-top: 0.8rem;
   font-weight: 600;
-  margin-top: 0.7rem;
 }
-input {
+
+input, textarea {
   width: 100%;
-  padding: 0.7rem;
+  padding: 0.6rem;
   margin-top: 0.3rem;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: var(--radius);
   font-size: 1rem;
-  box-sizing: border-box;
 }
 
-/* Stats bloc */
-.stats {
-  background: #eef4ff;
-  border-radius: var(--radius);
-  padding: 1rem;
-  margin-top: 1.2rem;
-  text-align: left;
-  box-shadow: var(--shadow);
-}
-.stats p {
-  margin: 0.3rem 0;
+textarea {
+  min-height: 60px;
+  resize: vertical;
 }
 
-/* Boutons d’action */
 .boutons {
+  margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
-  gap: 0.6rem;
-  margin-top: 1.2rem;
-}
-.boutons button {
-  flex: 1 1 45%;
-  background: var(--blue);
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: var(--radius);
-  padding: 0.8rem;
-  box-shadow: var(--shadow);
-  transition: background 0.3s, transform 0.2s;
-}
-.boutons button:hover {
-  background: var(--blue-dark);
-  transform: scale(1.05);
 }
 
-/* Bouton retour menu */
-.retour-menu {
-  background: var(--blue);
+.boutons button, .retour-menu {
+  background: #009eff;
   color: white;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 12px;
   padding: 0.7rem 1.2rem;
   font-weight: 600;
-  font-size: 1rem;
-  box-shadow: var(--shadow);
-  margin-bottom: 1rem;
-  transition: background 0.3s, transform 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
-.retour-menu:hover {
-  background: var(--blue-dark);
+
+.boutons button:hover, .retour-menu:hover {
+  background: #007bff;
   transform: scale(1.05);
 }
 
-/* Tableau Atelier */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-}
-th, td {
-  border-bottom: 1px solid #ccc;
-  padding: 0.6rem;
-}
-th {
-  background: var(--blue);
-  color: white;
+.stats {
+  background: #eef5ff;
+  border-radius: 12px;
+  padding: 0.7rem;
+  margin: 0.8rem 0;
+  font-size: 0.95rem;
 }
 
-/* Calculatrice flottante */
+/* === Calculatrice === */
 #calculator {
   position: fixed;
-  bottom: 90px;
-  right: 15px;
+  bottom: 80px;
+  right: 20px;
   background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 0.8rem;
-  width: 220px;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  padding: 1rem;
   display: none;
-  z-index: 50;
+  z-index: 1000;
 }
+
+#calculator input {
+  width: 100%;
+  font-size: 1.2rem;
+  margin-bottom: 0.6rem;
+  text-align: right;
+  padding: 0.4rem;
+}
+
 .calc-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.3rem;
-}
-.calc-buttons button {
-  padding: 0.6rem;
-  font-size: 1.1rem;
-  border: none;
-  background: var(--blue);
-  color: white;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-.calc-buttons button:hover {
-  background: var(--blue-dark);
-}
-#calcDisplay {
-  width: 100%;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  text-align: right;
-  padding: 0.4rem;
-  border-radius: var(--radius);
-  border: 1px solid #ccc;
+  gap: 8px;
 }
 
-/* Floating Action Buttons */
+.calc-buttons button {
+  padding: 0.7rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.calc-buttons button:hover {
+  background: #0062cc;
+}
+
+.hidden { display: none; }
+
+/* === Boutons flottants === */
 .fab-row {
   position: fixed;
-  right: 15px;
   bottom: 20px;
+  right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  z-index: 40;
+  gap: 10px;
+  z-index: 1001;
 }
+
 .fab {
-  background: var(--blue);
+  background: #007bff;
+  color: white;
   border: none;
   border-radius: 50%;
-  width: 58px;
-  height: 58px;
-  box-shadow: var(--shadow);
+  width: 55px;
+  height: 55px;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   cursor: pointer;
-  transition: transform 0.2s, background 0.3s;
+  transition: all 0.3s ease;
 }
+
 .fab:hover {
-  background: var(--blue-dark);
+  background: #005ecf;
   transform: scale(1.1);
 }
 
-/* Transitions page */
-.fade {
-  animation: fadeIn 0.4s ease-in-out;
-}
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-
-/* Footer */
+/* === Footer === */
 footer {
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-#cadenceManuelle {
-  width: 100%;
-  margin: 0.4rem 0;
+  text-align: center;
+  background: #003b8e;
+  color: white;
   padding: 0.7rem;
-  font-size: 1rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+  font-size: 0.85rem;
+  margin-top: auto;
 }
 
-button[onclick="remiseCadence()"] {
-  background: #ffb84d;
-  color: #222;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
-  padding: 0.6rem 1rem;
-  margin-top: 0.3rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: background 0.3s, transform 0.2s;
-}
-button[onclick="remiseCadence()"]:hover {
-  background: #ffa500;
-  transform: scale(1.05);
-}
+/* === Responsive === */
+@media (max-width: 600px) {
+  .page {
+    max-width: 95%;
+    padding: 0.8rem;
+  }
+
+  .menu-lignes {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .fab {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  header.site-header {
+    padding: 0.8rem;
+  }
+  }
