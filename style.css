@@ -93,26 +93,28 @@ footer {
   border-radius: 0 0 15px 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 10px;
+  z-index: 10;
 }
 
 #calculatrice-btn {
   position: fixed;
-  bottom: 25px;
-  right: 25px;
+  bottom: 30px;
+  right: 30px;
   background: #007bff;
   color: white;
-  font-size: 24px;
+  font-size: 26px;
   border-radius: 50%;
-  width: 55px;
-  height: 55px;
+  width: 65px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s;
+  z-index: 9999;
 }
 
 #calculatrice-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
