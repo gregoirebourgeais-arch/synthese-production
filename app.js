@@ -3,7 +3,6 @@ const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dé
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
 
-// === UTILITAIRES ===
 function sauvegarder() { localStorage.setItem("syntheseData", JSON.stringify(data)); }
 setInterval(sauvegarder, 120000);
 
@@ -29,6 +28,10 @@ function openPage(page) {
 // === PAGE LIGNE ===
 function pageLigne(nom, zone) {
   const entries = data[nom];
+  const lastEntry = entries[entries.length - 1];
+  const heureDebut = lastEntry ? lastEntry.fin : new Date().toISOString().slice(11, 16);
+  const heureFin = new Date().toISOString().slice(11, 16);
+
   zone.innerHTML = `
     <div class="card">
       <h2>${nom}</h2>
@@ -41,6 +44,10 @@ function pageLigne(nom, zone) {
       <input id="cause" type="text" placeholder="Cause d'arrêt...">
       <textarea id="comment" placeholder="Commentaire..."></textarea>
       <input id="restante" type="number" placeholder="Quantité restante...">
+      <div>
+        🕒 Début : <input id="hdeb" type="time" value="${heureDebut}">
+        → Fin : <input id="hfin" type="time" value="${heureFin}">
+      </div>
       <p id="finEstimee"></p>
 
       <button onclick="enregistrer('${nom}')">💾 Enregistrer</button>
@@ -51,10 +58,7 @@ function pageLigne(nom, zone) {
       <canvas id="chart${nom}" height="150"></canvas>
     </div>
   `;
-
-  // maj heure de fin
   document.getElementById("restante").addEventListener("input", () => majFin(nom));
-
   afficherGraphique(nom);
 }
 
@@ -64,9 +68,11 @@ function enregistrer(ligne) {
   const arret = Number(document.getElementById("arret").value)||0;
   const cause = document.getElementById("cause").value;
   const comment = document.getElementById("comment").value;
+  const hdeb = document.getElementById("hdeb").value;
+  const hfin = document.getElementById("hfin").value;
   const date = new Date();
 
-  data[ligne].push({date: date.toLocaleString(), qte: qte1+qte2, arret, cause, comment});
+  data[ligne].push({date: date.toLocaleDateString()+" "+date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), qte:qte1+qte2, arret, cause, comment, debut:hdeb, fin:hfin});
   sauvegarder();
   openPage(ligne);
 }
@@ -76,11 +82,14 @@ function remiseZero(ligne){ data[ligne]=[]; sauvegarder(); openPage(ligne); }
 
 function calcCadence(ligne){
   const arr=data[ligne];
-  if(arr.length<2)return 0;
-  const t1=new Date(arr[0].date),t2=new Date(arr[arr.length-1].date);
-  const total=arr.reduce((a,b)=>a+Number(b.qte||0),0);
-  const heures=(t2-t1)/3600000||1;
-  return Math.round(total/heures);
+  if(arr.length<1)return 0;
+  let total=arr.reduce((a,b)=>a+Number(b.qte||0),0);
+  const dureeTot=arr.reduce((a,b)=>{
+    const [h1,m1]=b.debut.split(":").map(Number);
+    const [h2,m2]=b.fin.split(":").map(Number);
+    return a + ((h2*60+m2)-(h1*60+m1))/60;
+  },0);
+  return dureeTot?Math.round(total/dureeTot):0;
 }
 
 function majFin(ligne){
@@ -94,7 +103,7 @@ function majFin(ligne){
 
 // === HISTORIQUE ===
 function afficherHistorique(ligne){
-  const h=data[ligne].map(e=>`${e.date} — ${e.qte} colis, ${e.arret}min, ${e.cause||''} ${e.comment||''}`).join("<br>");
+  const h=data[ligne].map(e=>`${e.date} — ${e.debut}→${e.fin} — ${e.qte} colis — ${e.arret}min (${e.cause||''}) ${e.comment||''}`).join("\n");
   alert("Historique " + ligne + " :\n\n" + h);
 }
 
@@ -102,20 +111,20 @@ function afficherHistorique(ligne){
 function afficherGraphique(ligne){
   const ctx=document.getElementById("chart"+ligne);
   if(!ctx)return;
-  const labels=data[ligne].map(e=>e.date.split(" ")[1]);
+  const labels=data[ligne].map(e=>e.debut);
   const qtes=data[ligne].map(e=>e.qte);
   const arrets=data[ligne].map(e=>e.arret);
   new Chart(ctx,{type:"bar",data:{
     labels, datasets:[
-      {label:"Quantité",data:qtes,borderWidth:1},
-      {label:"Arrêts (min)",data:arrets,borderWidth:1}
+      {label:"Quantité",data:qtes,backgroundColor:"rgba(11,115,200,0.7)"},
+      {label:"Arrêts (min)",data:arrets,backgroundColor:"rgba(255,99,132,0.6)"}
     ]}});
 }
 
 // === EXPORT EXCEL ===
 function exporterExcel(ligne){
-  const rows = [["Date","Quantité","Arrêt (min)","Cause","Commentaire"]];
-  data[ligne].forEach(e=>rows.push([e.date,e.qte,e.arret,e.cause,e.comment]));
+  const rows = [["Date","Heure début","Heure fin","Quantité","Arrêt (min)","Cause","Commentaire"]];
+  data[ligne].forEach(e=>rows.push([e.date,e.debut,e.fin,e.qte,e.arret,e.cause,e.comment]));
   const csv=rows.map(r=>r.join(";")).join("\n");
   const blob=new Blob([csv],{type:"text/csv"});
   const now=new Date();
@@ -142,6 +151,6 @@ function graphiqueGlobal(){
   const ctx=document.getElementById("chartGlobal");
   new Chart(ctx,{type:"bar",data:{
     labels:lignes,
-    datasets:[{label:"Total colis",data:lignes.map(l=>data[l].reduce((a,b)=>a+Number(b.qte||0),0))}]
+    datasets:[{label:"Total colis",data:lignes.map(l=>data[l].reduce((a,b)=>a+Number(b.qte||0),0)),backgroundColor:"rgba(11,115,200,0.7)"}]
   }});
-}
+                 }
