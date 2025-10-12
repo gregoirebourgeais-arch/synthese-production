@@ -1,4 +1,4 @@
-// === PANNEAU FLOTTANT ===
+// === PANNEAU FLOTTANT (Semaine + Date + Heure) ===
 function updateDateTime() {
   const now = new Date();
   const jour = now.toLocaleDateString("fr-FR", {
@@ -7,7 +7,10 @@ function updateDateTime() {
     month: "2-digit",
     year: "numeric"
   });
-  const heure = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const heure = now.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
   const tempDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   const jourNum = tempDate.getUTCDay() || 7;
@@ -22,7 +25,7 @@ function updateDateTime() {
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-// === DONNÉES LOCALES ===
+// === STOCKAGE LOCAL ===
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 function saveData() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
@@ -41,11 +44,15 @@ function openPage(page) {
       <label>Temps d’arrêt (min) :</label>
       <input type="number" id="arret" placeholder="0" />
       <div id="infos"></div>
+
       <div class="btns">
-        <button onclick="enregistrer('${page}')">Enregistrer</button>
-        <button onclick="annuler('${page}')">Annuler dernier</button>
-        <button onclick="afficherHistorique('${page}')">Historique</button>
+        <button onclick="enregistrer('${page}')">💾 Enregistrer</button>
+        <button onclick="annuler('${page}')">↩️ Annuler dernier</button>
+        <button onclick="afficherHistorique('${page}')">📜 Historique</button>
+        <button onclick="exporterExcel('${page}')">📦 Export Excel</button>
+        <button onclick="remiseZero('${page}')">♻️ Remise à zéro</button>
       </div>
+
       <canvas id="graphLigne"></canvas>
     </div>
   `;
@@ -63,6 +70,7 @@ function enregistrer(page) {
 
   const now = new Date();
   data[page].push({
+    date: now.toLocaleDateString("fr-FR"),
     heure: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     quantite: total,
     arret
@@ -85,7 +93,7 @@ function annuler(page) {
   }
 }
 
-// === AFFICHAGE DES INFOS ===
+// === AFFICHAGE INFOS ===
 function afficherInfos(page) {
   const zone = document.getElementById("infos");
   const lignes = data[page] || [];
@@ -102,57 +110,83 @@ function afficherInfos(page) {
     <p><strong>Total :</strong> ${total} colis</p>
     <p><strong>Cadence moyenne :</strong> ${cadence} colis/h</p>
   `;
+
+  renderGraph(page, lignes);
 }
 
-// === HISTORIQUE + GRAPHIQUE ===
-function afficherHistorique(page) {
-  const lignes = data[page] || [];
-  if (lignes.length === 0) return alert("Aucune donnée enregistrée.");
-
-  const labels = lignes.map(l => l.heure);
-  const valeurs = lignes.map(l => l.quantite);
-  const arrets = lignes.map(l => l.arret);
-
-  const content = document.getElementById("content");
-  content.innerHTML = `
-    <div class="card">
-      <h3>Historique ${page}</h3>
-      <canvas id="graphHisto"></canvas>
-      <button onclick="openPage('${page}')">Retour</button>
-    </div>
-  `;
-
-  const ctx = document.getElementById("graphHisto").getContext("2d");
+// === GRAPHIQUE ===
+function renderGraph(page, lignes) {
+  const ctx = document.getElementById("graphLigne").getContext("2d");
   new Chart(ctx, {
     type: "line",
     data: {
-      labels,
+      labels: lignes.map(l => l.heure),
       datasets: [
         {
           label: "Quantité (colis)",
-          data: valeurs,
+          data: lignes.map(l => l.quantite),
           borderColor: "#007bff",
           backgroundColor: "#007bff33",
-          fill: true,
-          yAxisID: "y1"
+          fill: true
         },
         {
           label: "Arrêts (min)",
-          data: arrets,
+          data: lignes.map(l => l.arret),
           borderColor: "#ff4747",
           backgroundColor: "#ff474755",
-          fill: true,
-          yAxisID: "y2"
+          fill: true
         }
       ]
     },
     options: {
-      scales: {
-        y1: { type: "linear", position: "left", beginAtZero: true },
-        y2: { type: "linear", position: "right", beginAtZero: true }
-      }
+      scales: { y: { beginAtZero: true } },
+      plugins: { legend: { position: "bottom" } }
     }
   });
+}
+
+// === HISTORIQUE ===
+function afficherHistorique(page) {
+  const lignes = data[page] || [];
+  if (lignes.length === 0) return alert("Aucune donnée enregistrée.");
+
+  const content = document.getElementById("content");
+  let table = `
+    <div class="card">
+      <h3>Historique ${page}</h3>
+      <table border="1" style="width:100%;border-collapse:collapse;">
+        <tr><th>Date</th><th>Heure</th><th>Quantité</th><th>Arrêt</th></tr>
+  `;
+  lignes.forEach(l => {
+    table += `<tr><td>${l.date}</td><td>${l.heure}</td><td>${l.quantite}</td><td>${l.arret}</td></tr>`;
+  });
+  table += `</table>
+    <button onclick="openPage('${page}')">⬅️ Retour</button>
+    </div>`;
+  content.innerHTML = table;
+}
+
+// === EXPORT EXCEL ===
+function exporterExcel(page) {
+  const lignes = data[page] || [];
+  if (lignes.length === 0) return alert("Aucune donnée à exporter.");
+
+  let csv = "Date;Heure;Quantité;Arrêt (min)\n";
+  lignes.forEach(l => csv += `${l.date};${l.heure};${l.quantite};${l.arret}\n`);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Synthese_${page}_${new Date().toLocaleDateString("fr-FR")}.csv`;
+  link.click();
+}
+
+// === REMISE À ZÉRO D'ÉQUIPE ===
+function remiseZero(page) {
+  if (!confirm("♻️ Remettre à zéro les données visibles (historique conservé) ?")) return;
+  data[page] = [];
+  saveData();
+  afficherInfos(page);
+  alert("✅ Données effacées pour une nouvelle équipe.");
 }
 
 // === PAGE PAR DÉFAUT ===
