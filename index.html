@@ -1,45 +1,46 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production - Lactalis</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0d6efd" />
-  <link rel="apple-touch-icon" href="icons/icon-512.png" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <meta name="theme-color" content="#007bff">
 </head>
 
 <body>
-  <header class="app-header">
-    <img src="Lactalis2023Logo.svg" class="brand" alt="Lactalis" />
-    <div>
-      <h1><span class="thin">Synthèse</span> <span class="strong">Production</span></h1>
-      <p id="metaTop"></p>
+  <header class="header">
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
+    <div class="titre">
+      <h1><span class="titre-bleu">Synthèse</span> Production</h1>
+      <p id="dateHeure"></p>
     </div>
   </header>
 
-  <nav class="menu">
-    <button onclick="openPage('Atelier')">Atelier</button>
-    <button onclick="openPage('Râpé')">Râpé</button>
-    <button onclick="openPage('T2')">T2</button>
-    <button onclick="openPage('RT')">RT</button>
-    <button onclick="openPage('OMORI')">OMORI</button>
-    <button onclick="openPage('T1')">T1</button>
-    <button onclick="openPage('Sticks')">Sticks</button>
-    <button onclick="openPage('Emballage')">Emballage</button>
-    <button onclick="openPage('Dés')">Dés</button>
-    <button onclick="openPage('Filets')">Filets</button>
-    <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
-  </nav>
+  <main id="content">
+    <div class="card">
+      <h2>Choisissez une ligne</h2>
+      <div class="menu-lignes">
+        <button onclick="openPage('Atelier')">Atelier</button>
+        <button onclick="openPage('Râpé')">Râpé</button>
+        <button onclick="openPage('T2')">T2</button>
+        <button onclick="openPage('RT')">RT</button>
+        <button onclick="openPage('OMORI')">OMORI</button>
+        <button onclick="openPage('T1')">T1</button>
+        <button onclick="openPage('Sticks')">Sticks</button>
+        <button onclick="openPage('Emballage')">Emballage</button>
+        <button onclick="openPage('Dés')">Dés</button>
+        <button onclick="openPage('Filets')">Filets</button>
+        <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
+      </div>
+    </div>
+  </main>
 
-  <main id="content"></main>
-
-  <footer>© Lactalis — Synthèse Production</footer>
-
+  <!-- Calculatrice flottante -->
   <div id="calcPanel" class="calc-panel hidden">
-    <input type="text" id="calcInput" readonly />
+    <input type="text" id="calcInput" readonly placeholder="0">
     <div class="calc-buttons">
       <button onclick="calcPress('7')">7</button>
       <button onclick="calcPress('8')">8</button>
@@ -62,11 +63,39 @@
     </div>
   </div>
 
+  <!-- Icône pour ouvrir la calculatrice -->
+  <button class="calc-icon" onclick="toggleCalc()">🧮</button>
+
+  <footer>
+    <p>© Lactalis — Synthèse Production</p>
+  </footer>
+
+  <!-- Librairie Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Script principal -->
   <script src="app.js"></script>
+
+  <!-- Service Worker -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('✅ Service Worker enregistré'))
+      .catch(err => console.log('❌ Erreur SW :', err));
+  }
+
+  // Affichage dynamique de la date / heure / semaine
+  function majDateHeure() {
+    const d = new Date();
+    const semaine = Math.ceil(((d - new Date(d.getFullYear(),0,1)) / 86400000 + new Date(d.getFullYear(),0,1).getDay()+1) / 7);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById("dateHeure").innerText =
+      d.toLocaleDateString('fr-FR', options) + " — Semaine " + semaine + " — " +
+      d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+  }
+  majDateHeure();
+  setInterval(majDateHeure, 60000);
   </script>
+
 </body>
 </html>
