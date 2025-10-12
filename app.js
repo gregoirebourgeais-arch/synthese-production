@@ -144,4 +144,4 @@ function graphiqueGlobal(){
     labels:lignes,
     datasets:[{label:"Total colis",data:lignes.map(l=>data[l].reduce((a,b)=>a+Number(b.qte||0),0))}]
   }});
-    }
+}
