@@ -1,64 +1,40 @@
-/* === Style général === */
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  background: #f4f8ff;
-  color: #222;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  overflow-x: hidden;
+  background: #f1f5ff;
+  color: #002b6b;
 }
 
-h1, h2 {
-  text-align: center;
-  color: #003b8e;
-  margin: 0.6em 0;
-}
-
-.titre-bleu { color: #007bff; }
-.titre-noir { color: #222; }
-
-/* === Header === */
-header.site-header {
-  background: linear-gradient(90deg, #007bff, #009eff);
-  color: white;
+.site-header {
+  background: linear-gradient(180deg, #0090ff, #0077e6);
   text-align: center;
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-header .logo-lactalis {
-  width: 100px;
-  margin-bottom: 0.4rem;
+.logo-lactalis {
+  width: 140px;
+  margin-bottom: .5rem;
+}
+
+.titre-bleu {
+  color: white;
+  font-weight: 600;
 }
 
 .top-clock {
   font-size: 0.9rem;
-  margin-top: 0.4rem;
-  color: #e9f3ff;
+  opacity: 0.9;
 }
 
-/* === Contenu principal === */
 main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
   padding: 1rem;
+  text-align: center;
 }
 
 .page {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  padding: 1.2rem;
-  max-width: 500px;
-  width: 100%;
-  animation: fadeIn 0.4s ease-in-out;
+  animation: fadeIn .4s ease;
 }
 
 @keyframes fadeIn {
@@ -66,182 +42,134 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.menu-lignes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-}
-
-.menu-lignes button {
-  background: #007bff;
-  border: none;
-  color: white;
-  padding: 0.8rem;
-  border-radius: 15px;
-  font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-}
-
-.menu-lignes button:hover {
-  transform: translateY(-2px);
-  background: #0065d8;
-}
-
-/* === Champs et boutons === */
-label {
+.menu-lignes button, 
+.bouton-principal, 
+.retour-menu, 
+.boutons button {
   display: block;
-  margin-top: 0.8rem;
-  font-weight: 600;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.3rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
-
-textarea {
-  min-height: 60px;
-  resize: vertical;
-}
-
-.boutons {
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.boutons button, .retour-menu {
-  background: #009eff;
+  width: 80%;
+  margin: 10px auto;
+  padding: 12px;
+  background: #007bff;
   color: white;
+  font-size: 1.1rem;
   border: none;
   border-radius: 12px;
-  padding: 0.7rem 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: 0.2s;
 }
 
-.boutons button:hover, .retour-menu:hover {
-  background: #007bff;
-  transform: scale(1.05);
+button:hover {
+  background: #005fcc;
+  transform: scale(1.02);
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+  text-align: left;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .stats {
-  background: #eef5ff;
-  border-radius: 12px;
-  padding: 0.7rem;
-  margin: 0.8rem 0;
-  font-size: 0.95rem;
-}
-
-/* === Calculatrice === */
-#calculator {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-  padding: 1rem;
-  display: none;
-  z-index: 1000;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  margin: 15px 0;
 }
 
-#calculator input {
+table {
   width: 100%;
-  font-size: 1.2rem;
-  margin-bottom: 0.6rem;
-  text-align: right;
-  padding: 0.4rem;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.calc-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
 }
 
-.calc-buttons button {
-  padding: 0.7rem;
+th {
   background: #007bff;
   color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: bold;
 }
 
-.calc-buttons button:hover {
-  background: #0062cc;
+footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.hidden { display: none; }
-
-/* === Boutons flottants === */
 .fab-row {
   position: fixed;
   bottom: 20px;
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  z-index: 1001;
+  gap: 12px;
 }
 
 .fab {
   background: #007bff;
-  color: white;
   border: none;
   border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  font-size: 1.4rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  width: 60px;
+  height: 60px;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  transition: 0.2s;
 }
 
 .fab:hover {
-  background: #005ecf;
   transform: scale(1.1);
 }
 
-/* === Footer === */
-footer {
-  text-align: center;
-  background: #003b8e;
-  color: white;
-  padding: 0.7rem;
-  font-size: 0.85rem;
-  margin-top: auto;
+#calculator {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  padding: 10px;
+  display: none;
 }
 
-/* === Responsive === */
-@media (max-width: 600px) {
-  .page {
-    max-width: 95%;
-    padding: 0.8rem;
-  }
+#calculator input {
+  width: calc(100% - 10px);
+  margin-bottom: 10px;
+  text-align: right;
+  font-size: 1.2rem;
+  border: none;
+  background: #eef;
+  border-radius: 8px;
+  padding: 6px;
+}
 
-  .menu-lignes {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
+.calc-buttons button {
+  width: 23%;
+  margin: 2px;
+  font-size: 1rem;
+  padding: 8px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+}
 
-  .fab {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
-  }
-
-  header.site-header {
-    padding: 0.8rem;
-  }
-  }
+.calc-buttons button:hover {
+  background: #005fcc;
+}
