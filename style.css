@@ -1,241 +1,52 @@
-/* === STYLE PRO LACTALIS V13 === */
-
-body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background: #f4f7fb;
-  color: #002a5c;
-  margin: 0;
-  padding: 0;
-  transition: background-color 0.3s ease;
+/* --- BOUTONS COULEURS --- */
+button[type="button"]:contains("Enregistrer") {
+  background: #009b4b;
+}
+button[type="button"]:contains("Annuler") {
+  background: #d9534f;
+}
+button[type="button"]:contains("Historique") {
+  background: #0074e8;
+}
+button[type="button"]:contains("Retour") {
+  background: #6c757d;
 }
 
+/* Correction pour compatibilité navigateur */
+button.green { background: #009b4b; }
+button.red { background: #d9534f; }
+button.blue { background: #0074e8; }
+button.gray { background: #6c757d; }
+
+/* --- HEADER ET LOGO CENTRÉ --- */
 header {
   background: linear-gradient(90deg, #004b9b, #0074e8);
   color: white;
   text-align: center;
-  padding: 10px 0;
+  padding: 15px 0;
   font-size: 1.4em;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+header img {
+  height: 60px;
+  margin-bottom: 5px;
 }
 
-#content {
-  padding: 20px;
-  max-width: 1000px;
-  margin: auto;
-  opacity: 0;
-  animation: fadeIn 0.3s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-h2, h3 {
-  color: #004b9b;
-  text-align: center;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  margin-top: 15px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-}
-
-th {
-  background: #004b9b;
-  color: white;
-  padding: 10px;
-  font-size: 0.9em;
-}
-
-td {
-  text-align: center;
-  padding: 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-tr:hover {
-  background: #f0f8ff;
-}
-
-/* --- BOUTONS --- */
-button {
-  background: #004b9b;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  margin: 6px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  background: #0064d2;
-  transform: scale(1.05);
-}
-
-button:active {
-  transform: scale(0.96);
-}
-
-/* --- FORMULAIRES --- */
-input, select {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e0;
-  margin: 5px 0 10px 0;
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 0.95em;
-}
-
-label {
-  font-weight: 600;
-  display: block;
-  margin-top: 8px;
-}
-
-/* --- CARTES LIGNES --- */
-.atelier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.card-ligne {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-  padding: 15px;
-  text-align: center;
-  transition: 0.2s;
-}
-
-.card-ligne:hover {
-  background: #f0f7ff;
-  transform: translateY(-3px);
-}
-
-/* --- RÉSUMÉS --- */
-.resume-ligne {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 10px;
-  margin-top: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* --- GRAPHES --- */
-canvas {
-  margin-top: 10px;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* --- ALERTES --- */
-.alert {
-  background: #e8f4ff;
-  color: #004b9b;
-  border-left: 5px solid #0074e8;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 15px;
-}
-
-/* --- TABLE HISTORIQUE --- */
-.table-histo tr:nth-child(even) {
-  background-color: #f8fbff;
-}
-
-.table-histo button {
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 0.9em;
-}
-
-/* --- PANNEAU FLOTTANT (heure/date/semaine) --- */
+/* --- PANNEAU FLOTTANT CENTRÉ --- */
 #panneau-info {
   position: fixed;
-  top: 10px;
-  right: 15px;
-  background: rgba(255,255,255,0.95);
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.97);
   color: #004b9b;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 0.9em;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  text-align: right;
-  z-index: 1000;
-  backdrop-filter: blur(6px);
-  transition: opacity 0.3s;
-}
-
-/* --- CALCULATRICE FLOTTANTE --- */
-#calculatrice {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: white;
   border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.25);
-  padding: 10px;
-  width: 220px;
-  display: none;
-  z-index: 2000;
-}
-
-#calculatrice input {
-  width: 100%;
-  font-size: 1.1em;
-  text-align: right;
-  padding: 5px;
-  border: none;
-  outline: none;
-}
-
-.calc-btns {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.calc-btns button {
-  padding: 10px;
-  font-size: 1em;
-  border-radius: 8px;
-}
-
-#btn-calc {
-  position: fixed;
-  bottom: 90px;
-  right: 25px;
-  background: #004b9b;
-  color: white;
-  font-size: 1.6em;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-  cursor: pointer;
-  z-index: 1500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-
-#btn-calc:hover {
-  transform: scale(1.1);
+  padding: 8px 18px;
+  font-size: 0.9em;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  text-align: center;
 }
