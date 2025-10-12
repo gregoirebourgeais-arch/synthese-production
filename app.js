@@ -271,21 +271,38 @@ function renderAtelierGraph() {
   });
 }
 
-// === 📤 Export global atelier (CSV) ===
+// === 📤 Export global Atelier (CSV + graphiques intégrés) ===
 function exportAtelier() {
-  const lignesCSV = ["Ligne,Total,Arrêts,Cadence"];
+  const lignesCSV = [
+    "Ligne;Total colis;Arrêts (min);Cadence moyenne (colis/h)"
+  ];
+
   lignes.forEach(l => {
     const d = data[l] || [];
     const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
     const arr = d.reduce((s, x) => s + Number(x.arret || 0), 0);
     const cad = d.length ? (tot / d.length).toFixed(1) : 0;
-    lignesCSV.push(`${l},${tot},${arr},${cad}`);
+    lignesCSV.push(`${l};${tot};${arr};${cad}`);
   });
-  const blob = new Blob([lignesCSV.join("\n")], { type: "text/csv" });
+
+  // Création du fichier CSV global
+  const blob = new Blob(["\uFEFF" + lignesCSV.join("\n")], { type: "text/csv;charset=utf-8;" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
   a.click();
+
+  showToast("📦 Export global créé (CSV formaté pour Excel)");
+
+  // Capture du graphique global en image PNG
+  const chartCanvas = document.getElementById("atelierChart");
+  if (chartCanvas) {
+    const img = chartCanvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = img;
+    link.download = `Graphique_Atelier_${new Date().toISOString().split("T")[0]}.png`;
+    link.click();
+  }
 }
 // === 📤 Export Excel (CSV propre et compatible Excel) ===
 function exportExcel(line) {
