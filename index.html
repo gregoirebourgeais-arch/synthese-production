@@ -2,30 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Synthèse Production</title>
   <meta name="theme-color" content="#007bff" />
 
-  <!-- 🧠 Description -->
-  <meta name="description" content="Application interne Lactalis de suivi de production en temps réel." />
-
-  <!-- 📱 PWA -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="apple-touch-icon" href="icons/icon-512.png">
-
-  <!-- 📊 Librairies externes -->
+  <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-  <!-- 🎨 Styles -->
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-512.png" />
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <header class="site-header">
-    <img src="Lactalis2023Logo.svg" alt="Lactalis logo" class="logo-lactalis" />
-    <h1><span class="titre-noir">Synthèse</span> <span class="titre-bleu">Production</span></h1>
+    <img src="Lactalis2023Logo.svg" class="logo-lactalis" alt="Lactalis" />
+    <h1><span class="titre-bleu">Synthèse</span> Production</h1>
     <div id="topClock" class="top-clock"></div>
   </header>
 
@@ -34,10 +31,10 @@
   </main>
 
   <footer>
-    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+    <p>© Lactalis 2025 — Application interne de suivi de production</p>
   </footer>
 
-  <!-- 🧮 Calculatrice flottante -->
+  <!-- Calculatrice flottante -->
   <div id="calculator" class="hidden">
     <input id="calcDisplay" readonly />
     <div class="calc-buttons">
@@ -62,21 +59,21 @@
     </div>
   </div>
 
-  <!-- ⚙️ Boutons flottants -->
+  <!-- Boutons flottants -->
   <div class="fab-row">
-    <button id="fabCalc" class="fab" onclick="toggleCalc()" title="Calculatrice">🧮</button>
-    <button id="fabAtelier" class="fab" onclick="openLine('Atelier')" title="Vue Atelier">🏭</button>
+    <button class="fab" onclick="toggleCalc()">🧮</button>
+    <button class="fab" onclick="showAtelier()">🏭</button>
   </div>
 
-  <!-- 🧠 Scripts -->
+  <!-- Script principal -->
   <script src="app.js"></script>
 
-  <!-- 🔒 Service Worker -->
+  <!-- Service worker -->
   <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log("✅ Service Worker actif"))
-        .catch(err => console.warn("❌ Erreur SW :", err));
+        .catch(e => console.warn("Erreur SW :", e));
     }
   </script>
 </body>
