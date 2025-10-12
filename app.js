@@ -81,11 +81,28 @@ function pageAtelier(zone) {
   zone.innerHTML = html;
 }
 
-// === EXPORT GLOBAL ===
+// === EXPORT GLOBAL (CSV + GRAPHIQUE ARRÊTS) ===
 function exportGlobal() {
   const date = new Date();
   const dateStr = date.toLocaleDateString().replace(/\//g, "-");
-  let csv = "Ligne,Date,Début,Fin,Quantité,Total,Arrêt (min),Cause,Cadence (u/h)\n";
+
+  // 1️⃣ Calcul des arrêts cumulés par ligne
+  let arretsLignes = lignes.map(ligne => {
+    const totalArrets = (data[ligne] || []).reduce((sum, r) => sum + (parseFloat(r.arret) || 0), 0);
+    return { ligne, totalArrets };
+  });
+
+  // 2️⃣ Classement décroissant
+  arretsLignes.sort((a, b) => b.totalArrets - a.totalArrets);
+
+  // 3️⃣ Création du CSV
+  let csv = "=== RÉSUMÉ DES ARRÊTS (Trié) ===\nLigne,Total Arrêts (min)\n";
+  arretsLignes.forEach(a => {
+    csv += `${a.ligne},${a.totalArrets}\n`;
+  });
+
+  csv += "\n=== DÉTAIL DES ENREGISTREMENTS ===\n";
+  csv += "Ligne,Date,Début,Fin,Quantité,Total,Arrêt (min),Cause,Cadence (u/h)\n";
 
   lignes.forEach(ligne => {
     const histo = data[ligne] || [];
@@ -94,15 +111,49 @@ function exportGlobal() {
     });
   });
 
+  // 4️⃣ Téléchargement du CSV
   const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `Synthese_Equipe_${dateStr}.csv`;
   a.click();
 
-  alert("✅ Données exportées. Réinitialisation des champs pour la nouvelle équipe.");
+  // 5️⃣ Génération du graphique des arrêts
+  const labels = arretsLignes.map(a => a.ligne);
+  const values = arretsLignes.map(a => a.totalArrets);
 
-  // Réinitialise les compteurs temporaires sans effacer l'historique
+  const canvas = document.createElement("canvas");
+  canvas.width = 800;
+  canvas.height = 400;
+  document.body.appendChild(canvas);
+
+  new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Arrêts cumulés (min)",
+        data: values,
+        backgroundColor: "rgba(54, 162, 235, 0.7)"
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: false }, title: { display: true, text: "Arrêts cumulés par ligne" } },
+      scales: { x: { beginAtZero: true } }
+    }
+  });
+
+  setTimeout(() => {
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `Graphique_Arrets_Equipe_${dateStr}.png`;
+    link.click();
+    document.body.removeChild(canvas);
+  }, 1000);
+
+  // 6️⃣ Réinitialisation douce (sans supprimer l'historique)
   lignes.forEach(l => {
     quantitesTemp[l] = 0;
     dernieresCadences[l] = 0;
@@ -110,6 +161,7 @@ function exportGlobal() {
   });
 
   sauvegarder();
+  alert("✅ Données exportées avec graphique des arrêts.\nLes compteurs sont remis à zéro.");
   openPage("atelier");
 }
 
@@ -313,5 +365,7 @@ function dessinerGraphique(ligne) {
 // === INITIALISATION ===
 document.addEventListener("DOMContentLoaded", () => {
   const savedPage = localStorage.getItem("currentPage") || "atelier";
+  openPage(savedPage);
+});Storage.getItem("currentPage") || "atelier";
   openPage(savedPage);
 });
