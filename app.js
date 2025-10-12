@@ -1,238 +1,216 @@
-// === Synthèse Production Lactalis V16.2 ===
-
-const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
-let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
+// === Variables globales ===
+let data = JSON.parse(localStorage.getItem("productionData") || "{}");
 let currentLine = null;
+let calcValue = "";
+let chart = null;
 
-// 🕒 Horloge + semaine
+// === Horloge ===
 function updateClock() {
-  const d = new Date();
-  const semaine = getWeekNumber(d);
-  const date = d.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-  const heure = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("topClock").textContent = `${date} — Semaine ${semaine} — ${heure}`;
-}
-function getWeekNumber(d = new Date()) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  const now = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const semaine = `Semaine ${Math.ceil(now.getDate() / 7)}`;
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  document.getElementById("topClock").innerText = `${now.toLocaleDateString('fr-FR', options)} — ${semaine} — ${time}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// 🏠 Menu principal
-function renderMenu() {
-  const buttons = lignes.map(l => `<button onclick="openLine('${l}')">${l}</button>`).join("");
-  document.getElementById("content").innerHTML = `
-    <div class="page fade">
-      <h2>Atelier</h2>
-      <button onclick="showAtelier()" class="bouton-principal">📊 Vue Atelier</button>
-      <div class="menu-lignes">${buttons}</div>
-    </div>`;
+// === Transition de page ===
+function pageTransition() {
+  const content = document.getElementById("content");
+  content.classList.remove("fade");
+  void content.offsetWidth;
+  content.classList.add("fade");
 }
 
-// 📈 Ouvrir une ligne
+// === Menu principal ===
+function renderMenu() {
+  pageTransition();
+  const lignes = ["Atelier", "Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="menu-lignes page">
+      <h2>Atelier</h2>
+      ${lignes.map(l => `<button onclick="openLine('${l}')">${l}</button>`).join("")}
+    </div>
+  `;
+}
+
+// === Ouvrir une ligne ===
 function openLine(line) {
+  pageTransition();
   currentLine = line;
   const d = data[line] || [];
-  const total = d.reduce((s, x) => s + (Number(x.quantite) || 0), 0);
-  const cadenceMoy = d.length ? (total / d.length).toFixed(1) : 0;
+
+  const total = d.reduce((s, x) => s + (parseFloat(x.total) || 0), 0);
+  const cadence = d.length ? (total / d.length).toFixed(1) : 0;
+  const unsaved = JSON.parse(localStorage.getItem("unsaved_" + line) || "{}");
+  const reste = unsaved.reste ? +unsaved.reste : 0;
+  const estimation = cadence > 0 && reste > 0 ? `${(reste / cadence).toFixed(1)} h` : "-";
 
   const html = `
-  <div class="page fade">
-    <h2>${line}</h2>
-    <button class="retour-menu" onclick="renderMenu()">⬅ Retour menu</button>
+    <div class="page fade">
+      <h2>${line}</h2>
+      <button class="retour-menu" onclick="renderMenu()">⬅️ Retour menu</button>
 
-    <label>Heure début :</label><input id="debut" type="time" value="${getTimeNow()}">
-    <label>Heure fin :</label><input id="fin" type="time" value="${getTimeNow()}">
-    <label>Quantité initiale :</label><input id="q1" type="number">
-    <label>Quantité ajoutée :</label><input id="q2" type="number">
-    <label>Quantité restante :</label><input id="reste" type="number">
-    <label>Temps d'arrêt (min) :</label><input id="arret" type="number">
-    <label>Cause d'arrêt :</label><input id="cause" type="text">
-    <label>Commentaire :</label><input id="commentaire" type="text">
+      <label>Heure début :</label>
+      <input id="debut" type="time" />
 
-    <div class="stats">
-      <p><b>Total :</b> <span id="total">${total}</span> colis</p>
-      <p><b>Cadence moyenne :</b> <span id="cadence">${cadenceMoy}</span> colis/h</p>
-      <p><b>Estimation fin :</b> <span id="estimation">—</span></p>
+      <label>Heure fin :</label>
+      <input id="fin" type="time" />
+
+      <label>Quantité initiale :</label>
+      <input id="init" type="number" placeholder="Saisir quantité initiale" />
+
+      <label>Quantité ajoutée :</label>
+      <input id="ajout" type="number" placeholder="Saisir quantité ajoutée" />
+
+      <label>Quantité restante :</label>
+      <input id="reste" type="number" placeholder="Saisir quantité restante" value="${reste}" />
+
+      <label>Temps d'arrêt (min) :</label>
+      <input id="arret" type="number" placeholder="Durée arrêt" />
+
+      <label>Cause d'arrêt :</label>
+      <input id="cause" type="text" placeholder="Commentaire..." />
+
+      <label>Cadence manuelle :</label>
+      <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
+
+      <button class="bouton-principal" onclick="enregistrer()">💾 Enregistrer</button>
+      <button class="bouton-principal" onclick="remiseCadence()">🔄 Remise à zéro cadence</button>
+      <button class="bouton-principal" onclick="exportExcel('${line}')">📦 Export Excel</button>
+      <button class="bouton-principal" onclick="showAtelier()">🏭 Vue Atelier</button>
+
+      <div class="stats">
+        <p><b>Total :</b> ${total}</p>
+        <p><b>Cadence :</b> ${cadence} colis/h</p>
+        <p><b>Estimation fin :</b> ${estimation}</p>
+      </div>
     </div>
-
-    <label>Cadence manuelle :</label>
-    <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
-    <button onclick="remiseAffichage()">♻ Remise affichage</button>
-
-    <div class="boutons">
-      <button onclick="enregistrer()">💾 Enregistrer</button>
-      <button onclick="annulerDernier()">↩ Annuler dernier</button>
-      <button onclick="afficherHistorique()">📜 Historique</button>
-      <button onclick="exportExcel('${line}')">📦 Export Excel</button>
-    </div>
-
-    <canvas id="chartLine"></canvas>
-  </div>`;
+  `;
   document.getElementById("content").innerHTML = html;
-  renderGraph(line);
 }
 
-// Heure actuelle
-function getTimeNow() {
-  const d = new Date();
-  return d.toTimeString().slice(0, 5);
-}
-
-// 💾 Enregistrer
+// === Enregistrer une ligne ===
 function enregistrer() {
-  const l = currentLine;
-  if (!l) return;
-  const q1 = +document.getElementById("q1").value || 0;
-  const q2 = +document.getElementById("q2").value || 0;
-  const total = q1 + q2;
+  const line = currentLine;
+  if (!line) return;
+
   const debut = document.getElementById("debut").value;
   const fin = document.getElementById("fin").value;
-  const durée = calcHeures(debut, fin);
-  const cadence = durée > 0 ? (total / durée).toFixed(1) : 0;
-  const cadManuelle = +document.getElementById("cadenceManuelle").value || cadence;
+  const init = +document.getElementById("init").value || 0;
+  const ajout = +document.getElementById("ajout").value || 0;
+  const reste = +document.getElementById("reste").value || 0;
+  const arret = +document.getElementById("arret").value || 0;
+  const cause = document.getElementById("cause").value || "";
+  const cadenceManuelle = +document.getElementById("cadenceManuelle").value || null;
 
-  const obj = {
-    date: new Date().toLocaleDateString(),
-    heure: getTimeNow(),
-    debut, fin, quantite: total,
-    cadence: cadManuelle,
-    arret: +document.getElementById("arret").value || 0,
-    cause: document.getElementById("cause").value,
-    commentaire: document.getElementById("commentaire").value
-  };
+  const total = init + ajout - reste;
+  const record = { debut, fin, init, ajout, reste, arret, cause, total, cadence: cadenceManuelle || 0 };
 
-  if (!data[l]) data[l] = [];
-  data[l].push(obj);
-  saveData();
-  openLine(l);
+  if (!data[line]) data[line] = [];
+  data[line].push(record);
+  localStorage.setItem("productionData", JSON.stringify(data));
+  localStorage.setItem("unsaved_" + line, JSON.stringify({ reste }));
+
+  alert(`✅ Enregistrement effectué sur ${line}`);
+  openLine(line);
 }
 
-// Annuler dernier
-function annulerDernier() {
-  if (data[currentLine]?.length) {
-    data[currentLine].pop();
-    saveData();
+// === Remise à zéro cadence ===
+function remiseCadence() {
+  if (!currentLine) return;
+  if (confirm("Remettre la cadence à zéro ?")) {
+    data[currentLine] = [];
+    localStorage.setItem("productionData", JSON.stringify(data));
     openLine(currentLine);
   }
 }
 
-// Remise affichage (cycle remis à zéro)
-function remiseAffichage() {
-  document.querySelectorAll("input").forEach(i => i.value = "");
-  document.getElementById("debut").value = getTimeNow();
-  document.getElementById("cadence").textContent = "0";
-  document.getElementById("estimation").textContent = "—";
-}
-
-// Sauvegarde
-function saveData() {
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-}
-
-// Calcul durée en heures
-function calcHeures(debut, fin) {
-  const [hd, md] = debut.split(":").map(Number);
-  const [hf, mf] = fin.split(":").map(Number);
-  let d = hf + mf / 60 - hd - md / 60;
-  if (d < 0) d += 24;
-  return d;
-}
-
-// Graphique par ligne
-function renderGraph(line) {
-  const d = data[line] || [];
-  const ctx = document.getElementById("chartLine");
-  if (!ctx) return;
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: d.map(x => x.heure),
-      datasets: [
-        { label: "Quantité", data: d.map(x => x.quantite), backgroundColor: "rgba(0,123,255,0.6)" },
-        { label: "Arrêts", data: d.map(x => x.arret), backgroundColor: "rgba(255,99,132,0.6)" }
-      ]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
-  });
-}
-
-// Historique
-function afficherHistorique() {
-  const l = currentLine;
-  const d = data[l] || [];
-  if (!d.length) return alert("Aucun enregistrement pour cette ligne.");
-  const hist = d.map((x, i) => `${i + 1}. ${x.date} ${x.heure} - ${x.quantite} colis (${x.cause || "—"})`).join("\n");
-  alert(hist);
-}
-
-// Export Excel (CSV)
-function exportExcel(line) {
-  const d = data[line] || [];
-  const csv = ["Date;Heure;Début;Fin;Quantité;Cadence;Arrêts;Cause;Commentaire"];
-  d.forEach(x => csv.push(`${x.date};${x.heure};${x.debut};${x.fin};${x.quantite};${x.cadence};${x.arret};${x.cause};${x.commentaire}`));
-  const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Synthese_${line}_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
-  a.click();
-}
-
-// Vue Atelier globale
+// === Vue Atelier ===
 function showAtelier() {
-  const rows = lignes.map(l => {
+  pageTransition();
+  const content = document.getElementById("content");
+  const lignes = Object.keys(data);
+  if (lignes.length === 0) {
+    content.innerHTML = "<h2>Atelier</h2><p>Aucune donnée enregistrée</p>";
+    return;
+  }
+
+  const lignesHTML = lignes.map(l => {
     const d = data[l] || [];
-    const tot = d.reduce((s, x) => s + (+x.quantite || 0), 0);
-    const arr = d.reduce((s, x) => s + (+x.arret || 0), 0);
-    const cad = d.length ? (tot / d.length).toFixed(1) : 0;
-    return `<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
+    const total = d.reduce((s, x) => s + (parseFloat(x.total) || 0), 0);
+    const cadence = d.length ? (total / d.length).toFixed(1) : 0;
+    return `<tr><td>${l}</td><td>${total}</td><td>${cadence}</td></tr>`;
   }).join("");
-  document.getElementById("content").innerHTML = `
+
+  const globalCadence = (
+    lignes.reduce((sum, l) => {
+      const d = data[l] || [];
+      const total = d.reduce((s, x) => s + (parseFloat(x.total) || 0), 0);
+      return sum + (d.length ? total / d.length : 0);
+    }, 0) / lignes.length
+  ).toFixed(1);
+
+  content.innerHTML = `
     <div class="page fade">
-      <h2>Atelier global</h2>
-      <table><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence moy.</th></tr>${rows}</table>
-      <canvas id="atelierChart"></canvas>
-      <div class="boutons"><button onclick="renderMenu()">⬅ Retour menu</button></div>
-    </div>`;
-  const ctx = document.getElementById("atelierChart");
-  new Chart(ctx, {
+      <h2>Atelier</h2>
+      <button class="retour-menu" onclick="renderMenu()">⬅️ Retour menu</button>
+      <table>
+        <tr><th>Ligne</th><th>Total</th><th>Cadence</th></tr>
+        ${lignesHTML}
+      </table>
+      <div class="stats"><b>Cadence moyenne globale :</b> ${globalCadence} colis/h</div>
+      <canvas id="atelierChart" height="250"></canvas>
+    </div>
+  `;
+
+  const ctx = document.getElementById("atelierChart").getContext("2d");
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: lignes,
-      datasets: [{ label: "Total colis", data: lignes.map(l => (data[l] || []).reduce((s, x) => s + (+x.quantite || 0), 0)), backgroundColor: "rgba(0,123,255,0.6)" }]
+      datasets: [{
+        label: "Cadence moyenne",
+        data: lignes.map(l => {
+          const d = data[l] || [];
+          const total = d.reduce((s, x) => s + (parseFloat(x.total) || 0), 0);
+          return d.length ? (total / d.length).toFixed(1) : 0;
+        }),
+        backgroundColor: "#007bff"
+      }]
     },
-    options: { responsive: true, indexAxis: "y" }
+    options: {
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
-// === Calculatrice ===
-let calcValue = "";
-function calcPress(v) {
-  calcValue += v;
-  document.getElementById("calcDisplay").value = calcValue;
-}
-function calcEqual() {
-  try {
-    calcValue = eval(calcValue).toString();
-    document.getElementById("calcDisplay").value = calcValue;
-  } catch {
-    calcClear();
-    document.getElementById("calcDisplay").value = "Erreur";
+// === Export Excel ===
+function exportExcel(line) {
+  const d = data[line];
+  if (!d || d.length === 0) {
+    alert("Aucune donnée à exporter !");
+    return;
   }
-}
-function calcClear() {
-  calcValue = "";
-  document.getElementById("calcDisplay").value = "";
-}
-function toggleCalc() {
-  const c = document.getElementById("calculator");
-  c.classList.toggle("hidden");
-  c.style.display = c.classList.contains("hidden") ? "none" : "block";
+  const ws = XLSX.utils.json_to_sheet(d);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, line);
+  const now = new Date();
+  const fileName = `${line}_${now.toLocaleTimeString().replace(/:/g, '-')}.xlsx`;
+  XLSX.writeFile(wb, fileName);
 }
 
-// 🚀 Init
+// === Calculatrice ===
+function toggleCalc() {
+  const calc = document.getElementById("calculator");
+  calc.style.display = calc.style.display === "block" ? "none" : "block";
+}
+function calcPress(val) { calcValue += val; document.getElementById("calcDisplay").value = calcValue; }
+function calcEqual() { calcValue = eval(calcValue || "0").toString(); document.getElementById("calcDisplay").value = calcValue; }
+function calcClear() { calcValue = ""; document.getElementById("calcDisplay").value = ""; }
+
+// === Lancer au chargement ===
 renderMenu();
-updateClock();
