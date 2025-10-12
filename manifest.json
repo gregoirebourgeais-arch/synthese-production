@@ -1,21 +1,20 @@
 {
   "name": "Synthèse Production",
   "short_name": "Synthèse",
-  "description": "Application Lactalis de suivi de production et passage de consignes.",
   "start_url": "/synthese-production/index.html",
-"scope": "/synthese-production/"
+  "scope": "/synthese-production/",
   "display": "standalone",
   "background_color": "#0c75ff",
   "theme_color": "#0c75ff",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
