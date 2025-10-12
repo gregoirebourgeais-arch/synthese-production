@@ -30,7 +30,7 @@ function renderMenu() {
   const content = document.getElementById("content");
   content.innerHTML = `
     <div class="menu-lignes page">
-      <h2>Atelier</h2>
+      <h2>Choisis une ligne</h2>
       ${lignes.map(l => `<button onclick="openLine('${l}')">${l}</button>`).join("")}
     </div>
   `;
@@ -41,12 +41,13 @@ function openLine(line) {
   pageTransition();
   currentLine = line;
   const d = data[line] || [];
-
   const total = d.reduce((s, x) => s + (parseFloat(x.total) || 0), 0);
-  const cadence = d.length ? (total / d.length).toFixed(1) : 0;
+  const cadenceMoy = d.length ? (total / d.length).toFixed(1) : 0;
   const unsaved = JSON.parse(localStorage.getItem("unsaved_" + line) || "{}");
+
   const reste = unsaved.reste ? +unsaved.reste : 0;
-  const estimation = cadence > 0 && reste > 0 ? `${(reste / cadence).toFixed(1)} h` : "-";
+  const cadenceActive = unsaved.cadenceManuelle || cadenceMoy;
+  const estimation = calcEstimationFin(reste, cadenceActive);
 
   const html = `
     <div class="page fade">
@@ -54,45 +55,72 @@ function openLine(line) {
       <button class="retour-menu" onclick="renderMenu()">⬅️ Retour menu</button>
 
       <label>Heure début :</label>
-      <input id="debut" type="time" />
+      <input id="debut" type="time" value="${unsaved.debut || ""}" />
 
       <label>Heure fin :</label>
-      <input id="fin" type="time" />
+      <input id="fin" type="time" value="${unsaved.fin || ""}" />
 
       <label>Quantité initiale :</label>
-      <input id="init" type="number" placeholder="Saisir quantité initiale" />
+      <input id="init" type="number" placeholder="Saisir quantité initiale" value="${unsaved.init || ""}" />
 
       <label>Quantité ajoutée :</label>
-      <input id="ajout" type="number" placeholder="Saisir quantité ajoutée" />
+      <input id="ajout" type="number" placeholder="Saisir quantité ajoutée" value="${unsaved.ajout || ""}" />
 
       <label>Quantité restante :</label>
-      <input id="reste" type="number" placeholder="Saisir quantité restante" value="${reste}" />
+      <input id="reste" type="number" placeholder="Saisir quantité restante" value="${reste}" oninput="majEstimation()" />
 
       <label>Temps d'arrêt (min) :</label>
-      <input id="arret" type="number" placeholder="Durée arrêt" />
+      <input id="arret" type="number" placeholder="Durée arrêt" value="${unsaved.arret || ""}" />
 
       <label>Cause d'arrêt :</label>
-      <input id="cause" type="text" placeholder="Commentaire..." />
+      <input id="cause" type="text" placeholder="Commentaire..." value="${unsaved.cause || ""}" />
 
       <label>Cadence manuelle :</label>
-      <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
+      <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." value="${unsaved.cadenceManuelle || ""}" oninput="majEstimation()" />
+      <button class="bouton-principal" onclick="appliquerCadence()">⚙️ Appliquer cadence</button>
 
       <button class="bouton-principal" onclick="enregistrer()">💾 Enregistrer</button>
-      <button class="bouton-principal" onclick="remiseCadence()">🔄 Remise à zéro cadence</button>
+      <button class="bouton-principal" onclick="remiseAffichage()">🔄 Remise affichage</button>
       <button class="bouton-principal" onclick="exportExcel('${line}')">📦 Export Excel</button>
       <button class="bouton-principal" onclick="showAtelier()">🏭 Vue Atelier</button>
 
-      <div class="stats">
+      <div class="stats" id="statsBloc">
         <p><b>Total :</b> ${total}</p>
-        <p><b>Cadence :</b> ${cadence} colis/h</p>
-        <p><b>Estimation fin :</b> ${estimation}</p>
+        <p><b>Cadence moyenne :</b> ${cadenceMoy} colis/h</p>
+        <p id="estimationBloc">${estimation}</p>
       </div>
     </div>
   `;
   document.getElementById("content").innerHTML = html;
 }
 
-// === Enregistrer une ligne ===
+// === Calcul estimation fin ===
+function calcEstimationFin(reste, cadence) {
+  if (!reste || !cadence || cadence <= 0) return "Estimation : -";
+  const heures = reste / cadence;
+  const minutes = Math.round(heures * 60);
+  const now = new Date();
+  const fin = new Date(now.getTime() + minutes * 60000);
+  return `Estimation : ≈ ${Math.floor(heures)}h${(minutes % 60).toString().padStart(2, "0")} → ${fin.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+}
+
+// === Met à jour estimation ===
+function majEstimation() {
+  const reste = +document.getElementById("reste").value || 0;
+  const cadence = +document.getElementById("cadenceManuelle").value || 0;
+  document.getElementById("estimationBloc").innerText = calcEstimationFin(reste, cadence);
+}
+
+// === Appliquer cadence manuelle ===
+function appliquerCadence() {
+  const cadence = +document.getElementById("cadenceManuelle").value || 0;
+  const reste = +document.getElementById("reste").value || 0;
+  localStorage.setItem("unsaved_" + currentLine, JSON.stringify({ reste, cadenceManuelle: cadence }));
+  majEstimation();
+  alert("✅ Cadence appliquée");
+}
+
+// === Enregistrer ===
 function enregistrer() {
   const line = currentLine;
   if (!line) return;
@@ -112,19 +140,20 @@ function enregistrer() {
   if (!data[line]) data[line] = [];
   data[line].push(record);
   localStorage.setItem("productionData", JSON.stringify(data));
-  localStorage.setItem("unsaved_" + line, JSON.stringify({ reste }));
+  localStorage.setItem("unsaved_" + line, JSON.stringify({ reste, cadenceManuelle }));
 
-  alert(`✅ Enregistrement effectué sur ${line}`);
+  alert(`✅ Données enregistrées sur ${line}`);
   openLine(line);
 }
 
-// === Remise à zéro cadence ===
-function remiseCadence() {
+// === Remise affichage ===
+function remiseAffichage() {
   if (!currentLine) return;
-  if (confirm("Remettre la cadence à zéro ?")) {
-    data[currentLine] = [];
-    localStorage.setItem("productionData", JSON.stringify(data));
+  if (confirm("Remettre l'affichage à zéro ?")) {
+    const now = new Date();
+    localStorage.removeItem("unsaved_" + currentLine);
     openLine(currentLine);
+    document.getElementById("debut").value = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 }
 
@@ -155,8 +184,9 @@ function showAtelier() {
 
   content.innerHTML = `
     <div class="page fade">
-      <h2>Atelier</h2>
+      <h2>Vue Atelier</h2>
       <button class="retour-menu" onclick="renderMenu()">⬅️ Retour menu</button>
+      <button class="bouton-principal" onclick="exportAtelier()">📊 Export global</button>
       <table>
         <tr><th>Ligne</th><th>Total</th><th>Cadence</th></tr>
         ${lignesHTML}
@@ -182,13 +212,11 @@ function showAtelier() {
         backgroundColor: "#007bff"
       }]
     },
-    options: {
-      scales: { y: { beginAtZero: true } }
-    }
+    options: { scales: { y: { beginAtZero: true } } }
   });
 }
 
-// === Export Excel ===
+// === Export Excel individuel ===
 function exportExcel(line) {
   const d = data[line];
   if (!d || d.length === 0) {
@@ -199,7 +227,19 @@ function exportExcel(line) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, line);
   const now = new Date();
-  const fileName = `${line}_${now.toLocaleTimeString().replace(/:/g, '-')}.xlsx`;
+  const fileName = `${line}_${now.toLocaleDateString('fr-CA')}_${now.toLocaleTimeString().replace(/:/g, '-')}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+}
+
+// === Export Excel global ===
+function exportAtelier() {
+  const wb = XLSX.utils.book_new();
+  for (let line in data) {
+    const ws = XLSX.utils.json_to_sheet(data[line]);
+    XLSX.utils.book_append_sheet(wb, ws, line);
+  }
+  const now = new Date();
+  const fileName = `Synthese_Atelier_${now.toLocaleDateString('fr-CA')}_${now.toLocaleTimeString().replace(/:/g, '-')}.xlsx`;
   XLSX.writeFile(wb, fileName);
 }
 
@@ -212,5 +252,5 @@ function calcPress(val) { calcValue += val; document.getElementById("calcDisplay
 function calcEqual() { calcValue = eval(calcValue || "0").toString(); document.getElementById("calcDisplay").value = calcValue; }
 function calcClear() { calcValue = ""; document.getElementById("calcDisplay").value = ""; }
 
-// === Lancer au chargement ===
+// === Démarrage ===
 renderMenu();
