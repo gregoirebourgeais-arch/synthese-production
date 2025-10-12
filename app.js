@@ -7,10 +7,7 @@ function updateDateTime() {
     month: "2-digit",
     year: "numeric"
   });
-  const heure = now.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  const heure = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   const tempDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   const jourNum = tempDate.getUTCDay() || 7;
@@ -25,84 +22,138 @@ function updateDateTime() {
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-// === CALCULATRICE SIMPLE ===
-function ouvrirCalculatrice() {
-  const res = prompt("Entrez une opération (ex: 1250/3 ou 250+420) :");
-  try {
-    const resultat = eval(res);
-    alert("Résultat : " + resultat);
-  } catch {
-    alert("Opération invalide !");
-  }
+// === DONNÉES LOCALES ===
+let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
+function saveData() {
+  localStorage.setItem("syntheseData", JSON.stringify(data));
 }
 
-// === PAGE ATELIER AVEC GRAPHIQUES ===
+// === PAGE DE LIGNE ===
 function openPage(page) {
   const content = document.getElementById("content");
-  if (page === "Atelier") {
-    content.innerHTML = `
-      <div class="card">
-        <h3>Résumé Atelier</h3>
-        <label>Quantité restante (colis) :</label>
-        <input type="number" id="qteRestante" placeholder="ex : 1200" oninput="majFinPrevue()" />
-        <p id="finPrevue"></p>
-        <canvas id="graphGlobal"></canvas>
+  content.innerHTML = `
+    <div class="card">
+      <h2>${page}</h2>
+      <label>Quantité 1 :</label>
+      <input type="number" id="qte1" placeholder="Entrer quantité..." />
+      <label>Quantité 2 :</label>
+      <input type="number" id="qte2" placeholder="Ajouter quantité..." />
+      <label>Temps d’arrêt (min) :</label>
+      <input type="number" id="arret" placeholder="0" />
+      <div id="infos"></div>
+      <div class="btns">
+        <button onclick="enregistrer('${page}')">Enregistrer</button>
+        <button onclick="annuler('${page}')">Annuler dernier</button>
+        <button onclick="afficherHistorique('${page}')">Historique</button>
       </div>
-    `;
-    renderGraph("graphGlobal");
-  } else {
-    content.innerHTML = `
-      <div class="card">
-        <h2>${page}</h2>
-        <label>Quantité restante :</label>
-        <input type="number" id="qteRestante" placeholder="ex : 800" oninput="majFinPrevue()" />
-        <p id="finPrevue"></p>
-        <canvas id="graphLigne"></canvas>
-      </div>
-    `;
-    renderGraph("graphLigne");
+      <canvas id="graphLigne"></canvas>
+    </div>
+  `;
+
+  if (!data[page]) data[page] = [];
+  afficherInfos(page);
+}
+
+// === ENREGISTREMENT ===
+function enregistrer(page) {
+  const q1 = parseFloat(document.getElementById("qte1").value) || 0;
+  const q2 = parseFloat(document.getElementById("qte2").value) || 0;
+  const arret = parseFloat(document.getElementById("arret").value) || 0;
+  const total = q1 + q2;
+
+  const now = new Date();
+  data[page].push({
+    heure: now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    quantite: total,
+    arret
+  });
+
+  saveData();
+  document.getElementById("qte1").value = "";
+  document.getElementById("qte2").value = "";
+  document.getElementById("arret").value = "";
+  afficherInfos(page);
+}
+
+// === ANNULER DERNIER ===
+function annuler(page) {
+  if (data[page] && data[page].length > 0) {
+    data[page].pop();
+    saveData();
+    afficherInfos(page);
+    alert("Dernier enregistrement annulé.");
   }
 }
 
-// === CALCUL HEURE DE FIN ESTIMÉE ===
-function majFinPrevue() {
-  const qte = parseFloat(document.getElementById("qteRestante").value);
-  const cadenceMoyenne = 450; // ex : moyenne de référence
-  if (!qte) {
-    document.getElementById("finPrevue").innerText = "";
+// === AFFICHAGE DES INFOS ===
+function afficherInfos(page) {
+  const zone = document.getElementById("infos");
+  const lignes = data[page] || [];
+  if (lignes.length === 0) {
+    zone.innerHTML = "<p>Aucune donnée enregistrée.</p>";
     return;
   }
-  const heures = qte / cadenceMoyenne;
-  const fin = new Date(Date.now() + heures * 3600000);
-  document.getElementById("finPrevue").innerText =
-    "Fin estimée à " + fin.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+  const total = lignes.reduce((a, b) => a + b.quantite, 0);
+  const moyenne = total / lignes.length;
+  const cadence = Math.round(moyenne * 60 / 60);
+
+  zone.innerHTML = `
+    <p><strong>Total :</strong> ${total} colis</p>
+    <p><strong>Cadence moyenne :</strong> ${cadence} colis/h</p>
+  `;
 }
 
-// === GRAPHIQUE DE TEST ===
-function renderGraph(id) {
-  const ctx = document.getElementById(id).getContext("2d");
+// === HISTORIQUE + GRAPHIQUE ===
+function afficherHistorique(page) {
+  const lignes = data[page] || [];
+  if (lignes.length === 0) return alert("Aucune donnée enregistrée.");
+
+  const labels = lignes.map(l => l.heure);
+  const valeurs = lignes.map(l => l.quantite);
+  const arrets = lignes.map(l => l.arret);
+
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="card">
+      <h3>Historique ${page}</h3>
+      <canvas id="graphHisto"></canvas>
+      <button onclick="openPage('${page}')">Retour</button>
+    </div>
+  `;
+
+  const ctx = document.getElementById("graphHisto").getContext("2d");
   new Chart(ctx, {
-    type: "bar",
+    type: "line",
     data: {
-      labels: ["08h", "10h", "12h", "14h", "16h"],
+      labels,
       datasets: [
         {
-          label: "Cadence (colis/h)",
-          data: [450, 470, 420, 460, 480],
-          backgroundColor: "#007bff88",
+          label: "Quantité (colis)",
+          data: valeurs,
           borderColor: "#007bff",
-          borderWidth: 1
+          backgroundColor: "#007bff33",
+          fill: true,
+          yAxisID: "y1"
+        },
+        {
+          label: "Arrêts (min)",
+          data: arrets,
+          borderColor: "#ff4747",
+          backgroundColor: "#ff474755",
+          fill: true,
+          yAxisID: "y2"
         }
       ]
     },
     options: {
       scales: {
-        y: { beginAtZero: true }
-      },
-      plugins: { legend: { display: false } }
+        y1: { type: "linear", position: "left", beginAtZero: true },
+        y2: { type: "linear", position: "right", beginAtZero: true }
+      }
     }
   });
 }
 
 // === PAGE PAR DÉFAUT ===
-document.addEventListener("DOMContentLoaded", () => openPage("Atelier"));
+document.addEventListener("DOMContentLoaded", () => openPage("Râpé"));
