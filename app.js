@@ -287,6 +287,32 @@ function exportAtelier() {
   a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
   a.click();
 }
+// === 📤 Export Excel (CSV propre et compatible Excel) ===
+function exportExcel(line) {
+  const d = data[line] || [];
+  if (!d.length) {
+    alert("Aucune donnée à exporter pour cette ligne !");
+    return;
+  }
+
+  // Ajout d’un en-tête lisible
+  const csv = [
+    "Date;Heure;Début;Fin;Quantité;Arrêt (min);Cause;Commentaire;Semaine"
+  ];
+  d.forEach(x => {
+    csv.push(`${x.date};${x.heure};${x.debut};${x.fin};${x.quantite};${x.arret};"${x.cause}";"${x.commentaire}";${x.semaine}`);
+  });
+
+  // Création du fichier CSV
+  const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  const now = new Date().toISOString().replace(/[:T]/g, "-").split(".")[0];
+  a.href = URL.createObjectURL(blob);
+  a.download = `Synthese_${line}_${now}.csv`;
+  a.click();
+
+  showToast("📊 Export Excel créé avec succès !");
+}
 
 // === 🧮 Calculatrice flottante ===
 const fabCalc = document.getElementById("fabCalc");
