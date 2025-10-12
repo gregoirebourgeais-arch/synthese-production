@@ -241,3 +241,28 @@ footer {
   font-size: 0.9rem;
   color: #666;
 }
+
+#cadenceManuelle {
+  width: 100%;
+  margin: 0.4rem 0;
+  padding: 0.7rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+button[onclick="remiseCadence()"] {
+  background: #ffb84d;
+  color: #222;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  margin-top: 0.3rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: background 0.3s, transform 0.2s;
+}
+button[onclick="remiseCadence()"]:hover {
+  background: #ffa500;
+  transform: scale(1.05);
+}
