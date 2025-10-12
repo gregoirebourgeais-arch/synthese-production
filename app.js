@@ -34,6 +34,20 @@ function saveData() {
 // === PAGE DE LIGNE ===
 function openPage(page) {
   const content = document.getElementById("content");
+
+  // Bouton global export complet atelier (visible uniquement sur Atelier)
+  if (page === "Atelier") {
+    content.innerHTML = `
+      <div class="card">
+        <h2>🏭 Atelier complet</h2>
+        <p>Exporter toutes les lignes en un seul fichier CSV.</p>
+        <button onclick="exporterAtelier()">📦 Export complet Atelier</button>
+      </div>
+    `;
+    return;
+  }
+
+  // Pages lignes classiques
   content.innerHTML = `
     <div class="card">
       <h2>${page}</h2>
@@ -51,6 +65,7 @@ function openPage(page) {
         <button onclick="afficherHistorique('${page}')">📜 Historique</button>
         <button onclick="exporterExcel('${page}')">📦 Export Excel</button>
         <button onclick="remiseZero('${page}')">♻️ Remise à zéro</button>
+        <button onclick="openPage('Atelier')">⬅️ Retour Atelier</button>
       </div>
 
       <canvas id="graphLigne"></canvas>
@@ -166,17 +181,36 @@ function afficherHistorique(page) {
   content.innerHTML = table;
 }
 
-// === EXPORT EXCEL ===
+// === EXPORT EXCEL PAR LIGNE ===
 function exporterExcel(page) {
   const lignes = data[page] || [];
   if (lignes.length === 0) return alert("Aucune donnée à exporter.");
 
-  let csv = "Date;Heure;Quantité;Arrêt (min)\n";
-  lignes.forEach(l => csv += `${l.date};${l.heure};${l.quantite};${l.arret}\n`);
+  let csv = "Ligne;Date;Heure;Quantité;Arrêt (min)\n";
+  lignes.forEach(l => csv += `${page};${l.date};${l.heure};${l.quantite};${l.arret}\n`);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = `Synthese_${page}_${new Date().toLocaleDateString("fr-FR")}.csv`;
+  link.click();
+}
+
+// === EXPORT COMPLET ATELIER ===
+function exporterAtelier() {
+  const toutesLignes = Object.keys(data);
+  if (toutesLignes.length === 0) return alert("Aucune donnée à exporter.");
+
+  let csv = "Ligne;Date;Heure;Quantité;Arrêt (min)\n";
+  toutesLignes.forEach(page => {
+    (data[page] || []).forEach(l => {
+      csv += `${page};${l.date};${l.heure};${l.quantite};${l.arret}\n`;
+    });
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Synthese_Atelier_Complet_${new Date().toLocaleDateString("fr-FR")}.csv`;
   link.click();
 }
 
@@ -190,4 +224,4 @@ function remiseZero(page) {
 }
 
 // === PAGE PAR DÉFAUT ===
-document.addEventListener("DOMContentLoaded", () => openPage("Râpé"));
+document.addEventListener("DOMContentLoaded", () => openPage("Atelier"));
