@@ -1,257 +1,243 @@
-/* ===============================
-   V15 - Synthèse Production Pro
-=============================== */
+/* === Synthèse Production Lactalis - Style V15.3 === */
 
+/* Variables globales */
 :root {
-  --blue: #007bff;
-  --blue-dark: #0056d6;
-  --bg-light: #f5f8ff;
-  --bg-dark: #1e1e1e;
-  --text-light: #fff;
-  --text-dark: #222;
+  --blue: #007aff;
+  --blue-dark: #005fcc;
+  --light: #f4f7ff;
+  --text: #1a1a1a;
+  --radius: 16px;
+  --shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
+/* Corps de page */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--light);
+  color: var(--text);
   margin: 0;
-  color: var(--text-dark);
-  background: var(--bg-light);
-  transition: background 0.3s, color 0.3s;
+  padding: 0;
+  text-align: center;
   overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Mode sombre automatique */
-@media (prefers-color-scheme: dark) {
-  body { background: var(--bg-dark); color: var(--text-light); }
-  .page, section { background: #2b2b2b; color: #eee; }
 }
 
 /* Header */
-.site-header {
-  background: linear-gradient(180deg, var(--blue), #4ba3ff);
+header, .site-header {
+  background: linear-gradient(to bottom, #007aff, #5aa9ff);
   color: white;
   text-align: center;
-  padding: 1rem 0.5rem;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 1.5rem 1rem;
+  box-shadow: var(--shadow);
 }
-.logo {
-  max-width: 160px;
-  display: block;
-  margin: 0 auto 0.3rem;
-  animation: fadeInLogo 1s ease-in-out;
+header img {
+  height: 60px;
+  margin-bottom: 10px;
 }
-@keyframes fadeInLogo {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+h2 {
+  color: var(--blue-dark);
+  font-size: 1.6rem;
+  margin: 1.2rem 0;
+}
+
+/* Section principale */
+.page {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin: 1rem auto;
+  padding: 1.2rem;
+  width: 90%;
+  max-width: 600px;
 }
 
 /* Menu */
-.menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  animation: fadeSlide 0.4s ease;
-}
 .menu button {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.9rem;
   background: var(--blue);
   color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
   border: none;
-  border-radius: 15px;
-  padding: 1rem;
-  margin: 0.5rem;
-  width: 85%;
-  font-size: 1.2rem;
-  max-width: 400px;
-  transition: all 0.3s;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
 }
 .menu button:hover {
   background: var(--blue-dark);
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
-/* Pages */
-.page {
-  background: white;
-  border-radius: 20px;
-  margin: 1rem;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  animation: slidePage 0.35s ease;
+/* Champs */
+label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  margin-top: 0.7rem;
 }
-.page h2 {
-  color: var(--blue);
-  margin-bottom: 0.8rem;
-}
-
-/* Inputs */
-label { font-weight: 600; display: block; margin-top: 10px; }
-input, textarea {
+input {
   width: 100%;
   padding: 0.7rem;
-  border-radius: 10px;
+  margin-top: 0.3rem;
   border: 1px solid #ccc;
-  margin-top: 5px;
+  border-radius: var(--radius);
+  font-size: 1rem;
   box-sizing: border-box;
 }
 
-/* Stats + boutons */
+/* Stats bloc */
 .stats {
-  background: #eaf5ff;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 1rem 0;
-  text-align: center;
-  font-weight: 500;
+  background: #eef4ff;
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-top: 1.2rem;
+  text-align: left;
+  box-shadow: var(--shadow);
 }
+.stats p {
+  margin: 0.3rem 0;
+}
+
+/* Boutons d’action */
 .boutons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
 }
 .boutons button {
   flex: 1 1 45%;
-  min-width: 150px;
+  background: var(--blue);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
   padding: 0.8rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.05rem;
-  background: var(--blue);
-  color: white;
-  transition: 0.3s;
+  box-shadow: var(--shadow);
+  transition: background 0.3s, transform 0.2s;
 }
-.boutons button:hover { background: var(--blue-dark); transform: scale(1.05); }
-
-/* Tableaux */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-th, td {
-  border: 1px solid #ccc;
-  padding: 6px;
-  text-align: center;
-}
-th { background: var(--blue); color: white; }
-
-/* Calculatrice */
-#calculator {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  background: white;
-  border-radius: 15px;
-  padding: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  width: 230px;
-  animation: fadeSlide 0.3s ease;
-}
-#calculator.hidden { display: none; }
-.calc-display {
-  width: 100%;
-  height: 45px;
-  text-align: right;
-  font-size: 1.2rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
-}
-.calc-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-}
-.calc-buttons button {
-  background: var(--blue);
-  color: white;
-  border-radius: 10px;
-  border: none;
-  padding: 8px;
-  font-size: 1.1rem;
-}
-.calc-buttons .clear { background: #ff6b6b; }
-.calc-buttons .close { background: #6c757d; grid-column: span 4; }
-
-/* Flottants */
-.fab-row {
-  position: fixed;
-  bottom: 15px;
-  right: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.fab {
-  width: 60px;
-  height: 60px;
-  background: var(--blue);
-  color: white;
-  border-radius: 50%;
-  border: none;
-  font-size: 1.8rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  transition: transform 0.2s;
-}
-.fab:hover { transform: scale(1.1); background: var(--blue-dark); }
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--blue);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  opacity: 0;
-  transition: all 0.4s;
-  z-index: 2000;
-  font-weight: 500;
-}
-.toast.show { opacity: 1; bottom: 40px; }
-
-/* Animations */
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes slidePage {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+.boutons button:hover {
+  background: var(--blue-dark);
+  transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width:600px) {
-  .menu button, .boutons button {
-    flex: 1 1 100%;
-    font-size: 1rem;
-  }
-  .page { margin: 0.5rem; padding: 1rem; }
-  .logo { max-width: 130px; }
-}
+/* Bouton retour menu */
 .retour-menu {
   background: var(--blue);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 0.8rem 1.4rem;
-  font-size: 1rem;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.2rem;
   font-weight: 600;
+  font-size: 1rem;
+  box-shadow: var(--shadow);
   margin-bottom: 1rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: transform 0.2s, background 0.3s;
+  transition: background 0.3s, transform 0.2s;
 }
 .retour-menu:hover {
   background: var(--blue-dark);
   transform: scale(1.05);
+}
+
+/* Tableau Atelier */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+th, td {
+  border-bottom: 1px solid #ccc;
+  padding: 0.6rem;
+}
+th {
+  background: var(--blue);
+  color: white;
+}
+
+/* Calculatrice flottante */
+#calculator {
+  position: fixed;
+  bottom: 90px;
+  right: 15px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.8rem;
+  width: 220px;
+  display: none;
+  z-index: 50;
+}
+.calc-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+.calc-buttons button {
+  padding: 0.6rem;
+  font-size: 1.1rem;
+  border: none;
+  background: var(--blue);
+  color: white;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.calc-buttons button:hover {
+  background: var(--blue-dark);
+}
+#calcDisplay {
+  width: 100%;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  text-align: right;
+  padding: 0.4rem;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+}
+
+/* Floating Action Buttons */
+.fab-row {
+  position: fixed;
+  right: 15px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 40;
+}
+.fab {
+  background: var(--blue);
+  border: none;
+  border-radius: 50%;
+  width: 58px;
+  height: 58px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+.fab:hover {
+  background: var(--blue-dark);
+  transform: scale(1.1);
+}
+
+/* Transitions page */
+.fade {
+  animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* Footer */
+footer {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
 }
