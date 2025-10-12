@@ -1,5 +1,5 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   margin: 0;
   background: #f3f7fc;
   color: #222;
@@ -13,7 +13,7 @@ header {
 }
 
 header img.logo {
-  width: 160px;
+  width: 180px;
   display: block;
   margin: 0 auto;
 }
@@ -29,17 +29,17 @@ header img.logo {
   gap: 8px;
   padding: 10px;
   background: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .menu button {
   background: #0d6efd;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 10px 20px;
   border-radius: 12px;
-  font-size: 15px;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.15);
+  font-size: 16px;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
 }
 
 main {
@@ -49,7 +49,7 @@ main {
 .card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-top: 15px;
   text-align: left;
@@ -61,7 +61,10 @@ main {
   justify-content: space-between;
 }
 
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   width: 100%;
   margin: 6px 0;
   padding: 8px;
@@ -96,4 +99,35 @@ footer {
   padding: 10px;
   font-size: 14px;
   color: #444;
+}
+
+.calc-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  z-index: 999;
+  width: 240px;
+}
+.calc-panel.hidden {
+  display: none;
+}
+.calc-buttons button {
+  width: 22%;
+  margin: 2%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+}
+.calc-buttons .clear {
+  background: #dc3545;
+}
+.calc-buttons .close {
+  background: #198754;
 }
