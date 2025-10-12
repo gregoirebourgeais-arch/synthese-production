@@ -73,9 +73,44 @@ function pageAtelier(zone) {
 
   html += `
     </table>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn-export" onclick="exportGlobal()">📦 Fin d’équipe – Export global</button>
+    </div>
     <p style="text-align:center;margin-top:15px;">Cliquez sur une ligne pour ouvrir la page correspondante</p>
   `;
   zone.innerHTML = html;
+}
+
+// === EXPORT GLOBAL ===
+function exportGlobal() {
+  const date = new Date();
+  const dateStr = date.toLocaleDateString().replace(/\//g, "-");
+  let csv = "Ligne,Date,Début,Fin,Quantité,Total,Arrêt (min),Cause,Cadence (u/h)\n";
+
+  lignes.forEach(ligne => {
+    const histo = data[ligne] || [];
+    histo.forEach(r => {
+      csv += `${ligne},${r.date},${r.debut},${r.fin},${r.quantite},${r.total},${r.arret},${r.cause},${r.cadence}\n`;
+    });
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Synthese_Equipe_${dateStr}.csv`;
+  a.click();
+
+  alert("✅ Données exportées. Réinitialisation des champs pour la nouvelle équipe.");
+
+  // Réinitialise les compteurs temporaires sans effacer l'historique
+  lignes.forEach(l => {
+    quantitesTemp[l] = 0;
+    dernieresCadences[l] = 0;
+    saisiesEnCours[l] = "";
+  });
+
+  sauvegarder();
+  openPage("atelier");
 }
 
 // === PAGE LIGNE ===
@@ -204,7 +239,7 @@ function supprimer(ligne, index) {
   }
 }
 
-// === EXPORT ===
+// === EXPORT INDIVIDUEL ===
 function exporterExcel(ligne) {
   const rows = data[ligne] || [];
   if (!rows.length) return alert("Aucune donnée à exporter !");
