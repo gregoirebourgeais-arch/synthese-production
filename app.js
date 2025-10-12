@@ -1,91 +1,107 @@
-// ===============================
-// 🌟 SYNTHÈSE PRODUCTION — V15 Pro Lactalis
-// ===============================
-
-// --- Configuration ---
+// === 📦 Synthèse Production Lactalis V15.3 ===
+// Données locales
+let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
 let currentLine = null;
-let data = JSON.parse(localStorage.getItem("productionData")) || {};
-let graph = null;
 
-// --- ⏰ Horloge ---
-function updateClock() {
-  const now = new Date();
-  const week = getWeekNumber(now);
-  const date = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" });
-  const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("topClock").textContent = `${date} — Semaine ${week} — ${time}`;
+// --- 🕒 Utilitaires ---
+function getDateNow() {
+  const d = new Date();
+  const jours = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  return `${jours[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
 }
-setInterval(updateClock, 1000); updateClock();
-
-function getWeekNumber(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+function getTimeNow() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
+}
+function getWeekNumber() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
 }
 
-// --- 🧭 Menu principal ---
+// --- 💾 Sauvegarde globale ---
+function saveData() {
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+}
+
+// --- 🏠 Menu principal ---
 function renderMenu() {
-  const menu = document.getElementById("menuButtons");
-  menu.innerHTML = "";
-  lignes.forEach(l => {
-    const b = document.createElement("button");
-    b.textContent = l;
-    b.onclick = () => openLine(l);
-    menu.appendChild(b);
-  });
-  const atelierBtn = document.createElement("button");
-  atelierBtn.textContent = "Atelier";
-  atelierBtn.onclick = showAtelier;
-  menu.prepend(atelierBtn);
+  pageTransition();
+  const btns = lignes.map(l => `<button onclick="openLine('${l}')">${l}</button>`).join("");
+  document.getElementById("content").innerHTML = `
+    <div class="page fade">
+      <h2>Sélectionne une ligne</h2>
+      <div class="menu">${btns}</div>
+      <footer>© Lactalis ${new Date().getFullYear()} — Application interne de suivi de production</footer>
+    </div>
+  `;
 }
-renderMenu();
 
-// --- 📄 Page Ligne ---
+// --- 🔁 Transition visuelle ---
+function pageTransition() {
+  const content = document.getElementById("content");
+  if (!content) return;
+  content.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+  content.style.opacity = 0;
+  content.style.transform = "translateX(15px)";
+  setTimeout(() => {
+    content.style.opacity = 1;
+    content.style.transform = "translateX(0)";
+  }, 200);
+}
+
+// --- 🔹 Retour menu ---
+function returnToMenu() {
+  pageTransition();
+  renderMenu();
+}
+
+// --- 📈 Ouvrir une ligne ---
 function openLine(line) {
   pageTransition();
   currentLine = line;
-  const unsaved = JSON.parse(localStorage.getItem(`unsaved_${line}`)) || {};
   const d = data[line] || [];
   const total = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
   const cadence = d.length ? (total / d.length).toFixed(1) : 0;
+  const unsaved = JSON.parse(localStorage.getItem(`unsaved_${line}`)) || {};
   const reste = unsaved.reste ? +unsaved.reste : 0;
   const estimation = cadence > 0 && reste > 0
     ? `${(reste / cadence).toFixed(2)} h restantes (~${Math.round((reste / cadence) * 60)} min)`
     : "—";
 
   const html = `
-  <div class="page fade">
-    <h2>${line}</h2>
-    <button class="retour-menu" onclick="returnToMenu()">⬅ Retour menu</button>
-    <label>Heure début :</label><input id="debut" type="time" value="${unsaved.debut || getTimeNow()}">
-    <label>Heure fin :</label><input id="fin" type="time" value="${unsaved.fin || getTimeNow()}">
-    <label>Quantité initiale :</label><input id="q1" type="number" value="${unsaved.q1 || ""}" placeholder="Entrer quantité...">
-    <label>Quantité ajoutée :</label><input id="q2" type="number" value="${unsaved.q2 || ""}" placeholder="Ajouter quantité...">
-    <label>Quantité restante :</label><input id="reste" type="number" value="${unsaved.reste || ""}" placeholder="Quantité restante...">
-    <label>Temps d'arrêt (min):</label><input id="arret" type="number" value="${unsaved.arret || ""}">
-    <label>Cause d'arrêt :</label><input id="cause" type="text" value="${unsaved.cause || ""}">
-    <label>Commentaire :</label><input id="commentaire" type="text" value="${unsaved.commentaire || ""}">
-    <div class="stats">
-      <p><b>Total :</b> <span id="total">${total}</span> colis</p>
-      <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
-      <p><b>Estimation fin :</b> <span id="estimation">${estimation}</span></p>
+    <div class="page fade">
+      <h2>${line}</h2>
+      <button class="retour-menu" onclick="returnToMenu()">⬅ Retour menu</button>
+      <label>Heure début :</label><input id="debut" type="time" value="${unsaved.debut || getTimeNow()}">
+      <label>Heure fin :</label><input id="fin" type="time" value="${unsaved.fin || getTimeNow()}">
+      <label>Quantité initiale :</label><input id="q1" type="number" value="${unsaved.q1 || ""}" placeholder="Entrer quantité...">
+      <label>Quantité ajoutée :</label><input id="q2" type="number" value="${unsaved.q2 || ""}" placeholder="Ajouter quantité...">
+      <label>Quantité restante :</label><input id="reste" type="number" value="${unsaved.reste || ""}" placeholder="Quantité restante...">
+      <label>Temps d'arrêt (min):</label><input id="arret" type="number" value="${unsaved.arret || ""}">
+      <label>Cause d'arrêt :</label><input id="cause" type="text" value="${unsaved.cause || ""}">
+      <label>Commentaire :</label><input id="commentaire" type="text" value="${unsaved.commentaire || ""}">
+      <div class="stats">
+        <p><b>Total :</b> <span id="total">${total}</span> colis</p>
+        <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
+        <p><b>Estimation fin :</b> <span id="estimation">${estimation}</span></p>
+      </div>
+      <div class="boutons">
+        <button onclick="enregistrer()">💾 Enregistrer</button>
+        <button onclick="annulerDernier()">↩ Annuler dernier</button>
+        <button onclick="afficherHistorique()">📜 Historique</button>
+        <button onclick="exportExcel('${line}')">📦 Export Excel</button>
+        <button onclick="remiseAffichage()">♻ Remise affichage</button>
+      </div>
+      <canvas id="chartLine"></canvas>
     </div>
-    <div class="boutons">
-      <button onclick="enregistrer()">💾 Enregistrer</button>
-      <button onclick="annulerDernier()">↩ Annuler dernier</button>
-      <button onclick="afficherHistorique()">📜 Historique</button>
-      <button onclick="exportExcel('${line}')">📦 Export Excel</button>
-      <button onclick="remiseAffichage()">♻ Remise affichage</button>
-    </div>
-    <canvas id="chartLine"></canvas>
-  </div>`;
-
+  `;
   document.getElementById("content").innerHTML = html;
   renderGraph(line);
 
-  // Sauvegarde temporaire automatique
   document.querySelectorAll("input").forEach(input => {
     input.addEventListener("input", () => {
       const tmp = {
@@ -100,7 +116,6 @@ function openLine(line) {
       };
       localStorage.setItem(`unsaved_${line}`, JSON.stringify(tmp));
 
-      // 🔹 Mettre à jour instantanément l’estimation
       const resteLive = +tmp.reste || 0;
       const est = cadence > 0 && resteLive > 0
         ? `${(resteLive / cadence).toFixed(2)} h restantes (~${Math.round((resteLive / cadence) * 60)} min)`
@@ -110,127 +125,79 @@ function openLine(line) {
   });
 }
 
-  // Sauvegarde temporaire
-  document.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", () => {
-      const tmp = {
-        debut: document.getElementById("debut").value,
-        fin: document.getElementById("fin").value,
-        q1: document.getElementById("q1").value,
-        q2: document.getElementById("q2").value,
-        reste: document.getElementById("reste").value,
-        arret: document.getElementById("arret").value,
-        cause: document.getElementById("cause").value,
-        commentaire: document.getElementById("commentaire").value
-      };
-      localStorage.setItem(`unsaved_${line}`, JSON.stringify(tmp));
-    });
-  });
+// --- 💾 Enregistrer ---
+function enregistrer() {
+  const line = currentLine;
+  const q1 = +document.getElementById("q1").value || 0;
+  const q2 = +document.getElementById("q2").value || 0;
+  const total = q1 + q2;
+  const obj = {
+    debut: document.getElementById("debut").value,
+    fin: document.getElementById("fin").value,
+    quantite: total,
+    arret: +document.getElementById("arret").value || 0,
+    cause: document.getElementById("cause").value,
+    commentaire: document.getElementById("commentaire").value,
+    date: getDateNow(),
+    heure: getTimeNow(),
+    semaine: getWeekNumber()
+  };
+  if (!data[line]) data[line] = [];
+  data[line].push(obj);
+  saveData();
+  localStorage.removeItem(`unsaved_${line}`);
+  openLine(line);
 }
 
-// --- 🕐 Heure actuelle ---
-function getTimeNow() {
-  const n = new Date();
-  return n.toLocaleTimeString("fr-FR", { hour12: false, hour: "2-digit", minute: "2-digit" });
+// --- ↩ Annuler dernier ---
+function annulerDernier() {
+  const line = currentLine;
+  if (!data[line] || data[line].length === 0) return;
+  data[line].pop();
+  saveData();
+  openLine(line);
 }
 
-// --- 📈 Graphique ligne ---
+// --- ♻ Remise affichage ---
+function remiseAffichage() {
+  localStorage.removeItem(`unsaved_${currentLine}`);
+  openLine(currentLine);
+}
+
+// --- 📜 Historique simple ---
+function afficherHistorique() {
+  const line = currentLine;
+  const d = data[line] || [];
+  if (d.length === 0) {
+    alert("Aucun enregistrement pour cette ligne.");
+    return;
+  }
+  let txt = `Historique ${line} :\n`;
+  d.forEach((x,i)=>{ txt += `${i+1}. ${x.date} ${x.heure} - ${x.quantite} colis (${x.cause || "ok"})\n`; });
+  alert(txt);
+}
+
+// --- 📈 Graphique individuel ---
 function renderGraph(line) {
   const ctx = document.getElementById("chartLine");
+  if (!ctx) return;
   const d = data[line] || [];
-  const labels = d.map(x => x.heure);
-  const q = d.map(x => x.quantite);
-  const a = d.map(x => x.arret);
-  if (graph) graph.destroy();
-  graph = new Chart(ctx, {
+  new Chart(ctx, {
     type: "bar",
     data: {
-      labels,
+      labels: d.map(x => x.heure),
       datasets: [
-        { label: "Quantité", data: q, backgroundColor: "rgba(54,162,235,0.7)" },
-        { label: "Arrêts (min)", data: a, backgroundColor: "rgba(255,99,132,0.7)" }
+        { label: "Quantité", data: d.map(x => x.quantite), backgroundColor: "rgba(0,122,255,0.6)" },
+        { label: "Arrêts (min)", data: d.map(x => x.arret), backgroundColor: "rgba(255,99,132,0.6)" }
       ]
     },
     options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 }
 
-// --- 💾 Enregistrement ---
-function enregistrer() {
-  const q1 = +document.getElementById("q1").value || 0;
-  const q2 = +document.getElementById("q2").value || 0;
-  const quantite = q1 + q2;
-  const arret = +document.getElementById("arret").value || 0;
-  const cause = document.getElementById("cause").value;
-  const commentaire = document.getElementById("commentaire").value;
-  const debut = document.getElementById("debut").value;
-  const fin = document.getElementById("fin").value;
-  const reste = +document.getElementById("reste").value || 0;
-  const entry = { quantite, arret, cause, commentaire, debut, fin, reste, heure: getTimeNow() };
-  if (!data[currentLine]) data[currentLine] = [];
-  data[currentLine].push(entry);
-  localStorage.setItem("productionData", JSON.stringify(data));
-  localStorage.removeItem(`unsaved_${currentLine}`);
-  showToast("✅ Données enregistrées");
-  window.scrollTo({top:0,behavior:"smooth"});
-  openLine(currentLine);
-}
-
-// --- ↩ Annuler dernier ---
-function annulerDernier() {
-  if (data[currentLine]?.length) {
-    data[currentLine].pop();
-    localStorage.setItem("productionData", JSON.stringify(data));
-    showToast("🗑 Dernier enregistrement annulé");
-    openLine(currentLine);
-  }
-}
-
-// --- 📜 Historique ---
-function afficherHistorique() {
-  pageTransition();
-  const d = data[currentLine] || [];
-  let html = `<h3>Historique — ${currentLine}</h3>`;
-  if (!d.length) html += "<p>Aucune donnée.</p>";
-  else {
-    html += "<table><tr><th>Heure</th><th>Quantité</th><th>Reste</th><th>Arrêt</th><th>Cause</th><th>Commentaire</th><th>Début</th><th>Fin</th></tr>";
-    d.forEach(r => {
-      html += `<tr><td>${r.heure}</td><td>${r.quantite}</td><td>${r.reste}</td><td>${r.arret}</td><td>${r.cause || "-"}</td><td>${r.commentaire || "-"}</td><td>${r.debut}</td><td>${r.fin}</td></tr>`;
-    });
-    html += "</table>";
-  }
-  html += `<button onclick="openLine('${currentLine}')">⬅ Retour</button>`;
-  document.getElementById("content").innerHTML = html;
-}
-
-// --- ♻ Remise affichage ---
-function remiseAffichage() {
-  document.querySelectorAll("input").forEach(e => e.value = "");
-  localStorage.removeItem(`unsaved_${currentLine}`);
-}
-
-// --- 📦 Export CSV (Excel) ---
-function exportExcel(line) {
-  const d = data[line] || [];
-  if (!d.length) return alert("Aucune donnée !");
-  const csv = [
-    "Heure,Quantité,Reste,Arrêt,Cause,Commentaire,Début,Fin",
-    ...d.map(r => `${r.heure},${r.quantite},${r.reste},${r.arret},"${r.cause}","${r.commentaire}",${r.debut},${r.fin}`)
-  ].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  const t = new Date().toISOString().replace(/[:T]/g, "-").split(".")[0];
-  a.href = URL.createObjectURL(blob);
-  a.download = `Synthese_${line}_${t}.csv`;
-  a.click();
-  showToast("📊 Export Excel créé");
-}
-
-// --- 🏭 Atelier ---
-// --- 🏭 Atelier ---
+// --- 🏭 Atelier global ---
 function showAtelier() {
   pageTransition();
-
   const rows = lignes.map(l => {
     const d = data[l] || [];
     const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
@@ -238,7 +205,6 @@ function showAtelier() {
     const cad = d.length ? (tot / d.length).toFixed(1) : 0;
     return `<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
   }).join("");
-
   const html = `
     <div class="page fade">
       <h2>Atelier</h2>
@@ -252,89 +218,24 @@ function showAtelier() {
         <button onclick="returnToMenu()">⬅ Retour menu</button>
       </div>
     </div>`;
-  
   document.getElementById("content").innerHTML = html;
   renderAtelierGraph();
 }
 
-// ✅ Fonction dédiée pour le retour menu
-function returnToMenu() {
-  pageTransition();
-  document.getElementById("content").innerHTML = `
-    <div id="menuButtons" class="menu"></div>
-  `;
-  renderMenu();
-}
-
-// --- 📊 Graphique Atelier ---
+// --- 📊 Graphique global atelier ---
 function renderAtelierGraph() {
   const ctx = document.getElementById("atelierChart");
-  const totals = lignes.map(l => (data[l] || []).reduce((s, x) => s + Number(x.quantite || 0), 0));
-  if (graph) graph.destroy();
-  graph = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: lignes,
-      datasets: [{ label: "Total colis", data: totals, backgroundColor: "rgba(54,162,235,0.7)" }]
+  const labels = lignes;
+  const totals = lignes.map(l => (data[l]||[]).reduce((s,x)=>s+x.quantite,0));
+  new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{label:"Total colis",data:totals,backgroundColor:"rgba(0,122,255,0.6)"}]
     },
-    options: { indexAxis: "y", responsive: true }
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
   });
 }
 
-// --- 📊 Export global ---
-function exportAtelier() {
-  const rows = lignes.map(l => {
-    const d = data[l] || [];
-    const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
-    const arr = d.reduce((s, x) => s + Number(x.arret || 0), 0);
-    const cad = d.length ? (tot / d.length).toFixed(1) : 0;
-    return `${l},${tot},${arr},${cad}`;
-  });
-  const csv = ["Ligne,Total,Arrêts,Cadence", ...rows].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
-  a.click();
-  showToast("📦 Export global créé");
-}
-
-// --- 🧮 Calculatrice ---
-function toggleCalc() { document.getElementById("calculator").classList.toggle("hidden"); }
-function calcPress(v) { document.getElementById("calcDisplay").value += v; }
-function calcEqual() { try { document.getElementById("calcDisplay").value = eval(document.getElementById("calcDisplay").value); } catch { document.getElementById("calcDisplay").value = "Erreur"; } }
-function calcClear() { document.getElementById("calcDisplay").value = ""; }
-
-// --- ✅ Toast Notification ---
-function showToast(msg) {
-  const t = document.createElement("div");
-  t.className = "toast";
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.classList.add("show"), 10);
-  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 500); }, 2500);
-}
-
-// --- 🧩 PWA Service Worker ---
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload());
-}
-
-// --- 🌫 Transitions / Défilement ---
-function pageTransition() {
-  const content = document.getElementById("content");
-  content.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-  content.style.opacity = 0;
-  content.style.transform = "translateX(20px)";
-  setTimeout(() => {
-    content.style.opacity = 1;
-    content.style.transform = "translateX(0)";
-  }, 200);
-}
-
-document.addEventListener("click", (e) => {
-  if (e.target.tagName === "BUTTON" && e.target.closest(".menu,.boutons")) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-});
+// --- 🚀 Démarrage ---
+renderMenu();
