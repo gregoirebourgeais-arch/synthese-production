@@ -3,9 +3,9 @@
   "short_name": "Synthèse Prod",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f7ff",
-  "theme_color": "#007aff",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "description": "Application interne de suivi de production Lactalis",
   "icons": [
     {
       "src": "icons/icon-192.png",
