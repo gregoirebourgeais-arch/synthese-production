@@ -1,27 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production</title>
 
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0c75ff">
-
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="theme-color" content="#0c75ff">
 
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Optional PWA icon (if tu as icon-512.png à la racine/public) -->
-  <link rel="icon" type="image/png" href="icon-512.png">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
   <header class="site-header">
     <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
     <div class="titleblock">
-      <h1><span class="titre-bleu">Synthèse</span><br/>Production</h1>
+      <h1><span class="titre-bleu">Synthèse</span> Production</h1>
       <div id="topClock" class="top-clock"></div>
     </div>
   </header>
@@ -34,26 +33,44 @@
 
   <footer>© Lactalis — Synthèse Production</footer>
 
-  <!-- Calculator floating (hidden by default) -->
+  <!-- Calculatrice flottante -->
   <div id="calculator" class="calculator hidden">
     <input id="calcDisplay" readonly class="calc-display" />
-    <div class="calc-buttons" id="calcButtons"></div>
+    <div class="calc-buttons" id="calcButtons">
+      <button onclick="calcPress('7')">7</button>
+      <button onclick="calcPress('8')">8</button>
+      <button onclick="calcPress('9')">9</button>
+      <button onclick="calcPress('/')">/</button>
+      <button onclick="calcPress('4')">4</button>
+      <button onclick="calcPress('5')">5</button>
+      <button onclick="calcPress('6')">6</button>
+      <button onclick="calcPress('*')">*</button>
+      <button onclick="calcPress('1')">1</button>
+      <button onclick="calcPress('2')">2</button>
+      <button onclick="calcPress('3')">3</button>
+      <button onclick="calcPress('-')">-</button>
+      <button onclick="calcPress('0')">0</button>
+      <button onclick="calcPress('.')">.</button>
+      <button onclick="calcEqual()">=</button>
+      <button onclick="calcPress('+')">+</button>
+      <button class="clear" onclick="calcClear()">C</button>
+      <button class="close" onclick="toggleCalc()">✕</button>
+    </div>
   </div>
 
-  <!-- Floating action button (calculator / atelier quick overview) -->
+  <!-- Boutons flottants -->
   <div class="fab-row">
     <button id="fabCalc" class="fab" title="Calculatrice">🧮</button>
-    <button id="fabAtelier" class="fab" title="Atelier">📊</button>
+    <button id="fabAtelier" class="fab" title="Atelier">🏭</button>
   </div>
 
-  <!-- Scripts -->
   <script src="app.js"></script>
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('✅ Service Worker enregistré'))
-      .catch(err => console.error('❌ Erreur Service Worker :', err));
-  }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('✅ Service Worker enregistré'))
+        .catch(err => console.error('❌ Erreur Service Worker :', err));
+    }
   </script>
 </body>
 </html>
