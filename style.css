@@ -14,7 +14,7 @@ header {
 }
 
 .logo {
-  height: 50px;
+  height: 55px;
   display: block;
   margin: 0 auto;
 }
@@ -61,7 +61,7 @@ button:hover {
 
 input, textarea {
   width: 90%;
-  max-width: 300px;
+  max-width: 320px;
   padding: 8px;
   margin: 8px;
   border-radius: 10px;
