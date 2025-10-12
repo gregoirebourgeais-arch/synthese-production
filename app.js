@@ -1,9 +1,16 @@
 // === CONFIGURATION ===
-const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
+const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-lignes.forEach(l => { if (!Array.isArray(data[l])) data[l] = []; });
+let historiqueGlobal = JSON.parse(localStorage.getItem("historiqueGlobal")) || {};
+lignes.forEach(l => {
+  if (!Array.isArray(data[l])) data[l] = [];
+  if (!Array.isArray(historiqueGlobal[l])) historiqueGlobal[l] = [];
+});
 
-function sauvegarder() { localStorage.setItem("syntheseData", JSON.stringify(data)); }
+function sauvegarder() {
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  localStorage.setItem("historiqueGlobal", JSON.stringify(historiqueGlobal));
+}
 setInterval(sauvegarder, 120000);
 
 // === DATE / HEURE ===
@@ -72,13 +79,23 @@ function enregistrer(ligne) {
   const hfin = document.getElementById("hfin").value;
   const date = new Date();
 
-  data[ligne].push({date: date.toLocaleDateString()+" "+date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), qte:qte1+qte2, arret, cause, comment, debut:hdeb, fin:hfin});
+  data[ligne].push({
+    date: date.toLocaleDateString()+" "+date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+    qte: qte1+qte2, arret, cause, comment, debut:hdeb, fin:hfin
+  });
   sauvegarder();
   openPage(ligne);
 }
 
 function annuler(ligne){ data[ligne].pop(); sauvegarder(); openPage(ligne); }
-function remiseZero(ligne){ data[ligne]=[]; sauvegarder(); openPage(ligne); }
+
+function remiseZero(ligne){
+  historiqueGlobal[ligne].push(...data[ligne]); // sauvegarde dans historique global
+  data[ligne] = []; // vide la session en cours
+  sauvegarder();
+  alert(`Remise à zéro effectuée pour ${ligne}. Les données ont été archivées dans l’historique global.`);
+  openPage(ligne);
+}
 
 function calcCadence(ligne){
   const arr=data[ligne];
@@ -101,10 +118,13 @@ function majFin(ligne){
   document.getElementById("finEstimee").innerText = `⏰ Fin estimée : ${fin.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
 }
 
-// === HISTORIQUE ===
+// === HISTORIQUE GLOBAL ===
 function afficherHistorique(ligne){
-  const h=data[ligne].map(e=>`${e.date} — ${e.debut}→${e.fin} — ${e.qte} colis — ${e.arret}min (${e.cause||''}) ${e.comment||''}`).join("\n");
-  alert("Historique " + ligne + " :\n\n" + h);
+  const all = [...(historiqueGlobal[ligne] || []), ...(data[ligne] || [])];
+  const h = all.map(e =>
+    `${e.date} — ${e.debut}→${e.fin} — ${e.qte} colis — ${e.arret}min (${e.cause||''}) ${e.comment||''}`
+  ).join("\n");
+  alert("Historique complet " + ligne + " :\n\n" + h);
 }
 
 // === GRAPH ===
@@ -121,10 +141,11 @@ function afficherGraphique(ligne){
     ]}});
 }
 
-// === EXPORT EXCEL ===
+// === EXPORT EXCEL GLOBAL ===
 function exporterExcel(ligne){
   const rows = [["Date","Heure début","Heure fin","Quantité","Arrêt (min)","Cause","Commentaire"]];
-  data[ligne].forEach(e=>rows.push([e.date,e.debut,e.fin,e.qte,e.arret,e.cause,e.comment]));
+  const allData = [...(historiqueGlobal[ligne] || []), ...(data[ligne] || [])];
+  allData.forEach(e=>rows.push([e.date,e.debut,e.fin,e.qte,e.arret,e.cause,e.comment]));
   const csv=rows.map(r=>r.join(";")).join("\n");
   const blob=new Blob([csv],{type:"text/csv"});
   const now=new Date();
@@ -153,4 +174,4 @@ function graphiqueGlobal(){
     labels:lignes,
     datasets:[{label:"Total colis",data:lignes.map(l=>data[l].reduce((a,b)=>a+Number(b.qte||0),0)),backgroundColor:"rgba(11,115,200,0.7)"}]
   }});
-                 }
+      }
