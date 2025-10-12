@@ -1,49 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production - Lactalis</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
-    <div class="header-content">
-      <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
-      <div class="titre">
-        <h1><span class="bleu">Synthèse</span> Production</h1>
-      </div>
-    </div>
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
+    <h1>Synthèse Production</h1>
+    <div id="dateInfo"></div>
   </header>
 
-  <div id="panneau-flottant">
-    <span id="date-jour"></span> — Semaine <span id="semaine-num"></span> — <span id="heure-actuelle"></span>
-  </div>
+  <nav class="menu">
+    <button onclick="openPage('atelier')">Atelier</button>
+    <button onclick="openPage('Râpé')">Râpé</button>
+    <button onclick="openPage('T2')">T2</button>
+    <button onclick="openPage('RT')">RT</button>
+    <button onclick="openPage('OMORI')">OMORI</button>
+    <button onclick="openPage('T1')">T1</button>
+    <button onclick="openPage('Sticks')">Sticks</button>
+    <button onclick="openPage('Emballage')">Emballage</button>
+    <button onclick="openPage('Dés')">Dés</button>
+    <button onclick="openPage('Filets')">Filets</button>
+    <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
+  </nav>
 
-  <main>
-    <div class="menu">
-      <button onclick="openPage('Atelier')">Atelier</button>
-      <button onclick="openPage('Râpé')">Râpé</button>
-      <button onclick="openPage('T2')">T2</button>
-      <button onclick="openPage('RT')">RT</button>
-      <button onclick="openPage('OMORI')">OMORI</button>
-      <button onclick="openPage('T1')">T1</button>
-      <button onclick="openPage('Sticks')">Sticks</button>
-      <button onclick="openPage('Emballage')">Emballage</button>
-      <button onclick="openPage('Dés')">Dés</button>
-      <button onclick="openPage('Filets')">Filets</button>
-      <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
-    </div>
+  <main id="content"></main>
 
-    <section id="content"></section>
-  </main>
-
-  <div id="calculatrice-btn" onclick="ouvrirCalculatrice()">🧮</div>
-
-  <footer>
-    © Lactalis — Synthèse Production
-  </footer>
+  <footer>© Lactalis — Synthèse Production</footer>
 
   <script src="app.js"></script>
 </body>
