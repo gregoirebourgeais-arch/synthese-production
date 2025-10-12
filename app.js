@@ -1,149 +1,215 @@
-// --- Configuration globale ---
-const lignes = [
-  "Râpé", "T2", "RT", "OMORI", "T1", "Sticks",
-  "Emballage", "Dés", "Filets", "Prédécoupé"
-];
-const data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-const app = document.getElementById("content");
+// ===============================
+// 🌟 SYNTHÈSE PRODUCTION vFinale
+// ===============================
 
-// --- Affichage date / semaine ---
-function updateDateTime() {
+// --- Lignes de production ---
+const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
+let currentLine = null;
+let data = JSON.parse(localStorage.getItem("productionData")) || {};
+let graph = null;
+
+// --- ⏰ Date / Heure / Semaine ---
+function updateClock() {
   const now = new Date();
   const week = getWeekNumber(now);
-  const dateStr = now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("topClock").textContent = `${dateStr} — Semaine ${week} — ${time}`;
+  document.getElementById("topClock").textContent =
+    `${now.toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"long"})} — Semaine ${week} — ${now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
 }
-setInterval(updateDateTime, 1000);
+setInterval(updateClock,1000); updateClock();
 
-function getWeekNumber(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+function getWeekNumber(d){
+  d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil(((d-yearStart)/86400000+1)/7);
 }
 
-// --- Page d'accueil ---
-function showAccueil() {
-  let html = `<div class="menu-buttons">`;
-  html += `<button onclick="showAtelier()">Atelier</button>`;
-  lignes.forEach(l => {
-    html += `<button onclick="showLigne('${l}')">${l}</button>`;
+// --- 🧭 Menu principal ---
+function renderMenu(){
+  const menu=document.getElementById("menuButtons");
+  menu.innerHTML="";
+  lignes.forEach(l=>{
+    const b=document.createElement("button");
+    b.textContent=l; b.onclick=()=>openLine(l);
+    menu.appendChild(b);
   });
-  html += `</div>`;
-  app.innerHTML = html;
+  const atelierBtn=document.createElement("button");
+  atelierBtn.textContent="Atelier"; atelierBtn.onclick=showAtelier;
+  menu.prepend(atelierBtn);
 }
-showAccueil();
+renderMenu();
 
-// --- Page Atelier ---
-function showAtelier() {
-  let html = `
+// --- 📄 Page Ligne ---
+function openLine(line){
+  currentLine=line;
+  const d=data[line]||[];
+  const total=d.reduce((s,x)=>s+Number(x.quantite||0),0);
+  const cadence=d.length? (total/d.length).toFixed(1):0;
+  const html=`
+  <div class="page">
+    <h2>${line}</h2>
+    <button class="secondary" onclick="showAtelier()">🏭 Retour Atelier</button>
+    <label>Heure début :</label><input id="debut" type="time" value="${getTimeNow()}">
+    <label>Heure fin :</label><input id="fin" type="time" value="${getTimeNow()}">
+    <label>Quantité initiale :</label><input id="q1" type="number" placeholder="Entrer quantité...">
+    <label>Quantité ajoutée :</label><input id="q2" type="number" placeholder="Ajouter quantité...">
+    <label>Quantité restante :</label><input id="reste" type="number" placeholder="Quantité restante...">
+    <label>Temps d'arrêt (min):</label><input id="arret" type="number">
+    <label>Cause d'arrêt :</label><input id="cause" type="text">
+    <label>Commentaire :</label><input id="commentaire" type="text">
+    <div class="stats">
+      <p><b>Total :</b> <span id="total">${total}</span> colis</p>
+      <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
+    </div>
+    <div class="boutons">
+      <button onclick="enregistrer()">💾 Enregistrer</button>
+      <button onclick="annulerDernier()">↩ Annuler dernier</button>
+      <button onclick="afficherHistorique()">📜 Historique</button>
+      <button onclick="exportExcel('${line}')">📦 Export Excel</button>
+      <button onclick="remiseAffichage()">♻ Remise affichage</button>
+    </div>
+    <canvas id="chartLine"></canvas>
+  </div>`;
+  document.getElementById("content").innerHTML=html;
+  renderGraph(line);
+}
+
+function getTimeNow(){
+  const n=new Date();
+  return n.toLocaleTimeString("fr-FR",{hour12:false,hour:"2-digit",minute:"2-digit"});
+}
+
+// --- 📈 Graphique ligne ---
+function renderGraph(line){
+  const ctx=document.getElementById("chartLine");
+  const d=data[line]||[];
+  const labels=d.map(x=>x.heure);
+  const q=d.map(x=>x.quantite);
+  const a=d.map(x=>x.arret);
+  if(graph)graph.destroy();
+  graph=new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[
+        {label:"Quantité",data:q,backgroundColor:"rgba(54,162,235,0.7)"},
+        {label:"Arrêts (min)",data:a,backgroundColor:"rgba(255,99,132,0.7)"}
+      ]
+    },
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+  });
+}
+
+// --- 💾 Enregistrement ---
+function enregistrer(){
+  const q1=+document.getElementById("q1").value||0;
+  const q2=+document.getElementById("q2").value||0;
+  const quantite=q1+q2;
+  const arret=+document.getElementById("arret").value||0;
+  const cause=document.getElementById("cause").value;
+  const commentaire=document.getElementById("commentaire").value;
+  const debut=document.getElementById("debut").value;
+  const fin=document.getElementById("fin").value;
+  const reste=+document.getElementById("reste").value||0;
+
+  const entry={quantite,arret,cause,commentaire,debut,fin,reste,heure:getTimeNow()};
+  if(!data[currentLine])data[currentLine]=[];
+  data[currentLine].push(entry);
+  localStorage.setItem("productionData",JSON.stringify(data));
+  openLine(currentLine);
+}
+
+// --- ↩ Annuler ---
+function annulerDernier(){
+  if(data[currentLine]?.length){data[currentLine].pop();localStorage.setItem("productionData",JSON.stringify(data));openLine(currentLine);}
+}
+
+// --- 📜 Historique ---
+function afficherHistorique(){
+  const d=data[currentLine]||[];
+  let html=`<h3>Historique — ${currentLine}</h3>`;
+  if(!d.length)html+="<p>Aucune donnée.</p>";
+  else{
+    html+="<table><tr><th>Heure</th><th>Quantité</th><th>Reste</th><th>Arrêt</th><th>Cause</th><th>Commentaire</th><th>Début</th><th>Fin</th></tr>";
+    d.forEach(r=>{html+=`<tr><td>${r.heure}</td><td>${r.quantite}</td><td>${r.reste}</td><td>${r.arret}</td><td>${r.cause||"-"}</td><td>${r.commentaire||"-"}</td><td>${r.debut}</td><td>${r.fin}</td></tr>`;});
+    html+="</table>";
+  }
+  html+=`<button onclick="openLine('${currentLine}')">⬅ Retour</button>`;
+  document.getElementById("content").innerHTML=html;
+}
+
+// --- ♻ Remise affichage ---
+function remiseAffichage(){document.querySelectorAll("input").forEach(e=>e.value="");}
+
+// --- 📦 Export Excel (CSV) ---
+function exportExcel(line){
+  const d=data[line]||[]; if(!d.length)return alert("Aucune donnée !");
+  const csv=["Heure,Quantité,Reste,Arrêt,Cause,Commentaire,Début,Fin",
+  ...d.map(r=>`${r.heure},${r.quantite},${r.reste},${r.arret},"${r.cause}","${r.commentaire}",${r.debut},${r.fin}`)].join("\n");
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  const t=new Date().toISOString().replace(/[:T]/g,"-").split(".")[0];
+  a.href=URL.createObjectURL(blob); a.download=`Synthese_${line}_${t}.csv`; a.click();
+}
+
+// --- 🏭 Page Atelier ---
+function showAtelier(){
+  const rows=lignes.map(l=>{
+    const d=data[l]||[];
+    const tot=d.reduce((s,x)=>s+Number(x.quantite||0),0);
+    const arr=d.reduce((s,x)=>s+Number(x.arret||0),0);
+    const cad=d.length?(tot/d.length).toFixed(1):0;
+    return `<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
+  }).join("");
+  const html=`
     <div class="page">
       <h2>Atelier</h2>
-      <button class="retour" onclick="showAccueil()">⬅ Retour</button>
-      <table>
-        <thead><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr></thead>
-        <tbody>`;
-  lignes.forEach(l => {
-    const ligneData = data[l] || { total: 0, arrets: 0, cadence: 0 };
-    html += `<tr><td>${l}</td><td>${ligneData.total || 0}</td><td>${ligneData.arrets || 0}</td><td>${ligneData.cadence || 0}</td></tr>`;
-  });
-  html += `</tbody></table>
+      <table><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>${rows}</table>
       <canvas id="atelierChart"></canvas>
+      <div class="boutons">
+        <button onclick="exportAtelier()">📊 Export global</button>
+        <button onclick="renderMenu()">⬅ Retour menu</button>
+      </div>
     </div>`;
-  app.innerHTML = html;
-  renderAtelierChart();
+  document.getElementById("content").innerHTML=html;
+  renderAtelierGraph();
 }
 
-function renderAtelierChart() {
-  const ctx = document.getElementById("atelierChart");
-  if (!ctx) return;
-  const labels = lignes;
-  const totals = lignes.map(l => (data[l] ? data[l].total || 0 : 0));
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Total colis",
-        data: totals,
-        backgroundColor: "rgba(12, 117, 255, 0.7)"
-      }]
-    },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+// --- 📊 Graphique Atelier ---
+function renderAtelierGraph(){
+  const ctx=document.getElementById("atelierChart");
+  const totals=lignes.map(l=>(data[l]||[]).reduce((s,x)=>s+Number(x.quantite||0),0));
+  if(graph)graph.destroy();
+  graph=new Chart(ctx,{type:"bar",
+    data:{labels:lignes,datasets:[{label:"Total colis",data:totals,backgroundColor:"rgba(54,162,235,0.7)"}]},
+    options:{indexAxis:"y",responsive:true}});
+}
+
+// --- 📊 Export global ---
+function exportAtelier(){
+  const rows=lignes.map(l=>{
+    const d=data[l]||[];
+    const tot=d.reduce((s,x)=>s+Number(x.quantite||0),0);
+    const arr=d.reduce((s,x)=>s+Number(x.arret||0),0);
+    const cad=d.length?(tot/d.length).toFixed(1):0;
+    return `${l},${tot},${arr},${cad}`;
   });
+  const csv=["Ligne,Total,Arrêts,Cadence",...rows].join("\n");
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
 }
 
-// --- Page Ligne ---
-function showLigne(ligne) {
-  const ligneData = data[ligne] || { total: 0, cadence: 0 };
-  let html = `
-    <div class="page">
-      <h2>${ligne}</h2>
-      <button class="retour" onclick="showAccueil()">⬅ Retour</button>
-      <p><strong>Total :</strong> ${ligneData.total} colis</p>
-      <p><strong>Cadence moyenne :</strong> ${ligneData.cadence} colis/h</p>
+// --- 🧮 Calculatrice ---
+function toggleCalc(){document.getElementById("calculator").classList.toggle("hidden");}
+function calcPress(v){document.getElementById("calcDisplay").value+=v;}
+function calcEqual(){try{document.getElementById("calcDisplay").value=eval(document.getElementById("calcDisplay").value);}catch{document.getElementById("calcDisplay").value="Erreur";}}
+function calcClear(){document.getElementById("calcDisplay").value="";}
 
-      <input type="number" id="qte" placeholder="Entrer quantité...">
-      <input type="number" id="arret" placeholder="Temps d'arrêt (min)...">
-      <button onclick="saveLigne('${ligne}')">💾 Enregistrer</button>
-      <button onclick="undoLigne('${ligne}')">↩ Annuler dernier</button>
-      <button onclick="showAtelier()">📊 Atelier</button>
-    </div>
-  `;
-  app.innerHTML = html;
-}
-
-// --- Sauvegarde ligne ---
-function saveLigne(ligne) {
-  const qte = parseInt(document.getElementById("qte").value) || 0;
-  const arret = parseInt(document.getElementById("arret").value) || 0;
-  if (!data[ligne]) data[ligne] = { total: 0, arrets: 0, cadence: 0 };
-  data[ligne].total += qte;
-  data[ligne].arrets += arret;
-  data[ligne].cadence = Math.round(data[ligne].total / (data[ligne].arrets + 1));
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-  showLigne(ligne);
-}
-
-// --- Annuler dernier enregistrement ---
-function undoLigne(ligne) {
-  if (data[ligne] && data[ligne].total > 0) {
-    data[ligne].total = Math.max(0, data[ligne].total - 1);
-    localStorage.setItem("syntheseData", JSON.stringify(data));
-    showLigne(ligne);
-  }
-}
-
-// --- Calculatrice flottante ---
-const calc = {
-  el: document.getElementById("calculator"),
-  display: document.getElementById("calcDisplay"),
-  hidden: true
-};
-function toggleCalc() {
-  const calcDiv = document.getElementById("calculator");
-  calcDiv.classList.toggle("hidden");
-}
-function calcPress(v) {
-  calc.display.value += v;
-}
-function calcEqual() {
-  try {
-    calc.display.value = eval(calc.display.value);
-  } catch {
-    calc.display.value = "Erreur";
-  }
-}
-function calcClear() {
-  calc.display.value = "";
-}
-
-// --- PWA Service Worker ---
-if ("serviceWorker" in navigator) {
+// --- 🧩 Service Worker PWA ---
+if("serviceWorker" in navigator){
   navigator.serviceWorker.register("service-worker.js");
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
-  });
+  navigator.serviceWorker.addEventListener("controllerchange",()=>window.location.reload());
 }
