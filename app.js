@@ -1,177 +1,314 @@
-// === CONFIGURATION ===
-const lignes = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
-let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
-let historiqueGlobal = JSON.parse(localStorage.getItem("historiqueGlobal")) || {};
-lignes.forEach(l => {
-  if (!Array.isArray(data[l])) data[l] = [];
-  if (!Array.isArray(historiqueGlobal[l])) historiqueGlobal[l] = [];
+/* ===== Config / State ===== */
+const LIGNES = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
+const STORE_KEY = "syntheseDataV17";
+
+let DATA = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+LIGNES.forEach(l => { if (!Array.isArray(DATA[l])) DATA[l] = []; });
+
+/* Sauvegarde périodique & à la fermeture */
+const save = () => localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
+setInterval(save, 15000);
+addEventListener("beforeunload", save);
+
+/* Meta (date/heure + semaine) */
+function renderMetaTop(){
+  const now = new Date();
+  const week = getWeekNumber(now);
+  document.getElementById("metaTop").textContent =
+    now.toLocaleDateString("fr-FR", {weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"}) +
+    ` — Semaine ${week} — ` +
+    now.toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"});
+}
+setInterval(renderMetaTop, 30_000);
+addEventListener("DOMContentLoaded", renderMetaTop);
+
+function getWeekNumber(d){
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7; // 1..7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+
+/* ===== Navigation ===== */
+addEventListener("DOMContentLoaded", () => {
+  openPage("atelier");
 });
 
-function sauvegarder() {
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-  localStorage.setItem("historiqueGlobal", JSON.stringify(historiqueGlobal));
-}
-setInterval(sauvegarder, 120000);
-
-// === DATE / HEURE ===
-function majDate() {
-  const now = new Date();
-  const semaine = Math.ceil(((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + now.getDay() + 1) / 7);
-  document.getElementById("dateInfo").innerText =
-    now.toLocaleDateString("fr-FR", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }) +
-    ` — Semaine ${semaine} — ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-}
-setInterval(majDate, 60000);
-window.onload = majDate;
-
-// === NAVIGATION ===
-function openPage(page) {
-  const content = document.getElementById("content");
-  if (page === "atelier") pageAtelier(content);
-  else pageLigne(page, content);
-  localStorage.setItem("currentPage", page);
+function openPage(page){
+  const zone = document.getElementById("content");
+  if (page === "atelier") renderAtelier(zone);
+  else renderLigne(page, zone);
 }
 
-// === PAGE LIGNE ===
-function pageLigne(nom, zone) {
-  const entries = data[nom];
-  const lastEntry = entries[entries.length - 1];
-  const heureDebut = lastEntry ? lastEntry.fin : new Date().toISOString().slice(11, 16);
-  const heureFin = new Date().toISOString().slice(11, 16);
+/* ===== Vue Atelier ===== */
+function renderAtelier(zone){
+  const totals = LIGNES.map(l => ({
+    ligne: l,
+    total: sum(DATA[l].map(r => r.qte || 0)),
+    arrets: sum(DATA[l].map(r => r.arretMin || 0)),
+    cadence: cadenceMoyenne(DATA[l])
+  }));
 
   zone.innerHTML = `
-    <div class="card">
-      <h2>${nom}</h2>
-      <p><b>Total :</b> ${entries.reduce((a,b)=>a+Number(b.qte||0),0)} colis</p>
-      <p><b>Cadence moyenne :</b> ${calcCadence(nom)} colis/h</p>
-
-      <input id="qte1" type="number" placeholder="Entrer quantité...">
-      <input id="qte2" type="number" placeholder="Ajouter quantité...">
-      <input id="arret" type="number" placeholder="Temps d'arrêt (min)...">
-      <input id="cause" type="text" placeholder="Cause d'arrêt...">
-      <textarea id="comment" placeholder="Commentaire..."></textarea>
-      <input id="restante" type="number" placeholder="Quantité restante...">
-      <div>
-        🕒 Début : <input id="hdeb" type="time" value="${heureDebut}">
-        → Fin : <input id="hfin" type="time" value="${heureFin}">
+    <section class="card">
+      <h2 style="margin-top:0">Atelier</h2>
+      <div class="meta">Vue d’ensemble — Total / Arrêts / Cadence</div>
+      <div class="card" style="overflow:auto; margin-top:12px">
+        <table class="table atelier-table">
+          <thead><tr>
+            <th>Ligne</th><th class="t-num">Total</th><th class="t-num">Arrêts (min)</th><th class="t-num">Cadence (colis/h)</th>
+          </tr></thead>
+          <tbody>
+            ${totals.map(t => `
+              <tr>
+                <td>${t.ligne}</td>
+                <td class="t-num">${t.total}</td>
+                <td class="t-num">${t.arrets}</td>
+                <td class="t-num">${fmt(t.cadence)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
       </div>
-      <p id="finEstimee"></p>
 
-      <button onclick="enregistrer('${nom}')">💾 Enregistrer</button>
-      <button onclick="annuler('${nom}')">↩️ Annuler dernier</button>
-      <button onclick="afficherHistorique('${nom}')">📜 Historique</button>
-      <button onclick="exporterExcel('${nom}')">📦 Export Excel</button>
-      <button onclick="remiseZero('${nom}')">♻️ Remise à zéro</button>
-      <canvas id="chart${nom}" height="150"></canvas>
-    </div>
+      <div class="card">
+        <canvas id="atelierChart" height="170"></canvas>
+      </div>
+    </section>
   `;
-  document.getElementById("restante").addEventListener("input", () => majFin(nom));
-  afficherGraphique(nom);
-}
 
-function enregistrer(ligne) {
-  const qte1 = Number(document.getElementById("qte1").value)||0;
-  const qte2 = Number(document.getElementById("qte2").value)||0;
-  const arret = Number(document.getElementById("arret").value)||0;
-  const cause = document.getElementById("cause").value;
-  const comment = document.getElementById("comment").value;
-  const hdeb = document.getElementById("hdeb").value;
-  const hfin = document.getElementById("hfin").value;
-  const date = new Date();
+  const ctx = document.getElementById("atelierChart");
+  const labels = totals.map(t => t.ligne);
+  const dataVals = totals.map(t => t.total);
 
-  data[ligne].push({
-    date: date.toLocaleDateString()+" "+date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-    qte: qte1+qte2, arret, cause, comment, debut:hdeb, fin:hfin
+  // barres horizontales = indexAxis:'y'
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Total colis',
+        data: dataVals
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      animation: false,
+      responsive: true,
+      plugins:{legend:{position:'top'}}
+    }
   });
-  sauvegarder();
-  openPage(ligne);
 }
 
-function annuler(ligne){ data[ligne].pop(); sauvegarder(); openPage(ligne); }
+/* ===== Vue Ligne ===== */
+function renderLigne(ligne, zone){
+  const history = DATA[ligne];
+  const total = sum(history.map(r => r.qte || 0));
+  const cad = cadenceMoyenne(history);
 
-function remiseZero(ligne){
-  historiqueGlobal[ligne].push(...data[ligne]); // sauvegarde dans historique global
-  data[ligne] = []; // vide la session en cours
-  sauvegarder();
-  alert(`Remise à zéro effectuée pour ${ligne}. Les données ont été archivées dans l’historique global.`);
-  openPage(ligne);
+  zone.innerHTML = `
+    <section class="card">
+      <h2 style="margin-top:0">${ligne}</h2>
+      <div class="meta" id="lineMeta"></div>
+
+      <div class="grid" style="margin-top:6px">
+        <div><input id="q1" type="number" class="input" placeholder="Entrer quantité…" /></div>
+        <div><input id="q2" type="number" class="input" placeholder="Ajouter quantité…" /></div>
+        <div><input id="arret" type="number" class="input" placeholder="Temps d'arrêt (min)…" /></div>
+        <div><input id="cause" class="input" placeholder="Cause d'arrêt…" /></div>
+        <div style="grid-column:1/-1"><textarea id="comment" class="input" rows="2" placeholder="Commentaire…"></textarea></div>
+        <div style="grid-column:1/-1"><input id="reste" type="number" class="input" placeholder="Quantité restante…" /></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="enregistrer('${ligne}')">💾 Enregistrer</button>
+        <button class="btn secondary" onclick="annulerDernier('${ligne}')">↩️ Annuler dernier</button>
+        <button class="btn secondary" onclick="ouvrirHistorique('${ligne}')">📜 Historique</button>
+        <button class="btn secondary" onclick="exportExcel('${ligne}')">📦 Export Excel</button>
+        <button class="btn warn" onclick="remiseZeroAffichage('${ligne}')">♻️ Remise à zéro (affichage)</button>
+      </div>
+
+      <p class="meta"><b>Total :</b> <span id="totalSpan">${total}</span> colis — 
+      <b>Cadence moyenne :</b> <span id="cadSpan">${fmt(cad)}</span> colis/h</p>
+
+      <div class="card">
+        <canvas id="lineChart" height="170"></canvas>
+      </div>
+    </section>
+  `;
+
+  updateLineMeta();
+  drawLineChart(ligne);
 }
 
-function calcCadence(ligne){
-  const arr=data[ligne];
-  if(arr.length<1)return 0;
-  let total=arr.reduce((a,b)=>a+Number(b.qte||0),0);
-  const dureeTot=arr.reduce((a,b)=>{
-    const [h1,m1]=b.debut.split(":").map(Number);
-    const [h2,m2]=b.fin.split(":").map(Number);
-    return a + ((h2*60+m2)-(h1*60+m1))/60;
-  },0);
-  return dureeTot?Math.round(total/dureeTot):0;
+function updateLineMeta(){
+  const now = new Date();
+  const week = getWeekNumber(now);
+  document.getElementById("lineMeta").textContent =
+    now.toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+
+    ` — Semaine ${week} — `+
+    now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 }
 
-function majFin(ligne){
-  const restante = Number(document.getElementById("restante").value)||0;
-  const cadence = calcCadence(ligne);
-  if(!cadence)return;
-  const heures = restante/cadence;
-  const fin = new Date(Date.now()+heures*3600000);
-  document.getElementById("finEstimee").innerText = `⏰ Fin estimée : ${fin.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-}
-
-// === HISTORIQUE GLOBAL ===
-function afficherHistorique(ligne){
-  const all = [...(historiqueGlobal[ligne] || []), ...(data[ligne] || [])];
-  const h = all.map(e =>
-    `${e.date} — ${e.debut}→${e.fin} — ${e.qte} colis — ${e.arret}min (${e.cause||''}) ${e.comment||''}`
-  ).join("\n");
-  alert("Historique complet " + ligne + " :\n\n" + h);
-}
-
-// === GRAPH ===
-function afficherGraphique(ligne){
-  const ctx=document.getElementById("chart"+ligne);
-  if(!ctx)return;
-  const labels=data[ligne].map(e=>e.debut);
-  const qtes=data[ligne].map(e=>e.qte);
-  const arrets=data[ligne].map(e=>e.arret);
-  new Chart(ctx,{type:"bar",data:{
-    labels, datasets:[
-      {label:"Quantité",data:qtes,backgroundColor:"rgba(11,115,200,0.7)"},
-      {label:"Arrêts (min)",data:arrets,backgroundColor:"rgba(255,99,132,0.6)"}
-    ]}});
-}
-
-// === EXPORT EXCEL GLOBAL ===
-function exporterExcel(ligne){
-  const rows = [["Date","Heure début","Heure fin","Quantité","Arrêt (min)","Cause","Commentaire"]];
-  const allData = [...(historiqueGlobal[ligne] || []), ...(data[ligne] || [])];
-  allData.forEach(e=>rows.push([e.date,e.debut,e.fin,e.qte,e.arret,e.cause,e.comment]));
-  const csv=rows.map(r=>r.join(";")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv"});
-  const now=new Date();
-  const fname=`Synthese_Lactalis_${ligne}_${now.toLocaleDateString('fr-FR').replaceAll('/','-')}_${now.getHours()}h${now.getMinutes()}.csv`;
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download=fname; a.click();
-}
-
-// === PAGE ATELIER ===
-function pageAtelier(zone){
-  let html="<div class='card'><h2>Atelier</h2><table style='width:100%'><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>";
-  lignes.forEach(l=>{
-    const tot=data[l].reduce((a,b)=>a+Number(b.qte||0),0);
-    const arr=data[l].reduce((a,b)=>a+Number(b.arret||0),0);
-    const cad=calcCadence(l);
-    html+=`<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
+function drawLineChart(ligne){
+  const history = DATA[ligne];
+  const ctx = document.getElementById("lineChart");
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: history.map(r => new Date(r.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})),
+      datasets: [
+        {label:'Quantité', data: history.map(r => r.qte || 0), tension:.3},
+        {label:'Arrêts (min)', data: history.map(r => r.arretMin || 0), tension:.3}
+      ]
+    },
+    options: {animation:false,responsive:true}
   });
-  html+="</table><canvas id='chartGlobal' height='150'></canvas></div>";
-  zone.innerHTML=html;
-  setTimeout(()=>graphiqueGlobal(),200);
 }
 
-function graphiqueGlobal(){
-  const ctx=document.getElementById("chartGlobal");
-  new Chart(ctx,{type:"bar",data:{
-    labels:lignes,
-    datasets:[{label:"Total colis",data:lignes.map(l=>data[l].reduce((a,b)=>a+Number(b.qte||0),0)),backgroundColor:"rgba(11,115,200,0.7)"}]
-  }});
-      }
+/* ===== Enregistrement / actions ===== */
+function enregistrer(ligne){
+  const q1 = +document.getElementById("q1").value || 0;
+  const q2 = +document.getElementById("q2").value || 0;
+  const arret = +document.getElementById("arret").value || 0;
+  const cause = document.getElementById("cause").value.trim();
+  const comment = document.getElementById("comment").value.trim();
+  const reste = +document.getElementById("reste").value || 0;
+
+  const now = new Date();
+  // heure début = heure fin de la dernière saisie si dispo
+  const last = DATA[ligne][DATA[ligne].length-1];
+  const hDeb = last ? last.hFin : now.toTimeString().slice(0,5);
+  const hFin = now.toTimeString().slice(0,5);
+
+  const qte = q1 + q2;
+
+  DATA[ligne].push({
+    ts: now.toISOString(),
+    date: now.toLocaleDateString('fr-FR'),
+    hDeb, hFin,
+    qte, arretMin: arret, cause, comment, reste
+  });
+
+  // Vider les champs de saisie sauf "q1" (comportement demandé : q1 reste tant qu'on n'enregistre pas)
+  document.getElementById("q1").value = "";
+  document.getElementById("q2").value = "";
+  document.getElementById("arret").value = "";
+  document.getElementById("cause").value = "";
+  document.getElementById("comment").value = "";
+  // "reste" est juste indicatif, on le laisse tel quel
+
+  save();
+
+  // MAJ total + cadence + graph
+  document.getElementById("totalSpan").textContent = sum(DATA[ligne].map(r => r.qte||0));
+  document.getElementById("cadSpan").textContent = fmt(cadenceMoyenne(DATA[ligne]));
+  drawLineChart(ligne);
+}
+
+function annulerDernier(ligne){
+  if(!DATA[ligne].length) return;
+  DATA[ligne].pop();
+  save();
+  document.getElementById("totalSpan").textContent = sum(DATA[ligne].map(r => r.qte||0));
+  document.getElementById("cadSpan").textContent = fmt(cadenceMoyenne(DATA[ligne]));
+  drawLineChart(ligne);
+}
+
+function remiseZeroAffichage(ligne){
+  // Ne touche pas à l'historique : on simule un "reset visuel"
+  document.getElementById("totalSpan").textContent = "0";
+  document.getElementById("cadSpan").textContent = "0";
+}
+
+/* Historique simple (lecture) */
+function ouvrirHistorique(ligne){
+  const rows = DATA[ligne].slice().reverse().map(r =>
+    `${r.date} ${r.hDeb}-${r.hFin} | q=${r.qte} | arrêt=${r.arretMin}min ${r.cause?("("+r.cause+")"):""} ${r.comment?("— "+r.comment):""}`
+  );
+  alert(rows.join("\n") || "Aucune saisie.");
+}
+
+/* Export Excel (CSV) */
+function exportExcel(ligne){
+  const now = new Date();
+  const week = getWeekNumber(now);
+  const file = `Synthese_${ligne}_S${String(week).padStart(2,"0")}_${now.toLocaleDateString('fr-FR').replaceAll('/','-')}_${now.toTimeString().slice(0,5).replace(':','h')}.csv`;
+
+  const header = ["Date","Heure début","Heure fin","Quantité","Arrêt(min)","Cause","Commentaire","Reste"];
+  const body = DATA[ligne].map(r => [
+    r.date, r.hDeb, r.hFin, r.qte, r.arretMin, safe(r.cause), safe(r.comment), r.reste ?? ""
+  ]);
+
+  const csv = [header].concat(body).map(row => row.map(v => `"${String(v??"").replaceAll('"','""')}"`).join(";")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = file;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function safe(s){return (s||"").replaceAll("\n"," ").trim()}
+
+/* ===== Helpers ===== */
+function sum(a){return a.reduce((x,y)=>x+(+y||0),0)}
+function fmt(n){return (isFinite(n)?Math.round(n*10)/10:0).toString()}
+
+/* Cadence moyenne (colis/h) sur tout l’historique */
+function cadenceMoyenne(rows){
+  if(!rows.length) return 0;
+  // somme quantités / durée totale (heures) en utilisant les heures début/fin
+  let totalQ=0, totalMin=0;
+  rows.forEach(r=>{
+    totalQ += (r.qte||0);
+    const dur = dureeMin(r.hDeb, r.hFin);
+    totalMin += Math.max(1, dur); // évite division par 0
+  });
+  return totalQ / (totalMin/60);
+}
+
+/* Durée en minutes en gérant le passage minuit (23:10 -> 00:10) */
+function dureeMin(hDeb, hFin){
+  if(!hDeb || !hFin) return 0;
+  const [dh,dm] = hDeb.split(":").map(Number);
+  const [fh,fm] = hFin.split(":").map(Number);
+  let d = (fh*60+fm) - (dh*60+dm);
+  if (d < 0) d += 24*60; // passe minuit
+  return d;
+}
+
+/* ===== Calculatrice ===== */
+const fab = document.getElementById("fab-calc");
+const backdrop = document.getElementById("calc-backdrop");
+const modal = document.getElementById("calc-modal");
+const closeBtn = document.getElementById("calc-close");
+const display = document.getElementById("calc-display");
+const grid = document.querySelector(".calc-grid");
+const btnEq = document.getElementById("calc-eq");
+const btnClr = document.getElementById("calc-clear");
+const btnCopy = document.getElementById("calc-copy");
+
+function openCalc(){backdrop.classList.remove("hidden");modal.classList.remove("hidden");display.focus();}
+function closeCalc(){backdrop.classList.add("hidden");modal.classList.add("hidden");}
+fab.addEventListener("click", openCalc);
+closeBtn.addEventListener("click", closeCalc);
+backdrop.addEventListener("click", closeCalc);
+
+grid.addEventListener("click", e=>{
+  const k = e.target.getAttribute?.("data-k");
+  if(!k) return;
+  display.value += k;
+});
+btnClr.addEventListener("click", ()=> display.value = "");
+btnEq.addEventListener("click", ()=>{
+  try{
+    // évalue en sécurité basique
+    const expr = display.value.replace(/[^0-9+\-*/().,]/g,"").replaceAll(",",".");
+    const res = Function(`"use strict";return (${expr})`)();
+    display.value = Number.isFinite(res)? String(res) : "Erreur";
+  }catch{ display.value = "Erreur"; }
+});
+btnCopy.addEventListener("click", async ()=>{
+  try{ await navigator.clipboard.writeText(display.value); btnCopy.textContent="Copié"; setTimeout(()=>btnCopy.textContent="Copier",900); }catch{}
+});
