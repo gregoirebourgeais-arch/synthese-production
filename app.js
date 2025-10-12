@@ -122,6 +122,7 @@ function openLine(line) {
         cause: document.getElementById("cause").value,
         commentaire: document.getElementById("commentaire").value
       };
+      tmp.cadenceManuelle = document.getElementById("cadenceManuelle").value;
       localStorage.setItem(`unsaved_${line}`, JSON.stringify(tmp));
       const resteLive = +tmp.reste || 0;
       const est = cadence > 0 && resteLive > 0
