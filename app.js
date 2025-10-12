@@ -8,7 +8,7 @@ let data = JSON.parse(localStorage.getItem("productionData")) || {};
 let graph = null;
 
 // -------------------------------
-// 🕐 Horloge en haut
+// 🕐 Horloge
 // -------------------------------
 function updateClock() {
   const now = new Date();
@@ -59,7 +59,8 @@ function openLine(line) {
   const html = `
   <div class="page">
     <h2>${line}</h2>
-    <div id="horlogeLigne">${new Date().toLocaleString()}</div>
+    <label>Heure début :</label><input id="debut" type="time" value="${getHeureDebut(line)}">
+    <label>Heure fin :</label><input id="fin" type="time" value="${getHeureActuelle()}">
     <label>Quantité 1 :</label><input id="q1" type="number" placeholder="Entrer quantité..." />
     <label>Quantité 2 :</label><input id="q2" type="number" placeholder="Ajouter quantité..." />
     <label>Temps d'arrêt (min):</label><input id="arret" type="number" />
@@ -82,6 +83,15 @@ function openLine(line) {
   </div>`;
   c.innerHTML = html;
   renderGraph(line);
+}
+
+function getHeureDebut(line) {
+  if (!startTimes[line]) startTimes[line] = new Date().toISOString();
+  return new Date(startTimes[line]).toLocaleTimeString("fr-FR", { hour12: false, hour: "2-digit", minute: "2-digit" });
+}
+function getHeureActuelle() {
+  const now = new Date();
+  return now.toLocaleTimeString("fr-FR", { hour12: false, hour: "2-digit", minute: "2-digit" });
 }
 
 // -------------------------------
@@ -117,17 +127,12 @@ function enregistrer() {
   const arret = Number(document.getElementById("arret").value) || 0;
   const cause = document.getElementById("cause").value;
   const commentaire = document.getElementById("commentaire").value;
-
-  if (!startTimes[currentLine]) startTimes[currentLine] = new Date().toISOString();
+  const debut = document.getElementById("debut").value;
+  const fin = document.getElementById("fin").value;
 
   const entry = {
-    quantite,
-    arret,
-    cause,
-    commentaire,
-    heure: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-    debut: startTimes[currentLine],
-    fin: new Date().toISOString()
+    quantite, arret, cause, commentaire, debut, fin,
+    heure: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
   };
 
   if (!data[currentLine]) data[currentLine] = [];
@@ -157,9 +162,9 @@ function afficherHistorique() {
   let html = `<h3>Historique — ${currentLine}</h3>`;
   if (!d.length) html += "<p>Aucune donnée enregistrée.</p>";
   else {
-    html += "<table><tr><th>Heure</th><th>Quantité</th><th>Arrêt</th><th>Cause</th><th>Commentaire</th></tr>";
+    html += "<table><tr><th>Heure</th><th>Quantité</th><th>Arrêt</th><th>Cause</th><th>Commentaire</th><th>Début</th><th>Fin</th></tr>";
     d.forEach(r => {
-      html += `<tr><td>${r.heure}</td><td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause || "-"}</td><td>${r.commentaire || "-"}</td></tr>`;
+      html += `<tr><td>${r.heure}</td><td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause || "-"}</td><td>${r.commentaire || "-"}</td><td>${r.debut || "-"}</td><td>${r.fin || "-"}</td></tr>`;
     });
     html += "</table>";
   }
@@ -167,15 +172,10 @@ function afficherHistorique() {
 }
 
 // -------------------------------
-// ♻️ Remise affichage (affichage seul)
+// ♻️ Remise affichage
 // -------------------------------
 function remiseAffichage() {
-  document.getElementById("q1").value = "";
-  document.getElementById("q2").value = "";
-  document.getElementById("arret").value = "";
-  document.getElementById("cause").value = "";
-  document.getElementById("commentaire").value = "";
-  document.getElementById("reste").value = "";
+  document.querySelectorAll("input").forEach(el => el.value = "");
 }
 
 // -------------------------------
@@ -188,15 +188,10 @@ function calcPress(v) {
   document.getElementById("calcDisplay").value += v;
 }
 function calcEqual() {
-  try {
-    document.getElementById("calcDisplay").value = eval(document.getElementById("calcDisplay").value);
-  } catch {
-    document.getElementById("calcDisplay").value = "Erreur";
-  }
+  try { document.getElementById("calcDisplay").value = eval(document.getElementById("calcDisplay").value); }
+  catch { document.getElementById("calcDisplay").value = "Erreur"; }
 }
-function calcClear() {
-  document.getElementById("calcDisplay").value = "";
-}
+function calcClear() { document.getElementById("calcDisplay").value = ""; }
 document.getElementById("fabCalc").onclick = toggleCalc;
 
 // -------------------------------
@@ -217,7 +212,10 @@ function showAtelier() {
       <h2>Atelier</h2>
       <table><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>${rows}</table>
       <canvas id="atelierChart"></canvas>
-      <button onclick="renderMenu()">⬅️ Retour menu</button>
+      <div class="boutons">
+        <button onclick="exportAtelier()">📊 Export Global</button>
+        <button onclick="renderMenu()">⬅️ Retour menu</button>
+      </div>
     </div>`;
   renderAtelierGraph();
 }
@@ -229,16 +227,13 @@ function renderAtelierGraph() {
   if (graph) graph.destroy();
   graph = new Chart(ctx, {
     type: "bar",
-    data: {
-      labels,
-      datasets: [{ label: "Total colis", data: totals, backgroundColor: "rgba(54,162,235,0.7)" }]
-    },
+    data: { labels, datasets: [{ label: "Total colis", data: totals, backgroundColor: "rgba(54,162,235,0.7)" }] },
     options: { indexAxis: "y", responsive: true }
   });
 }
 
 // -------------------------------
-// 📦 Export Excel (CSV simple)
+// 📦 Export
 // -------------------------------
 function exportExcel(line) {
   const d = data[line] || [];
@@ -247,7 +242,6 @@ function exportExcel(line) {
     "Heure,Quantité,Arrêt (min),Cause,Commentaire,Début,Fin",
     ...d.map(r => `${r.heure},${r.quantite},${r.arret},"${r.cause || ""}","${r.commentaire || ""}",${r.debut},${r.fin}`)
   ].join("\n");
-
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -258,3 +252,41 @@ function exportExcel(line) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+function exportAtelier() {
+  const rows = lignes.map(line => {
+    const d = data[line] || [];
+    const total = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
+    const arrets = d.reduce((s, x) => s + Number(x.arret || 0), 0);
+    const cadence = d.length ? (total / (d.length || 1)).toFixed(1) : 0;
+    return `${line},${total},${arrets},${cadence}`;
+  });
+  const csv = ["Ligne,Total,Arrêts,Cadence", ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// -------------------------------
+// 💡 PWA : prompt d’installation forcé
+// -------------------------------
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.createElement('button');
+  btn.textContent = "📲 Installer Synthèse Production";
+  btn.className = "install-btn";
+  btn.onclick = async () => {
+    btn.remove();
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") console.log("PWA installée ✅");
+    deferredPrompt = null;
+  };
+  document.body.appendChild(btn);
+});
