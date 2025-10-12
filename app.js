@@ -1,33 +1,38 @@
-// === 📦 Synthèse Production Lactalis V15.3 ===
+// === 📦 Synthèse Production Lactalis V15.4 ===
+
 // Données locales
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
 const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
 let currentLine = null;
 
-// --- 🕒 Utilitaires ---
-function getDateNow() {
+// === 🕒 Gestion horloge / date ===
+function updateClock() {
   const d = new Date();
   const jours = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
-  return `${jours[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+  const mois = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const semaine = getWeekNumber();
+  const clock = document.getElementById("topClock");
+  if (clock) {
+    clock.innerHTML = `${jours[d.getDay()]} ${d.getDate()} ${mois[d.getMonth()]} ${d.getFullYear()} — Semaine ${semaine} — ${d.toTimeString().slice(0,5)}`;
+  }
 }
-function getTimeNow() {
-  const d = new Date();
-  return d.toTimeString().slice(0,5);
-}
+setInterval(updateClock, 1000);
+updateClock();
+
 function getWeekNumber() {
   const d = new Date();
-  d.setHours(0,0,0,0);
+  d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
   const week1 = new Date(d.getFullYear(), 0, 4);
   return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
 }
 
-// --- 💾 Sauvegarde globale ---
+// === 💾 Sauvegarde globale ===
 function saveData() {
   localStorage.setItem("syntheseData", JSON.stringify(data));
 }
 
-// --- 🏠 Menu principal ---
+// === 🏠 Menu principal ===
 function renderMenu() {
   pageTransition();
   const btns = lignes.map(l => `<button onclick="openLine('${l}')">${l}</button>`).join("");
@@ -35,12 +40,10 @@ function renderMenu() {
     <div class="page fade">
       <h2>Sélectionne une ligne</h2>
       <div class="menu">${btns}</div>
-      <footer>© Lactalis ${new Date().getFullYear()} — Application interne de suivi de production</footer>
-    </div>
-  `;
+    </div>`;
 }
 
-// --- 🔁 Transition visuelle ---
+// === ✨ Transition visuelle ===
 function pageTransition() {
   const content = document.getElementById("content");
   if (!content) return;
@@ -53,13 +56,13 @@ function pageTransition() {
   }, 200);
 }
 
-// --- 🔹 Retour menu ---
+// === 🔙 Retour menu ===
 function returnToMenu() {
   pageTransition();
   renderMenu();
 }
 
-// --- 📈 Ouvrir une ligne ---
+// === 📈 Ouvrir une ligne ===
 function openLine(line) {
   pageTransition();
   currentLine = line;
@@ -78,9 +81,9 @@ function openLine(line) {
       <button class="retour-menu" onclick="returnToMenu()">⬅ Retour menu</button>
       <label>Heure début :</label><input id="debut" type="time" value="${unsaved.debut || getTimeNow()}">
       <label>Heure fin :</label><input id="fin" type="time" value="${unsaved.fin || getTimeNow()}">
-      <label>Quantité initiale :</label><input id="q1" type="number" value="${unsaved.q1 || ""}" placeholder="Entrer quantité...">
-      <label>Quantité ajoutée :</label><input id="q2" type="number" value="${unsaved.q2 || ""}" placeholder="Ajouter quantité...">
-      <label>Quantité restante :</label><input id="reste" type="number" value="${unsaved.reste || ""}" placeholder="Quantité restante...">
+      <label>Quantité initiale :</label><input id="q1" type="number" value="${unsaved.q1 || ""}">
+      <label>Quantité ajoutée :</label><input id="q2" type="number" value="${unsaved.q2 || ""}">
+      <label>Quantité restante :</label><input id="reste" type="number" value="${unsaved.reste || ""}">
       <label>Temps d'arrêt (min):</label><input id="arret" type="number" value="${unsaved.arret || ""}">
       <label>Cause d'arrêt :</label><input id="cause" type="text" value="${unsaved.cause || ""}">
       <label>Commentaire :</label><input id="commentaire" type="text" value="${unsaved.commentaire || ""}">
@@ -97,11 +100,11 @@ function openLine(line) {
         <button onclick="remiseAffichage()">♻ Remise affichage</button>
       </div>
       <canvas id="chartLine"></canvas>
-    </div>
-  `;
+    </div>`;
   document.getElementById("content").innerHTML = html;
   renderGraph(line);
 
+  // Sauvegarde automatique des champs
   document.querySelectorAll("input").forEach(input => {
     input.addEventListener("input", () => {
       const tmp = {
@@ -115,7 +118,6 @@ function openLine(line) {
         commentaire: document.getElementById("commentaire").value
       };
       localStorage.setItem(`unsaved_${line}`, JSON.stringify(tmp));
-
       const resteLive = +tmp.reste || 0;
       const est = cadence > 0 && resteLive > 0
         ? `${(resteLive / cadence).toFixed(2)} h restantes (~${Math.round((resteLive / cadence) * 60)} min)`
@@ -125,7 +127,13 @@ function openLine(line) {
   });
 }
 
-// --- 💾 Enregistrer ---
+// === 🕒 Heure actuelle ===
+function getTimeNow() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
+}
+
+// === 💾 Enregistrer ===
 function enregistrer() {
   const line = currentLine;
   const q1 = +document.getElementById("q1").value || 0;
@@ -138,7 +146,7 @@ function enregistrer() {
     arret: +document.getElementById("arret").value || 0,
     cause: document.getElementById("cause").value,
     commentaire: document.getElementById("commentaire").value,
-    date: getDateNow(),
+    date: new Date().toLocaleDateString(),
     heure: getTimeNow(),
     semaine: getWeekNumber()
   };
@@ -149,7 +157,7 @@ function enregistrer() {
   openLine(line);
 }
 
-// --- ↩ Annuler dernier ---
+// === ↩ Annuler dernier ===
 function annulerDernier() {
   const line = currentLine;
   if (!data[line] || data[line].length === 0) return;
@@ -158,13 +166,13 @@ function annulerDernier() {
   openLine(line);
 }
 
-// --- ♻ Remise affichage ---
+// === ♻ Remise affichage ===
 function remiseAffichage() {
   localStorage.removeItem(`unsaved_${currentLine}`);
   openLine(currentLine);
 }
 
-// --- 📜 Historique simple ---
+// === 📜 Historique ===
 function afficherHistorique() {
   const line = currentLine;
   const d = data[line] || [];
@@ -177,7 +185,7 @@ function afficherHistorique() {
   alert(txt);
 }
 
-// --- 📈 Graphique individuel ---
+// === 📈 Graphique individuel ===
 function renderGraph(line) {
   const ctx = document.getElementById("chartLine");
   if (!ctx) return;
@@ -195,7 +203,7 @@ function renderGraph(line) {
   });
 }
 
-// --- 🏭 Atelier global ---
+// === 🏭 Atelier global ===
 function showAtelier() {
   pageTransition();
   const rows = lignes.map(l => {
@@ -214,7 +222,6 @@ function showAtelier() {
       </table>
       <canvas id="atelierChart"></canvas>
       <div class="boutons">
-        <button onclick="exportAtelier()">📊 Export global</button>
         <button onclick="returnToMenu()">⬅ Retour menu</button>
       </div>
     </div>`;
@@ -222,7 +229,7 @@ function showAtelier() {
   renderAtelierGraph();
 }
 
-// --- 📊 Graphique global atelier ---
+// === 📊 Graphique global atelier ===
 function renderAtelierGraph() {
   const ctx = document.getElementById("atelierChart");
   const labels = lignes;
@@ -237,5 +244,45 @@ function renderAtelierGraph() {
   });
 }
 
-// --- 🚀 Démarrage ---
+// === 🧮 Calculatrice flottante ===
+const fabCalc = document.getElementById("fabCalc");
+const calculator = document.getElementById("calculator");
+if (fabCalc && calculator) {
+  fabCalc.addEventListener("click", toggleCalculator);
+  buildCalculatorButtons();
+}
+
+function toggleCalculator() {
+  calculator.style.display = calculator.style.display === "block" ? "none" : "block";
+}
+
+function buildCalculatorButtons() {
+  const buttons = [
+    "7","8","9","/",
+    "4","5","6","*",
+    "1","2","3","-",
+    "0",".","=","+",
+    "C","X"
+  ];
+  const container = document.getElementById("calcButtons");
+  container.innerHTML = "";
+  buttons.forEach(b => {
+    const btn = document.createElement("button");
+    btn.textContent = b;
+    btn.addEventListener("click", () => handleCalcInput(b));
+    container.appendChild(btn);
+  });
+}
+
+function handleCalcInput(val) {
+  const display = document.getElementById("calcDisplay");
+  if (val === "C") display.value = "";
+  else if (val === "X") toggleCalculator();
+  else if (val === "=") {
+    try { display.value = eval(display.value) } catch { display.value = "Err" }
+  } else display.value += val;
+}
+
+// === 🚀 Démarrage ===
 renderMenu();
+updateClock();
