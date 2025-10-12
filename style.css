@@ -1,52 +1,96 @@
-/* --- BOUTONS COULEURS --- */
-button[type="button"]:contains("Enregistrer") {
-  background: #009b4b;
-}
-button[type="button"]:contains("Annuler") {
-  background: #d9534f;
-}
-button[type="button"]:contains("Historique") {
-  background: #0074e8;
-}
-button[type="button"]:contains("Retour") {
-  background: #6c757d;
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f9ff;
+  color: #222;
+  margin: 0;
+  text-align: center;
 }
 
-/* Correction pour compatibilité navigateur */
-button.green { background: #009b4b; }
-button.red { background: #d9534f; }
-button.blue { background: #0074e8; }
-button.gray { background: #6c757d; }
-
-/* --- HEADER ET LOGO CENTRÉ --- */
 header {
-  background: linear-gradient(90deg, #004b9b, #0074e8);
+  background: linear-gradient(90deg, #007bff, #0098ff);
+  padding: 15px;
   color: white;
-  text-align: center;
-  padding: 15px 0;
-  font-size: 1.4em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-header img {
-  height: 60px;
-  margin-bottom: 5px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* --- PANNEAU FLOTTANT CENTRÉ --- */
-#panneau-info {
-  position: fixed;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.97);
-  color: #004b9b;
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 40px;
+}
+
+.titre h1 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.bleu {
+  color: #cfe9ff;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+button {
+  background: #007bff;
+  border: none;
+  color: white;
   border-radius: 12px;
-  padding: 8px 18px;
-  font-size: 0.9em;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  z-index: 1000;
-  backdrop-filter: blur(8px);
-  text-align: center;
+  padding: 8px 14px;
+  font-size: 15px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+button:hover {
+  background: #005ecb;
+  transform: scale(1.05);
+}
+
+#content {
+  margin-top: 10px;
+  padding: 20px;
+}
+
+footer {
+  font-size: 14px;
+  padding: 20px;
+  color: #444;
+  background: #eef4ff;
+  border-top: 1px solid #d0e2ff;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+#panneau-flottant {
+  position: sticky;
+  top: 0;
+  background: #0098ff;
+  color: white;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+}
+
+.card {
+  background: white;
+  margin: 12px auto;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
 }
