@@ -379,3 +379,21 @@ function handleCalcInput(val) {
 // === 🚀 Démarrage ===
 renderMenu();
 updateClock();
+
+// === 🔧 Remise à zéro cadence ===
+function remiseCadence() {
+  const c = document.getElementById("cadenceManuelle");
+  if (c) c.value = "";
+  const span = document.getElementById("cadence");
+  if (span) span.textContent = "0";
+  showToast("⏱ Cadence remise à zéro.");
+}
+
+// === ✏️ Appliquer cadence manuelle ===
+document.addEventListener("input", e => {
+  if (e.target && e.target.id === "cadenceManuelle") {
+    const val = e.target.value;
+    const span = document.getElementById("cadence");
+    if (val && span) span.textContent = val;
+  }
+});
