@@ -1,60 +1,25 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d6efd">
-
-<!-- Apple iOS support -->
-<link rel="apple-touch-icon" href="icons/icon-512.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Synthèse">
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production - Lactalis</title>
+  <link rel="stylesheet" href="style.css">
 
-  <!-- ===== Styles ===== -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- ===== Chart.js ===== -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- ===== Icône & PWA ===== -->
-  <link rel="icon" href="Lactalis2023Logo.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0d6efd" />
-
-  <!-- ===== Service Worker (PWA) ===== -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js")
-          .then(() => console.log("✅ Service Worker enregistré"))
-          .catch((err) => console.error("❌ Erreur SW :", err));
-      });
-    }
-  </script>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d6efd">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
 </head>
-  <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log('✅ Service Worker enregistré'))
-    .catch(err => console.log('❌ Erreur Service Worker:', err));
-}
-  </script>
-
 <body>
-  <header class="app-header">
-    <img src="Lactalis2023Logo.svg" class="brand" alt="Lactalis" />
-    <div class="titles">
-      <h1><span class="thin">Synthèse</span> <span class="strong">Production</span></h1>
-      <p id="metaTop"></p>
-    </div>
+  <header>
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
+    <h1><span class="titre-bleu">Synthèse</span> Production</h1>
+    <p id="dateInfo"></p>
   </header>
 
   <nav class="menu">
-    <button onclick="openPage('atelier')">Atelier</button>
+    <button onclick="openPage('Atelier')">Atelier</button>
     <button onclick="openPage('Râpé')">Râpé</button>
     <button onclick="openPage('T2')">T2</button>
     <button onclick="openPage('RT')">RT</button>
@@ -67,34 +32,17 @@ if ('serviceWorker' in navigator) {
     <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
   </nav>
 
-  <main id="content" class="content"></main>
+  <main id="content"></main>
 
-  <footer class="app-footer">
-    © Lactalis — Synthèse Production
-  </footer>
+  <footer>© Lactalis — Synthèse Production</footer>
 
-  <!-- Bouton flottant Calculatrice -->
-  <button id="fab-calc" class="fab" title="Calculatrice">🧮</button>
-
-  <!-- Fenêtre Calculatrice -->
-  <div id="calc-backdrop" class="modal-backdrop hidden"></div>
-  <div id="calc-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="calc-title">
-    <div class="modal-head">
-      <h3 id="calc-title">Calculatrice</h3>
-      <button class="icon-btn" id="calc-close" aria-label="Fermer">✕</button>
-    </div>
-    <input id="calc-display" class="calc-display" inputmode="decimal" />
-    <div class="calc-grid">
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="/">÷</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="*">×</button>
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-">−</button>
-      <button data-k="0">0</button><button data-k=".">.</button><button id="calc-clear">C</button><button data-k="+">+</button>
-      <button id="calc-eq" class="eq">=</button>
-      <button id="calc-copy" class="copy">Copier</button>
-    </div>
-    <p class="calc-tip">Astuce : collez le résultat dans un champ quantité.</p>
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 </html>
