@@ -1,91 +1,104 @@
 /* ===============================
-   STYLE V14 - UX+ Lactalis
+   V15 - Synthèse Production Pro
 =============================== */
+
+:root {
+  --blue: #007bff;
+  --blue-dark: #0056d6;
+  --bg-light: #f5f8ff;
+  --bg-dark: #1e1e1e;
+  --text-light: #fff;
+  --text-dark: #222;
+}
+
 body {
   font-family: "Segoe UI", Arial, sans-serif;
   margin: 0;
-  background: #f5f8ff;
-  color: #222;
+  color: var(--text-dark);
+  background: var(--bg-light);
+  transition: background 0.3s, color 0.3s;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Mode sombre automatique */
+@media (prefers-color-scheme: dark) {
+  body { background: var(--bg-dark); color: var(--text-light); }
+  .page, section { background: #2b2b2b; color: #eee; }
 }
 
 /* Header */
 .site-header {
-  background: linear-gradient(180deg, #007bff, #4ba3ff);
+  background: linear-gradient(180deg, var(--blue), #4ba3ff);
   color: white;
   text-align: center;
   padding: 1rem 0.5rem;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  position: relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 .logo {
-  max-width: 180px;
+  max-width: 160px;
   display: block;
-  margin: 0 auto 0.5rem;
+  margin: 0 auto 0.3rem;
   animation: fadeInLogo 1s ease-in-out;
 }
 @keyframes fadeInLogo {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.top-clock {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
 
-/* Menu principal */
+/* Menu */
 .menu {
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: fadeIn 0.4s ease;
+  padding: 1rem;
+  animation: fadeSlide 0.4s ease;
 }
 .menu button {
-  background: #007bff;
+  background: var(--blue);
   color: white;
   border: none;
   border-radius: 15px;
-  padding: 1rem 2rem;
-  margin: 0.6rem;
-  font-size: 1.2rem;
+  padding: 1rem;
+  margin: 0.5rem;
   width: 85%;
+  font-size: 1.2rem;
   max-width: 400px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
   transition: all 0.3s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 .menu button:hover {
-  background: #0056d6;
-  transform: scale(1.04);
+  background: var(--blue-dark);
+  transform: scale(1.05);
 }
 
-/* Page */
+/* Pages */
 .page {
   background: white;
   border-radius: 20px;
-  margin: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  animation: fadeIn 0.4s ease;
+  margin: 1rem;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  animation: slidePage 0.35s ease;
 }
 .page h2 {
-  color: #007bff;
-  font-size: 1.6rem;
+  color: var(--blue);
   margin-bottom: 0.8rem;
 }
 
 /* Inputs */
-label {
-  display: block;
-  margin-top: 10px;
-  font-weight: 600;
-}
+label { font-weight: 600; display: block; margin-top: 10px; }
 input, textarea {
   width: 100%;
-  padding: 0.8rem;
-  margin-top: 0.3rem;
-  border: 1px solid #ccc;
+  padding: 0.7rem;
   border-radius: 10px;
-  font-size: 1rem;
+  border: 1px solid #ccc;
+  margin-top: 5px;
   box-sizing: border-box;
 }
 
@@ -94,7 +107,8 @@ input, textarea {
   background: #eaf5ff;
   border-radius: 10px;
   padding: 10px;
-  margin: 15px 0;
+  margin: 1rem 0;
+  text-align: center;
   font-weight: 500;
 }
 .boutons {
@@ -105,49 +119,41 @@ input, textarea {
 }
 .boutons button {
   flex: 1 1 45%;
-  min-width: 160px;
-  font-size: 1.05rem;
+  min-width: 150px;
   padding: 0.8rem;
-  border-radius: 12px;
   border: none;
-  background: #007bff;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  background: var(--blue);
   color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: transform 0.2s, background 0.3s;
+  transition: 0.3s;
 }
-.boutons button:hover {
-  background: #0056d6;
-  transform: scale(1.05);
-}
+.boutons button:hover { background: var(--blue-dark); transform: scale(1.05); }
 
 /* Tableaux */
 table {
   width: 100%;
-  margin: 1rem 0;
   border-collapse: collapse;
+  margin-top: 1rem;
 }
-th {
-  background: #007bff;
-  color: white;
-  padding: 8px;
-}
-td, th {
+th, td {
   border: 1px solid #ccc;
   padding: 6px;
   text-align: center;
 }
+th { background: var(--blue); color: white; }
 
 /* Calculatrice */
 #calculator {
   position: fixed;
-  bottom: 90px;
+  bottom: 80px;
   right: 20px;
   background: white;
   border-radius: 15px;
   padding: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  width: 240px;
-  animation: fadeIn 0.4s ease;
+  width: 230px;
+  animation: fadeSlide 0.3s ease;
 }
 #calculator.hidden { display: none; }
 .calc-display {
@@ -157,30 +163,25 @@ td, th {
   font-size: 1.2rem;
   border-radius: 10px;
   border: 1px solid #ccc;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .calc-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 .calc-buttons button {
-  background: #007bff;
-  border: none;
+  background: var(--blue);
   color: white;
-  font-weight: 600;
-  padding: 10px;
   border-radius: 10px;
+  border: none;
+  padding: 8px;
   font-size: 1.1rem;
 }
-.calc-buttons button:hover { background: #0056d6; }
 .calc-buttons .clear { background: #ff6b6b; }
-.calc-buttons .close {
-  background: #6c757d;
-  grid-column: span 4;
-}
+.calc-buttons .close { background: #6c757d; grid-column: span 4; }
 
-/* Boutons flottants */
+/* Flottants */
 .fab-row {
   position: fixed;
   bottom: 15px;
@@ -192,37 +193,23 @@ td, th {
 .fab {
   width: 60px;
   height: 60px;
+  background: var(--blue);
+  color: white;
   border-radius: 50%;
   border: none;
-  background: #007bff;
-  color: white;
   font-size: 1.8rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  transition: transform 0.2s, background 0.3s;
+  transition: transform 0.2s;
 }
-.fab:hover { background: #0056d6; transform: scale(1.1); }
+.fab:hover { transform: scale(1.1); background: var(--blue-dark); }
 
-/* Effet de fondu */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
-@media (max-width:600px) {
-  .menu button, .boutons button {
-    flex: 1 1 100%;
-    font-size: 1rem;
-  }
-  .page { margin: 10px; padding: 15px; }
-  .logo { max-width: 140px; }
-}
+/* Toast */
 .toast {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #007bff;
+  background: var(--blue);
   color: white;
   padding: 10px 20px;
   border-radius: 25px;
@@ -231,7 +218,24 @@ td, th {
   z-index: 2000;
   font-weight: 500;
 }
-.toast.show {
-  opacity: 1;
-  bottom: 40px;
+.toast.show { opacity: 1; bottom: 40px; }
+
+/* Animations */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slidePage {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width:600px) {
+  .menu button, .boutons button {
+    flex: 1 1 100%;
+    font-size: 1rem;
+  }
+  .page { margin: 0.5rem; padding: 1rem; }
+  .logo { max-width: 130px; }
 }
