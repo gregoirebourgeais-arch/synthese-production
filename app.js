@@ -290,3 +290,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   };
   document.body.appendChild(btn);
 });
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+
+  // 🔄 Forcer l'update du SW si nouvelle version disponible
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
+  });
+}
