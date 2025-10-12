@@ -206,42 +206,86 @@ function renderGraph(line) {
 // === 🏭 Atelier global ===
 function showAtelier() {
   pageTransition();
+
   const rows = lignes.map(l => {
     const d = data[l] || [];
     const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
     const arr = d.reduce((s, x) => s + Number(x.arret || 0), 0);
     const cad = d.length ? (tot / d.length).toFixed(1) : 0;
-    return `<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
+    return `<tr>
+      <td>${l}</td>
+      <td>${tot}</td>
+      <td>${arr}</td>
+      <td>${cad}</td>
+    </tr>`;
   }).join("");
+
   const html = `
     <div class="page fade">
-      <h2>Atelier</h2>
+      <h2>Atelier global</h2>
       <table>
-        <tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>
+        <tr>
+          <th>Ligne</th><th>Total colis</th><th>Temps d'arrêt (min)</th><th>Cadence moy. (colis/h)</th>
+        </tr>
         ${rows}
       </table>
+
+      <div class="stats">
+        <p><b>Résumé global :</b> ${lignes.length} lignes analysées</p>
+      </div>
+
       <canvas id="atelierChart"></canvas>
+
       <div class="boutons">
-        <button onclick="returnToMenu()">⬅ Retour menu</button>
+        <button onclick="exportAtelier()">📊 Export global</button>
+        <button class="retour-menu" onclick="returnToMenu()">⬅ Retour menu</button>
       </div>
     </div>`;
   document.getElementById("content").innerHTML = html;
   renderAtelierGraph();
-}
+        }
 
-// === 📊 Graphique global atelier ===
+// === 📊 Graphique global Atelier ===
 function renderAtelierGraph() {
   const ctx = document.getElementById("atelierChart");
+  if (!ctx) return;
   const labels = lignes;
-  const totals = lignes.map(l => (data[l]||[]).reduce((s,x)=>s+x.quantite,0));
-  new Chart(ctx,{
-    type:"bar",
-    data:{
+  const totals = lignes.map(l => (data[l] || []).reduce((s, x) => s + Number(x.quantite || 0), 0));
+  const stops = lignes.map(l => (data[l] || []).reduce((s, x) => s + Number(x.arret || 0), 0));
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
       labels,
-      datasets:[{label:"Total colis",data:totals,backgroundColor:"rgba(0,122,255,0.6)"}]
+      datasets: [
+        { label: "Total colis", data: totals, backgroundColor: "rgba(0,122,255,0.6)" },
+        { label: "Arrêts (min)", data: stops, backgroundColor: "rgba(255,99,132,0.6)" }
+      ]
     },
-    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+    options: {
+      responsive: true,
+      indexAxis: "y",
+      plugins: { legend: { position: "bottom" } },
+      scales: { x: { beginAtZero: true } }
+    }
   });
+}
+
+// === 📤 Export global atelier (CSV) ===
+function exportAtelier() {
+  const lignesCSV = ["Ligne,Total,Arrêts,Cadence"];
+  lignes.forEach(l => {
+    const d = data[l] || [];
+    const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
+    const arr = d.reduce((s, x) => s + Number(x.arret || 0), 0);
+    const cad = d.length ? (tot / d.length).toFixed(1) : 0;
+    lignesCSV.push(`${l},${tot},${arr},${cad}`);
+  });
+  const blob = new Blob([lignesCSV.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
 }
 
 // === 🧮 Calculatrice flottante ===
