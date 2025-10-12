@@ -196,8 +196,10 @@ function exportExcel(line) {
 }
 
 // --- 🏭 Atelier ---
+// --- 🏭 Atelier ---
 function showAtelier() {
   pageTransition();
+
   const rows = lignes.map(l => {
     const d = data[l] || [];
     const tot = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
@@ -205,18 +207,32 @@ function showAtelier() {
     const cad = d.length ? (tot / d.length).toFixed(1) : 0;
     return `<tr><td>${l}</td><td>${tot}</td><td>${arr}</td><td>${cad}</td></tr>`;
   }).join("");
+
   const html = `
     <div class="page fade">
       <h2>Atelier</h2>
-      <table><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>${rows}</table>
+      <table>
+        <tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>
+        ${rows}
+      </table>
       <canvas id="atelierChart"></canvas>
       <div class="boutons">
         <button onclick="exportAtelier()">📊 Export global</button>
-        <button onclick="renderMenu()">⬅ Retour menu</button>
+        <button onclick="returnToMenu()">⬅ Retour menu</button>
       </div>
     </div>`;
+  
   document.getElementById("content").innerHTML = html;
   renderAtelierGraph();
+}
+
+// ✅ Fonction dédiée pour le retour menu
+function returnToMenu() {
+  pageTransition();
+  document.getElementById("content").innerHTML = `
+    <div id="menuButtons" class="menu"></div>
+  `;
+  renderMenu();
 }
 
 // --- 📊 Graphique Atelier ---
