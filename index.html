@@ -1,17 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Synthèse Production - Lactalis</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="icon" href="Lactalis2023Logo.svg" type="image/svg+xml" />
 </head>
 <body>
-  <header>
-    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
-    <h1>Synthèse Production</h1>
-    <div id="dateInfo"></div>
+  <header class="app-header">
+    <img src="Lactalis2023Logo.svg" class="brand" alt="Lactalis" />
+    <div class="titles">
+      <h1><span class="thin">Synthèse</span> <span class="strong">Production</span></h1>
+      <p id="metaTop"></p>
+    </div>
   </header>
 
   <nav class="menu">
@@ -28,9 +31,31 @@
     <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
   </nav>
 
-  <main id="content"></main>
+  <main id="content" class="content"></main>
 
-  <footer>© Lactalis — Synthèse Production</footer>
+  <footer class="app-footer">© Lactalis — Synthèse Production</footer>
+
+  <!-- FAB Calculatrice -->
+  <button id="fab-calc" class="fab" title="Calculatrice">🧮</button>
+
+  <!-- Modal Calculatrice -->
+  <div id="calc-backdrop" class="modal-backdrop hidden"></div>
+  <div id="calc-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="calc-title">
+    <div class="modal-head">
+      <h3 id="calc-title">Calculatrice</h3>
+      <button class="icon-btn" id="calc-close" aria-label="Fermer">✕</button>
+    </div>
+    <input id="calc-display" class="calc-display" inputmode="decimal" />
+    <div class="calc-grid">
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="/">÷</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="*">×</button>
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-">−</button>
+      <button data-k="0">0</button><button data-k=".">.</button><button id="calc-clear">C</button><button data-k="+">+</button>
+      <button id="calc-eq" class="eq">=</button>
+      <button id="calc-copy" class="copy">Copier</button>
+    </div>
+    <p class="calc-tip">Astuce : collez le résultat dans un champ quantité.</p>
+  </div>
 
   <script src="app.js"></script>
 </body>
