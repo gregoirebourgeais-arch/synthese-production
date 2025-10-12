@@ -239,3 +239,19 @@ th { background: var(--blue); color: white; }
   .page { margin: 0.5rem; padding: 1rem; }
   .logo { max-width: 130px; }
 }
+.retour-menu {
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s, background 0.3s;
+}
+.retour-menu:hover {
+  background: var(--blue-dark);
+  transform: scale(1.05);
+}
