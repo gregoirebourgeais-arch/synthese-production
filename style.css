@@ -1,307 +1,114 @@
-/* ========== BASE ========== */
-* {
-  box-sizing: border-box;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+:root{
+  --primary:#0c75ff;
+  --accent:#e9f2ff;
+  --card-bg:#ffffff;
+  --muted:#8b95a3;
+  --radius:14px;
+  --shadow: 0 8px 30px rgba(12,40,80,0.08);
+  font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
-body {
-  background: #f6f9ff;
-  color: #222;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  overflow-x: hidden;
+/* Reset / base */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(180deg, #f7fbff 0%, #f2f6fb 60%);
+  color:#102231;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+header.site-header{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:1rem;
+  background:linear-gradient(180deg,var(--primary),#3aa0ff);
+  color:white;
+  box-shadow:0 8px 24px rgba(0,0,0,0.08);
+}
+.logo{ width:120px; max-width:28%; object-fit:contain; margin-left:6px }
+.titleblock{flex:1; text-align:left;}
+.titleblock h1{ margin:0; font-size:2rem; line-height:1; font-weight:700; color:white; }
+.titre-bleu{ color:#e8f6ff; font-weight:700; }
+.top-clock{ font-size:0.95rem; opacity:0.95; margin-top:8px }
+
+/* Menu buttons */
+.menu{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.7rem;
+  justify-content:center;
+  padding:0.9rem;
+  background:rgba(255,255,255,0.5);
+}
+.menu button{
+  background:var(--primary);
+  color:white;
+  border:none;
+  padding:0.8rem 1.2rem;
+  border-radius:12px;
+  box-shadow:0 10px 20px rgba(12,80,200,0.12);
+  font-weight:600;
+  cursor:pointer;
+}
+.menu button:hover{ transform:translateY(-2px) }
+
+/* Main content cards */
+main{ padding:1rem; max-width:920px; margin:0 auto; }
+.card{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  padding:1.2rem;
+  box-shadow:var(--shadow);
+  margin-bottom:1rem;
 }
 
-/* ========== HEADER ========== */
-.header {
-  background: linear-gradient(180deg, #007bff 0%, #1e90ff 100%);
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+/* Atelier card/table */
+.atelier-card{ text-align:center; }
+.atelier-card h2{ color:#0b62d6; margin:0 0 10px; font-size:1.6rem; }
+.atelier-table{ width:100%; border-collapse:collapse; margin:0 auto; max-width:720px; }
+.atelier-table th, .atelier-table td{ padding:0.6rem 0.8rem; text-align:left; }
+.atelier-table thead th{ font-weight:700; color:#fff; background:var(--primary); border-radius:8px; }
+.atelier-table tbody td{ color:#25323f; }
+
+/* Ligne page */
+.ligne-title{ font-size:1.8rem; margin:0 0 6px; color:#073a9a; }
+.meta-line{ color:var(--muted); margin-bottom:12px; }
+
+/* Inputs */
+.input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #e6eefc; margin-bottom:10px; font-size:1rem; }
+.small-input{ width:140px; display:inline-block; margin-right:10px; }
+
+/* Buttons area */
+.controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px }
+.btn{ background:var(--primary); color:white; padding:10px 14px; border-radius:10px; border:none; cursor:pointer; font-weight:700; box-shadow:0 8px 18px rgba(12,80,200,0.12) }
+.btn.secondary{ background:#eef6ff; color:var(--primary); box-shadow:none; border:1px solid #d9eaff }
+.btn.warn{ background:#f44336; }
+.btn.small{ padding:8px 10px; font-weight:600; border-radius:8px }
+
+/* Floating action button */
+.fab-row{ position:fixed; right:16px; bottom:22px; display:flex; flex-direction:column; gap:10px; z-index:999; }
+.fab{ width:56px; height:56px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:1.2rem; box-shadow:0 10px 24px rgba(12,80,200,0.18); cursor:pointer }
+
+/* Calculator */
+.calculator{
+  position:fixed; right:16px; bottom:100px; width:260px; background:white; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.12); z-index:1000; padding:10px;
 }
+.hidden{ display:none }
+.calc-display{ width:100%; padding:10px; font-size:1.2rem; border-radius:8px; margin-bottom:8px; text-align:right; border:1px solid #eef4ff }
+.calc-buttons{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px }
+.calc-buttons button{ padding:10px; font-size:1rem; border-radius:8px; border:none; background:#f2f7ff; cursor:pointer }
 
-.logo {
-  width: 160px;
-  margin-bottom: 0.5rem;
+/* Retour button */
+.retour{ display:inline-block; margin-bottom:1rem; background:transparent; color:var(--primary); border:2px solid var(--primary); padding:8px 12px; border-radius:10px; font-weight:700 }
+
+/* Small helpers */
+.legend{ display:flex; gap:8px; align-items:center; margin-top:10px; font-size:0.9rem; color:var(--muted) }
+.legend span{ display:inline-flex; align-items:center; gap:6px }
+
+/* Responsive tweaks */
+@media (max-width:600px){
+  .logo{ width:110px }
+  .titleblock h1{ font-size:1.6rem }
+  .atelier-card canvas{ height:180px !important }
 }
-
-.titre h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.titre-bleu {
-  color: #b3e0ff;
-}
-
-#dateHeure {
-  font-size: 0.95rem;
-  color: #eef7ff;
-}
-
-/* ========== CONTENU PRINCIPAL ========== */
-main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 1rem;
-}
-
-.card {
-  background: white;
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  max-width: 500px;
-  width: 100%;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.card h2 {
-  font-size: 1.5rem;
-  color: #004aad;
-  margin-bottom: 1rem;
-}
-
-.menu-lignes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.8rem;
-}
-
-.menu-lignes button {
-  background: #007bff;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.8rem;
-  padding: 0.8rem 1.2rem;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transition: 0.3s;
-  min-width: 120px;
-}
-
-.menu-lignes button:hover {
-  background: #005dc1;
-  transform: translateY(-2px);
-}
-
-/* ========== CHAMPS DE FORMULAIRE ========== */
-input[type="text"],
-input[type="number"],
-input[type="time"],
-textarea {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #d0d7e3;
-  border-radius: 0.6rem;
-  margin-bottom: 0.9rem;
-  font-size: 1rem;
-  background: #fdfdff;
-  transition: border 0.3s;
-}
-
-input:focus,
-textarea:focus {
-  border: 1px solid #007bff;
-  outline: none;
-  background: #fff;
-}
-
-/* ========== BOUTONS D'ACTION ========== */
-button {
-  cursor: pointer;
-}
-
-.action-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.7rem;
-}
-
-.action-buttons button {
-  border: none;
-  border-radius: 0.8rem;
-  font-weight: 600;
-  padding: 0.7rem 1.2rem;
-  transition: all 0.25s ease;
-  color: white;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-}
-
-button.enregistrer {
-  background: #007bff;
-}
-
-button.annuler {
-  background: #6c757d;
-}
-
-button.historique {
-  background: #0d6efd;
-}
-
-button.export {
-  background: #ff9f00;
-}
-
-button.reset {
-  background: #28a745;
-}
-
-button.enregistrer:hover { background: #005dc1; }
-button.annuler:hover { background: #555; }
-button.historique:hover { background: #0b5ed7; }
-button.export:hover { background: #e48b00; }
-button.reset:hover { background: #218838; }
-
-/* ========== GRAPHIQUES ========== */
-canvas {
-  max-width: 100%;
-  height: 220px !important;
-  margin-top: 1.2rem;
-}
-
-/* ========== CALCULATRICE FLOTTANTE ========== */
-.calc-panel {
-  position: fixed;
-  bottom: 90px;
-  right: 15px;
-  background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  z-index: 100;
-  width: 240px;
-  display: none;
-  animation: fadeIn 0.3s ease;
-}
-
-.calc-panel.visible {
-  display: block;
-}
-
-.calc-panel input {
-  width: 100%;
-  text-align: right;
-  font-size: 1.3rem;
-  margin-bottom: 0.8rem;
-  border: 1px solid #d0d7e3;
-  border-radius: 0.6rem;
-  padding: 0.4rem;
-}
-
-.calc-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
-}
-
-.calc-buttons button {
-  padding: 0.7rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  transition: 0.2s;
-}
-
-.calc-buttons button:hover {
-  background: #005dc1;
-}
-
-.calc-buttons .clear {
-  background: #dc3545;
-}
-
-.calc-buttons .close {
-  background: #6c757d;
-}
-
-/* Bouton icône calculatrice flottant */
-.calc-icon {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 28px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-  z-index: 110;
-  transition: 0.3s;
-}
-
-.calc-icon:hover {
-  background: #005dc1;
-  transform: scale(1.05);
-}
-
-/* ========== TABLEAU ATELIER ========== */
-.tableau-atelier {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.tableau-atelier th,
-.tableau-atelier td {
-  border: 1px solid #d0d7e3;
-  padding: 0.6rem;
-  text-align: center;
-}
-
-.tableau-atelier th {
-  background: #007bff;
-  color: white;
-}
-
-.tableau-atelier tr:nth-child(even) {
-  background: #f2f7ff;
-}
-
-/* ========== FOOTER ========== */
-footer {
-  text-align: center;
-  font-size: 0.9rem;
-  padding: 1rem;
-  color: #555;
-  background: #f1f4f9;
-  border-top: 1px solid #d0d7e3;
-}
-
-/* ========== ANIMATIONS ========== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 600px) {
-  .card {
-    margin: 0.5rem;
-    padding: 1rem;
-  }
-  .menu-lignes button {
-    width: 100%;
-  }
-  .calc-panel {
-    bottom: 80px;
-    right: 10px;
-    width: 90%;
-  }
-  }
