@@ -2,8 +2,8 @@
   "name": "Synthèse Production",
   "short_name": "Synthèse",
   "description": "Application Lactalis de suivi de production et passage de consignes.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/synthese-production/index.html",
+"scope": "/synthese-production/"
   "display": "standalone",
   "background_color": "#0c75ff",
   "theme_color": "#0c75ff",
