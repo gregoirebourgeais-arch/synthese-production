@@ -50,11 +50,15 @@ function openLine(line) {
   const d = data[line] || [];
   const total = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
   const cadence = d.length ? (total / d.length).toFixed(1) : 0;
+  const reste = unsaved.reste ? +unsaved.reste : 0;
+  const estimation = cadence > 0 && reste > 0
+    ? `${(reste / cadence).toFixed(2)} h restantes (~${Math.round((reste / cadence) * 60)} min)`
+    : "—";
 
   const html = `
   <div class="page fade">
     <h2>${line}</h2>
-    <button class="secondary" onclick="showAtelier()">🏭 Retour Atelier</button>
+    <button class="retour-menu" onclick="returnToMenu()">⬅ Retour menu</button>
     <label>Heure début :</label><input id="debut" type="time" value="${unsaved.debut || getTimeNow()}">
     <label>Heure fin :</label><input id="fin" type="time" value="${unsaved.fin || getTimeNow()}">
     <label>Quantité initiale :</label><input id="q1" type="number" value="${unsaved.q1 || ""}" placeholder="Entrer quantité...">
@@ -66,6 +70,7 @@ function openLine(line) {
     <div class="stats">
       <p><b>Total :</b> <span id="total">${total}</span> colis</p>
       <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
+      <p><b>Estimation fin :</b> <span id="estimation">${estimation}</span></p>
     </div>
     <div class="boutons">
       <button onclick="enregistrer()">💾 Enregistrer</button>
@@ -76,8 +81,34 @@ function openLine(line) {
     </div>
     <canvas id="chartLine"></canvas>
   </div>`;
+
   document.getElementById("content").innerHTML = html;
   renderGraph(line);
+
+  // Sauvegarde temporaire automatique
+  document.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", () => {
+      const tmp = {
+        debut: document.getElementById("debut").value,
+        fin: document.getElementById("fin").value,
+        q1: document.getElementById("q1").value,
+        q2: document.getElementById("q2").value,
+        reste: document.getElementById("reste").value,
+        arret: document.getElementById("arret").value,
+        cause: document.getElementById("cause").value,
+        commentaire: document.getElementById("commentaire").value
+      };
+      localStorage.setItem(`unsaved_${line}`, JSON.stringify(tmp));
+
+      // 🔹 Mettre à jour instantanément l’estimation
+      const resteLive = +tmp.reste || 0;
+      const est = cadence > 0 && resteLive > 0
+        ? `${(resteLive / cadence).toFixed(2)} h restantes (~${Math.round((resteLive / cadence) * 60)} min)`
+        : "—";
+      document.getElementById("estimation").textContent = est;
+    });
+  });
+}
 
   // Sauvegarde temporaire
   document.querySelectorAll("input").forEach(input => {
