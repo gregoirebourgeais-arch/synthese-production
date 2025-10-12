@@ -1,101 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synthèse Production - Lactalis</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icons/icon-192.png">
-  <meta name="theme-color" content="#007bff">
-</head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Synthèse Production</title>
 
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Optional PWA icon (if tu as icon-512.png à la racine/public) -->
+  <link rel="icon" type="image/png" href="icon-512.png">
+</head>
 <body>
-  <header class="header">
+  <header class="site-header">
     <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
-    <div class="titre">
-      <h1><span class="titre-bleu">Synthèse</span> Production</h1>
-      <p id="dateHeure"></p>
+    <div class="titleblock">
+      <h1><span class="titre-bleu">Synthèse</span><br/>Production</h1>
+      <div id="topClock" class="top-clock"></div>
     </div>
   </header>
 
-  <main id="content">
-    <div class="card">
-      <h2>Choisissez une ligne</h2>
-      <div class="menu-lignes">
-        <button onclick="openPage('Atelier')">Atelier</button>
-        <button onclick="openPage('Râpé')">Râpé</button>
-        <button onclick="openPage('T2')">T2</button>
-        <button onclick="openPage('RT')">RT</button>
-        <button onclick="openPage('OMORI')">OMORI</button>
-        <button onclick="openPage('T1')">T1</button>
-        <button onclick="openPage('Sticks')">Sticks</button>
-        <button onclick="openPage('Emballage')">Emballage</button>
-        <button onclick="openPage('Dés')">Dés</button>
-        <button onclick="openPage('Filets')">Filets</button>
-        <button onclick="openPage('Prédécoupé')">Prédécoupé</button>
-      </div>
-    </div>
+  <nav class="menu" id="menuButtons"></nav>
+
+  <main>
+    <section id="content"></section>
   </main>
 
-  <!-- Calculatrice flottante -->
-  <div id="calcPanel" class="calc-panel hidden">
-    <input type="text" id="calcInput" readonly placeholder="0">
-    <div class="calc-buttons">
-      <button onclick="calcPress('7')">7</button>
-      <button onclick="calcPress('8')">8</button>
-      <button onclick="calcPress('9')">9</button>
-      <button onclick="calcPress('/')">÷</button>
-      <button onclick="calcPress('4')">4</button>
-      <button onclick="calcPress('5')">5</button>
-      <button onclick="calcPress('6')">6</button>
-      <button onclick="calcPress('*')">×</button>
-      <button onclick="calcPress('1')">1</button>
-      <button onclick="calcPress('2')">2</button>
-      <button onclick="calcPress('3')">3</button>
-      <button onclick="calcPress('-')">−</button>
-      <button onclick="calcPress('0')">0</button>
-      <button onclick="calcPress('.')">.</button>
-      <button onclick="calcEqual()">=</button>
-      <button onclick="calcPress('+')">+</button>
-      <button class="clear" onclick="calcClear()">C</button>
-      <button class="close" onclick="toggleCalc()">Fermer</button>
-    </div>
+  <footer>© Lactalis — Synthèse Production</footer>
+
+  <!-- Calculator floating (hidden by default) -->
+  <div id="calculator" class="calculator hidden">
+    <input id="calcDisplay" readonly class="calc-display" />
+    <div class="calc-buttons" id="calcButtons"></div>
   </div>
 
-  <!-- Icône pour ouvrir la calculatrice -->
-  <button class="calc-icon" onclick="toggleCalc()">🧮</button>
+  <!-- Floating action button (calculator / atelier quick overview) -->
+  <div class="fab-row">
+    <button id="fabCalc" class="fab" title="Calculatrice">🧮</button>
+    <button id="fabAtelier" class="fab" title="Atelier">📊</button>
+  </div>
 
-  <footer>
-    <p>© Lactalis — Synthèse Production</p>
-  </footer>
-
-  <!-- Librairie Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Script principal -->
+  <!-- Scripts -->
   <script src="app.js"></script>
-
-  <!-- Service Worker -->
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('✅ Service Worker enregistré'))
-      .catch(err => console.log('❌ Erreur SW :', err));
-  }
-
-  // Affichage dynamique de la date / heure / semaine
-  function majDateHeure() {
-    const d = new Date();
-    const semaine = Math.ceil(((d - new Date(d.getFullYear(),0,1)) / 86400000 + new Date(d.getFullYear(),0,1).getDay()+1) / 7);
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById("dateHeure").innerText =
-      d.toLocaleDateString('fr-FR', options) + " — Semaine " + semaine + " — " +
-      d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
-  }
-  majDateHeure();
-  setInterval(majDateHeure, 60000);
-  </script>
-
 </body>
 </html>
