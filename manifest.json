@@ -1,11 +1,12 @@
 {
   "name": "Synthèse Production",
   "short_name": "Synthèse",
+  "description": "Application de suivi de production Lactalis — Synthèse Production",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f6f8fb",
+  "background_color": "#f0f6ff",
   "theme_color": "#0d6efd",
-  "description": "Application Lactalis de suivi de production",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icons/icon-192.png",
