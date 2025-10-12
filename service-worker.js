@@ -1,24 +1,22 @@
-const CACHE_NAME = "synthese-production-v1";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "./Lactalis2023Logo.svg"
-];
-
-self.addEventListener("install", (e) => {
+self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+    caches.open('synthese-cache-v1').then(cache => {
+      return cache.addAll([
+        './',
+        './index.html',
+        './app.js',
+        './style.css',
+        './manifest.json',
+        './icons/icon-192.png',
+        './icons/icon-512.png'
+      ]);
     })
   );
 });
 
-self.addEventListener("fetch", (e) => {
+self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then((response) => {
+    caches.match(e.request).then(response => {
       return response || fetch(e.request);
     })
   );
