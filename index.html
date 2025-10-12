@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production - Lactalis</title>
-  <link rel="stylesheet" href="style.css">
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d6efd">
-  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d6efd" />
+  <link rel="apple-touch-icon" href="icons/icon-512.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
-    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo">
+    <img src="Lactalis2023Logo.svg" class="logo" alt="Lactalis" />
     <h1><span class="titre-bleu">Synthèse</span> Production</h1>
     <p id="dateInfo"></p>
   </header>
@@ -34,15 +33,31 @@
 
   <main id="content"></main>
 
+  <div id="calcPanel" class="calc-panel hidden">
+    <input type="text" id="calcInput" readonly />
+    <div class="calc-buttons">
+      <button onclick="calcPress('7')">7</button>
+      <button onclick="calcPress('8')">8</button>
+      <button onclick="calcPress('9')">9</button>
+      <button onclick="calcPress('/')">÷</button>
+      <button onclick="calcPress('4')">4</button>
+      <button onclick="calcPress('5')">5</button>
+      <button onclick="calcPress('6')">6</button>
+      <button onclick="calcPress('*')">×</button>
+      <button onclick="calcPress('1')">1</button>
+      <button onclick="calcPress('2')">2</button>
+      <button onclick="calcPress('3')">3</button>
+      <button onclick="calcPress('-')">−</button>
+      <button onclick="calcPress('0')">0</button>
+      <button onclick="calcPress('.')">.</button>
+      <button onclick="calcEqual()">=</button>
+      <button onclick="calcPress('+')">+</button>
+      <button class="clear" onclick="calcClear()">C</button>
+      <button class="close" onclick="toggleCalc()">Fermer</button>
+    </div>
+  </div>
+
   <footer>© Lactalis — Synthèse Production</footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-  </script>
 </body>
 </html>
