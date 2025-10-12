@@ -1,299 +1,148 @@
-// -------------------------------
-// ⚙️ Données globales
-// -------------------------------
-const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
-let currentLine = null;
-let startTimes = JSON.parse(localStorage.getItem("startTimes")) || {};
-let data = JSON.parse(localStorage.getItem("productionData")) || {};
-let graph = null;
+// --- Configuration globale ---
+const lignes = [
+  "Râpé", "T2", "RT", "OMORI", "T1", "Sticks",
+  "Emballage", "Dés", "Filets", "Prédécoupé"
+];
+const data = JSON.parse(localStorage.getItem("syntheseData")) || {};
+const app = document.getElementById("content");
 
-// -------------------------------
-// 🕐 Horloge
-// -------------------------------
-function updateClock() {
+// --- Affichage date / semaine ---
+function updateDateTime() {
   const now = new Date();
-  const day = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
   const week = getWeekNumber(now);
+  const dateStr = now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const time = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("topClock").textContent = `${day} — Semaine ${week} — ${time}`;
+  document.getElementById("topClock").textContent = `${dateStr} — Semaine ${week} — ${time}`;
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(updateDateTime, 1000);
 
 function getWeekNumber(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
 }
 
-// -------------------------------
-// 🧭 Menu principal
-// -------------------------------
-function renderMenu() {
-  const menu = document.getElementById("menuButtons");
-  menu.innerHTML = "";
-  lignes.forEach(line => {
-    const btn = document.createElement("button");
-    btn.textContent = line;
-    btn.onclick = () => openLine(line);
-    menu.appendChild(btn);
+// --- Page d'accueil ---
+function showAccueil() {
+  let html = `<div class="menu-buttons">`;
+  html += `<button onclick="showAtelier()">Atelier</button>`;
+  lignes.forEach(l => {
+    html += `<button onclick="showLigne('${l}')">${l}</button>`;
   });
-  const atelierBtn = document.createElement("button");
-  atelierBtn.textContent = "Atelier";
-  atelierBtn.onclick = showAtelier;
-  menu.prepend(atelierBtn);
+  html += `</div>`;
+  app.innerHTML = html;
 }
-renderMenu();
+showAccueil();
 
-// -------------------------------
-// 📄 Page d’une ligne
-// -------------------------------
-function openLine(line) {
-  currentLine = line;
-  const c = document.getElementById("content");
-  const d = data[line] || [];
-  const total = d.reduce((sum, x) => sum + Number(x.quantite || 0), 0);
-  const cadenceMoy = d.length ? (total / (d.length || 1)).toFixed(1) : 0;
-
-  const html = `
-  <div class="page">
-    <h2>${line}</h2>
-    <label>Heure début :</label><input id="debut" type="time" value="${getHeureDebut(line)}">
-    <label>Heure fin :</label><input id="fin" type="time" value="${getHeureActuelle()}">
-    <label>Quantité 1 :</label><input id="q1" type="number" placeholder="Entrer quantité..." />
-    <label>Quantité 2 :</label><input id="q2" type="number" placeholder="Ajouter quantité..." />
-    <label>Temps d'arrêt (min):</label><input id="arret" type="number" />
-    <label>Cause d'arrêt :</label><input id="cause" type="text" placeholder="Cause d'arrêt..." />
-    <label>Commentaire :</label><input id="commentaire" type="text" placeholder="Commentaire..." />
-    <label>Quantité restante :</label><input id="reste" type="number" placeholder="Quantité restante..." />
-    <div class="stats">
-      <p><b>Total :</b> <span id="total">${total}</span> colis</p>
-      <p><b>Cadence moyenne :</b> <span id="cadence">${cadenceMoy}</span> colis/h</p>
-    </div>
-    <div class="boutons">
-      <button onclick="enregistrer()">💾 Enregistrer</button>
-      <button onclick="annulerDernier()">↩️ Annuler dernier</button>
-      <button onclick="afficherHistorique()">📜 Historique</button>
-      <button onclick="exportExcel('${line}')">📦 Export Excel</button>
-      <button onclick="remiseAffichage()">♻️ Remise à zéro (affichage)</button>
-      <button onclick="showAtelier()">🏭 Retour Atelier</button>
-    </div>
-    <canvas id="chartLine"></canvas>
-  </div>`;
-  c.innerHTML = html;
-  renderGraph(line);
+// --- Page Atelier ---
+function showAtelier() {
+  let html = `
+    <div class="page">
+      <h2>Atelier</h2>
+      <button class="retour" onclick="showAccueil()">⬅ Retour</button>
+      <table>
+        <thead><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr></thead>
+        <tbody>`;
+  lignes.forEach(l => {
+    const ligneData = data[l] || { total: 0, arrets: 0, cadence: 0 };
+    html += `<tr><td>${l}</td><td>${ligneData.total || 0}</td><td>${ligneData.arrets || 0}</td><td>${ligneData.cadence || 0}</td></tr>`;
+  });
+  html += `</tbody></table>
+      <canvas id="atelierChart"></canvas>
+    </div>`;
+  app.innerHTML = html;
+  renderAtelierChart();
 }
 
-function getHeureDebut(line) {
-  if (!startTimes[line]) startTimes[line] = new Date().toISOString();
-  return new Date(startTimes[line]).toLocaleTimeString("fr-FR", { hour12: false, hour: "2-digit", minute: "2-digit" });
-}
-function getHeureActuelle() {
-  const now = new Date();
-  return now.toLocaleTimeString("fr-FR", { hour12: false, hour: "2-digit", minute: "2-digit" });
-}
-
-// -------------------------------
-// 📈 Graphique de ligne
-// -------------------------------
-function renderGraph(line) {
-  const ctx = document.getElementById("chartLine");
-  const d = data[line] || [];
-  const labels = d.map(x => x.heure);
-  const q = d.map(x => x.quantite);
-  const a = d.map(x => x.arret);
-  if (graph) graph.destroy();
-  graph = new Chart(ctx, {
+function renderAtelierChart() {
+  const ctx = document.getElementById("atelierChart");
+  if (!ctx) return;
+  const labels = lignes;
+  const totals = lignes.map(l => (data[l] ? data[l].total || 0 : 0));
+  new Chart(ctx, {
     type: "bar",
     data: {
       labels,
-      datasets: [
-        { label: "Quantité", data: q, backgroundColor: "rgba(54,162,235,0.7)" },
-        { label: "Arrêts (min)", data: a, backgroundColor: "rgba(255,99,132,0.7)" }
-      ]
+      datasets: [{
+        label: "Total colis",
+        data: totals,
+        backgroundColor: "rgba(12, 117, 255, 0.7)"
+      }]
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    options: { responsive: true, plugins: { legend: { display: false } } }
   });
 }
 
-// -------------------------------
-// 💾 Enregistrer / Annuler
-// -------------------------------
-function enregistrer() {
-  const q1 = Number(document.getElementById("q1").value) || 0;
-  const q2 = Number(document.getElementById("q2").value) || 0;
-  const quantite = q1 + q2;
-  const arret = Number(document.getElementById("arret").value) || 0;
-  const cause = document.getElementById("cause").value;
-  const commentaire = document.getElementById("commentaire").value;
-  const debut = document.getElementById("debut").value;
-  const fin = document.getElementById("fin").value;
+// --- Page Ligne ---
+function showLigne(ligne) {
+  const ligneData = data[ligne] || { total: 0, cadence: 0 };
+  let html = `
+    <div class="page">
+      <h2>${ligne}</h2>
+      <button class="retour" onclick="showAccueil()">⬅ Retour</button>
+      <p><strong>Total :</strong> ${ligneData.total} colis</p>
+      <p><strong>Cadence moyenne :</strong> ${ligneData.cadence} colis/h</p>
 
-  const entry = {
-    quantite, arret, cause, commentaire, debut, fin,
-    heure: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-  };
-
-  if (!data[currentLine]) data[currentLine] = [];
-  data[currentLine].push(entry);
-  localStorage.setItem("productionData", JSON.stringify(data));
-  localStorage.setItem("startTimes", JSON.stringify(startTimes));
-
-  document.getElementById("q2").value = "";
-  document.getElementById("arret").value = "";
-  renderGraph(currentLine);
-  openLine(currentLine);
+      <input type="number" id="qte" placeholder="Entrer quantité...">
+      <input type="number" id="arret" placeholder="Temps d'arrêt (min)...">
+      <button onclick="saveLigne('${ligne}')">💾 Enregistrer</button>
+      <button onclick="undoLigne('${ligne}')">↩ Annuler dernier</button>
+      <button onclick="showAtelier()">📊 Atelier</button>
+    </div>
+  `;
+  app.innerHTML = html;
 }
 
-function annulerDernier() {
-  if (data[currentLine]?.length) {
-    data[currentLine].pop();
-    localStorage.setItem("productionData", JSON.stringify(data));
-    openLine(currentLine);
+// --- Sauvegarde ligne ---
+function saveLigne(ligne) {
+  const qte = parseInt(document.getElementById("qte").value) || 0;
+  const arret = parseInt(document.getElementById("arret").value) || 0;
+  if (!data[ligne]) data[ligne] = { total: 0, arrets: 0, cadence: 0 };
+  data[ligne].total += qte;
+  data[ligne].arrets += arret;
+  data[ligne].cadence = Math.round(data[ligne].total / (data[ligne].arrets + 1));
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  showLigne(ligne);
+}
+
+// --- Annuler dernier enregistrement ---
+function undoLigne(ligne) {
+  if (data[ligne] && data[ligne].total > 0) {
+    data[ligne].total = Math.max(0, data[ligne].total - 1);
+    localStorage.setItem("syntheseData", JSON.stringify(data));
+    showLigne(ligne);
   }
 }
 
-// -------------------------------
-// 🕓 Historique
-// -------------------------------
-function afficherHistorique() {
-  const d = data[currentLine] || [];
-  let html = `<h3>Historique — ${currentLine}</h3>`;
-  if (!d.length) html += "<p>Aucune donnée enregistrée.</p>";
-  else {
-    html += "<table><tr><th>Heure</th><th>Quantité</th><th>Arrêt</th><th>Cause</th><th>Commentaire</th><th>Début</th><th>Fin</th></tr>";
-    d.forEach(r => {
-      html += `<tr><td>${r.heure}</td><td>${r.quantite}</td><td>${r.arret}</td><td>${r.cause || "-"}</td><td>${r.commentaire || "-"}</td><td>${r.debut || "-"}</td><td>${r.fin || "-"}</td></tr>`;
-    });
-    html += "</table>";
-  }
-  document.getElementById("content").innerHTML = html + `<button onclick="openLine('${currentLine}')">⬅️ Retour</button>`;
-}
-
-// -------------------------------
-// ♻️ Remise affichage
-// -------------------------------
-function remiseAffichage() {
-  document.querySelectorAll("input").forEach(el => el.value = "");
-}
-
-// -------------------------------
-// 🧮 Calculatrice
-// -------------------------------
+// --- Calculatrice flottante ---
+const calc = {
+  el: document.getElementById("calculator"),
+  display: document.getElementById("calcDisplay"),
+  hidden: true
+};
 function toggleCalc() {
-  document.getElementById("calculator").classList.toggle("hidden");
+  const calcDiv = document.getElementById("calculator");
+  calcDiv.classList.toggle("hidden");
 }
 function calcPress(v) {
-  document.getElementById("calcDisplay").value += v;
+  calc.display.value += v;
 }
 function calcEqual() {
-  try { document.getElementById("calcDisplay").value = eval(document.getElementById("calcDisplay").value); }
-  catch { document.getElementById("calcDisplay").value = "Erreur"; }
+  try {
+    calc.display.value = eval(calc.display.value);
+  } catch {
+    calc.display.value = "Erreur";
+  }
 }
-function calcClear() { document.getElementById("calcDisplay").value = ""; }
-document.getElementById("fabCalc").onclick = toggleCalc;
-
-// -------------------------------
-// 🏭 Page Atelier
-// -------------------------------
-function showAtelier() {
-  const c = document.getElementById("content");
-  const rows = lignes.map(line => {
-    const d = data[line] || [];
-    const total = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
-    const arrets = d.reduce((s, x) => s + Number(x.arret || 0), 0);
-    const cadence = d.length ? (total / (d.length || 1)).toFixed(1) : 0;
-    return `<tr><td>${line}</td><td>${total}</td><td>${arrets}</td><td>${cadence}</td></tr>`;
-  }).join("");
-
-  c.innerHTML = `
-    <div class="page">
-      <h2>Atelier</h2>
-      <table><tr><th>Ligne</th><th>Total</th><th>Arrêts</th><th>Cadence</th></tr>${rows}</table>
-      <canvas id="atelierChart"></canvas>
-      <div class="boutons">
-        <button onclick="exportAtelier()">📊 Export Global</button>
-        <button onclick="renderMenu()">⬅️ Retour menu</button>
-      </div>
-    </div>`;
-  renderAtelierGraph();
+function calcClear() {
+  calc.display.value = "";
 }
 
-function renderAtelierGraph() {
-  const ctx = document.getElementById("atelierChart");
-  const labels = lignes;
-  const totals = lignes.map(l => (data[l] || []).reduce((s, x) => s + Number(x.quantite || 0), 0));
-  if (graph) graph.destroy();
-  graph = new Chart(ctx, {
-    type: "bar",
-    data: { labels, datasets: [{ label: "Total colis", data: totals, backgroundColor: "rgba(54,162,235,0.7)" }] },
-    options: { indexAxis: "y", responsive: true }
-  });
-}
-
-// -------------------------------
-// 📦 Export
-// -------------------------------
-function exportExcel(line) {
-  const d = data[line] || [];
-  if (!d.length) return alert("Aucune donnée à exporter !");
-  const csv = [
-    "Heure,Quantité,Arrêt (min),Cause,Commentaire,Début,Fin",
-    ...d.map(r => `${r.heure},${r.quantite},${r.arret},"${r.cause || ""}","${r.commentaire || ""}",${r.debut},${r.fin}`)
-  ].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const now = new Date();
-  const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}_${now.getHours()}h${now.getMinutes()}`
-  a.href = url;
-  a.download = `Synthese_${line}_${timestamp}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportAtelier() {
-  const rows = lignes.map(line => {
-    const d = data[line] || [];
-    const total = d.reduce((s, x) => s + Number(x.quantite || 0), 0);
-    const arrets = d.reduce((s, x) => s + Number(x.arret || 0), 0);
-    const cadence = d.length ? (total / (d.length || 1)).toFixed(1) : 0;
-    return `${line},${total},${arrets},${cadence}`;
-  });
-  const csv = ["Ligne,Total,Arrêts,Cadence", ...rows].join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Synthese_Atelier_${new Date().toISOString().split("T")[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// -------------------------------
-// 💡 PWA : prompt d’installation forcé
-// -------------------------------
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.createElement('button');
-  btn.textContent = "📲 Installer Synthèse Production";
-  btn.className = "install-btn";
-  btn.onclick = async () => {
-    btn.remove();
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") console.log("PWA installée ✅");
-    deferredPrompt = null;
-  };
-  document.body.appendChild(btn);
-});
+// --- PWA Service Worker ---
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
-
-  // 🔄 Forcer l'update du SW si nouvelle version disponible
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     window.location.reload();
   });
