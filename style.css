@@ -6,50 +6,48 @@ body {
   text-align: center;
 }
 
-header {
+header.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(180deg, #0d6efd, #69a9ff);
   color: white;
-  padding: 10px 0 15px;
+  padding: 10px;
+}
+header img.brand {
+  width: 150px;
+  margin-right: 10px;
 }
 
-header img.logo {
-  width: 180px;
-  display: block;
-  margin: 0 auto;
-}
-
-.titre-bleu {
-  color: #0d6efd;
-}
+.thin { font-weight: 400; }
+.strong { font-weight: 700; }
 
 .menu {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  padding: 10px;
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px;
 }
-
 .menu button {
   background: #0d6efd;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 10px 15px;
   border-radius: 12px;
-  font-size: 16px;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.15);
+  font-size: 15px;
+  cursor: pointer;
 }
 
-main {
-  padding: 15px;
-}
+main { padding: 15px; }
 
 .card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   padding: 20px;
   margin-top: 15px;
   text-align: left;
@@ -60,11 +58,7 @@ main {
   gap: 10px;
   justify-content: space-between;
 }
-
-input,
-textarea,
-select,
-button {
+input, textarea, button {
   width: 100%;
   margin: 6px 0;
   padding: 8px;
@@ -78,12 +72,9 @@ button {
   background: #0d6efd;
   color: white;
   border: none;
-  cursor: pointer;
   transition: 0.2s;
 }
-button:hover {
-  background: #0a58ca;
-}
+button:hover { background: #0a58ca; }
 
 .buttons {
   display: flex;
@@ -101,6 +92,7 @@ footer {
   color: #444;
 }
 
+/* Calculatrice flottante */
 .calc-panel {
   position: fixed;
   bottom: 20px;
@@ -112,9 +104,7 @@ footer {
   z-index: 999;
   width: 240px;
 }
-.calc-panel.hidden {
-  display: none;
-}
+.calc-panel.hidden { display: none; }
 .calc-buttons button {
   width: 22%;
   margin: 2%;
@@ -125,9 +115,5 @@ footer {
   color: white;
   border: none;
 }
-.calc-buttons .clear {
-  background: #dc3545;
-}
-.calc-buttons .close {
-  background: #198754;
-}
+.calc-buttons .clear { background: #dc3545; }
+.calc-buttons .close { background: #198754; }
