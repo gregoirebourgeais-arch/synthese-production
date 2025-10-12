@@ -92,6 +92,11 @@ function openLine(line) {
         <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
         <p><b>Estimation fin :</b> <span id="estimation">${estimation}</span></p>
       </div>
+      <div class="stats">
+  <p><b>Total :</b> <span id="total">${total}</span> colis</p>
+  <p><b>Cadence moyenne :</b> <span id="cadence">${cadence}</span> colis/h</p>
+  <p><b>Estimation fin :</b> <span id="estimation">${estimation}</span></p>
+</div>
       <div class="boutons">
         <button onclick="enregistrer()">💾 Enregistrer</button>
         <button onclick="annulerDernier()">↩ Annuler dernier</button>
