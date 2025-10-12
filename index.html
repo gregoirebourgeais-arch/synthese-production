@@ -10,11 +10,14 @@
   <link rel="apple-touch-icon" href="icons/icon-512.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-  <header>
-    <img src="Lactalis2023Logo.svg" class="logo" alt="Lactalis" />
-    <h1><span class="titre-bleu">Synthèse</span> Production</h1>
-    <p id="dateInfo"></p>
+  <header class="app-header">
+    <img src="Lactalis2023Logo.svg" class="brand" alt="Lactalis" />
+    <div>
+      <h1><span class="thin">Synthèse</span> <span class="strong">Production</span></h1>
+      <p id="metaTop"></p>
+    </div>
   </header>
 
   <nav class="menu">
@@ -32,6 +35,8 @@
   </nav>
 
   <main id="content"></main>
+
+  <footer>© Lactalis — Synthèse Production</footer>
 
   <div id="calcPanel" class="calc-panel hidden">
     <input type="text" id="calcInput" readonly />
@@ -57,7 +62,11 @@
     </div>
   </div>
 
-  <footer>© Lactalis — Synthèse Production</footer>
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 </html>
