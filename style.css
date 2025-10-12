@@ -1,120 +1,108 @@
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: #f5f9ff;
-  color: #222;
-  margin: 0;
-  text-align: center;
+// === PANNEAU FLOTTANT (Semaine + Date + Heure) ===
+function updateDateTime() {
+  const now = new Date();
+  const jour = now.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+  const heure = now.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  const tempDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const jourNum = tempDate.getUTCDay() || 7;
+  tempDate.setUTCDate(tempDate.getUTCDate() + 4 - jourNum);
+  const anneeDebut = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+  const semaine = Math.ceil(((tempDate - anneeDebut) / 86400000 + 1) / 7);
+
+  document.getElementById("date-jour").textContent = jour;
+  document.getElementById("heure-actuelle").textContent = heure;
+  document.getElementById("semaine-num").textContent = semaine;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+// === CALCULATRICE ===
+function ouvrirCalculatrice() {
+  const res = prompt("🧮 Entrez une opération (ex: 1250/3 ou 250+420) :");
+  if (res === null || res.trim() === "") return;
+  try {
+    const resultat = eval(res);
+    alert("Résultat : " + resultat);
+  } catch {
+    alert("⚠️ Opération invalide !");
+  }
 }
 
-header {
-  background: linear-gradient(90deg, #007bff, #0098ff);
-  padding: 15px;
-  color: white;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+// === PAGE ATELIER ===
+function openPage(page) {
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="card"><h2>Chargement...</h2></div>`;
+
+  setTimeout(() => {
+    if (page === "Atelier") {
+      content.innerHTML = `
+        <div class="card">
+          <h3>Résumé Atelier</h3>
+          <label>Quantité restante (colis) :</label>
+          <input type="number" id="qteRestante" placeholder="ex : 1200" oninput="majFinPrevue()" />
+          <p id="finPrevue"></p>
+          <canvas id="graphGlobal"></canvas>
+        </div>
+      `;
+      renderGraph("graphGlobal");
+    } else {
+      content.innerHTML = `
+        <div class="card">
+          <h2>${page}</h2>
+          <label>Quantité restante :</label>
+          <input type="number" id="qteRestante" placeholder="ex : 800" oninput="majFinPrevue()" />
+          <p id="finPrevue"></p>
+          <canvas id="graphLigne"></canvas>
+        </div>
+      `;
+      renderGraph("graphLigne");
+    }
+  }, 200); // petit délai pour éviter “chargement infini”
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+// === HEURE DE FIN ESTIMÉE ===
+function majFinPrevue() {
+  const qte = parseFloat(document.getElementById("qteRestante").value);
+  const cadenceMoyenne = 450;
+  const p = document.getElementById("finPrevue");
+  if (!qte) return (p.innerText = "");
+  const heures = qte / cadenceMoyenne;
+  const fin = new Date(Date.now() + heures * 3600000);
+  p.innerText = "⏰ Fin estimée à " + fin.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-.logo {
-  height: 40px;
+// === GRAPHIQUES ===
+function renderGraph(id) {
+  const ctx = document.getElementById(id).getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["08h", "10h", "12h", "14h", "16h"],
+      datasets: [
+        {
+          label: "Cadence (colis/h)",
+          data: [450, 470, 420, 460, 480],
+          backgroundColor: "#007bff88",
+          borderColor: "#007bff",
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      scales: { y: { beginAtZero: true } },
+      plugins: { legend: { display: false } }
+    }
+  });
 }
 
-.titre h1 {
-  font-size: 1.4rem;
-  margin: 0;
-}
-
-.bleu {
-  color: #cfe9ff;
-}
-
-.menu {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px;
-}
-
-button {
-  background: #007bff;
-  border: none;
-  color: white;
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-size: 15px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-}
-
-button:hover {
-  background: #005ecb;
-  transform: scale(1.05);
-}
-
-#content {
-  margin-top: 10px;
-  padding: 20px;
-}
-
-.card {
-  background: white;
-  margin: 12px auto;
-  padding: 15px;
-  border-radius: 15px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-}
-
-footer {
-  font-size: 14px;
-  padding: 20px;
-  color: #444;
-  background: #eef4ff;
-  border-top: 1px solid #d0e2ff;
-  position: relative;
-  bottom: 0;
-  width: 100%;
-}
-
-#panneau-flottant {
-  position: sticky;
-  top: 0;
-  background: #0098ff;
-  color: white;
-  font-weight: 500;
-  padding: 10px;
-  border-radius: 0 0 15px 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-bottom: 10px;
-  z-index: 10;
-}
-
-#calculatrice-btn {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: #007bff;
-  color: white;
-  font-size: 26px;
-  border-radius: 50%;
-  width: 65px;
-  height: 65px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s;
-  z-index: 9999;
-}
-
-#calculatrice-btn:hover {
-  transform: scale(1.15);
-}
+// === INITIALISATION ===
+document.addEventListener("DOMContentLoaded", () => openPage("Atelier"));
