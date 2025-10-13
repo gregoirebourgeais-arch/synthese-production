@@ -1,122 +1,81 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#007bff" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production Lactalis</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
 </head>
 
 <body>
-  <!-- ===== MENU LATÉRAL ===== -->
-  <aside class="menu-container">
-    <button class="menu-btn active" data-section="production">
-      <span class="menu-emoji">🏭</span><span>Production</span>
-    </button>
-    <button class="menu-btn" data-section="personnel">
-      <span class="menu-emoji">👥</span><span>Personnel</span>
-    </button>
-    <button class="menu-btn" data-section="organisation">
-      <span class="menu-emoji">🗒️</span><span>Organisation</span>
-    </button>
-    <button class="menu-btn" data-section="dashboard">
-      <span class="menu-emoji">📊</span><span>Tableau<br>de bord</span>
-    </button>
-  </aside>
+  <header class="header">
+    <img src="icons/Lactalis2023Logo.png" alt="Lactalis" class="logo">
+    <h1>Synthèse Production</h1>
+    <p id="dateDisplay"></p>
+  </header>
 
-  <!-- ===== CONTENU PRINCIPAL ===== -->
+  <nav class="sidebar">
+    <button onclick="showSection('production')">🏭 Production</button>
+    <button onclick="showSection('personnel')">👥 Personnel</button>
+    <button onclick="showSection('organisation')">🗒️ Organisation</button>
+    <button onclick="showSection('dashboard')">📊 Tableau de bord</button>
+  </nav>
+
   <main id="content">
-    <header class="header">
-      <img src="icons/lactalis2023logo.png" alt="Lactalis" class="logo" />
-      <h1>Synthèse Production</h1>
-      <p id="dateTime"></p>
-    </header>
-
-    <!-- ===== SECTION PRODUCTION ===== -->
-    <section id="production" class="page fade active">
+    <section id="production" class="section active">
       <h2>Choisir une ligne de production</h2>
-      <div class="lines-container">
-        <button onclick="openLine('Râpé')">Râpé</button>
-        <button onclick="openLine('T2')">T2</button>
-        <button onclick="openLine('RT')">RT</button>
-        <button onclick="openLine('OMORI')">OMORI</button>
-        <button onclick="openLine('T1')">T1</button>
-        <button onclick="openLine('Sticks')">Sticks</button>
-        <button onclick="openLine('Emballage')">Emballage</button>
-        <button onclick="openLine('Dés')">Dés</button>
-        <button onclick="openLine('Filets')">Filets</button>
-        <button onclick="openLine('Prédécoupé')">Prédécoupé</button>
+      <div class="lines">
+        <a href="rape.html" class="btn">Râpé</a>
+        <a href="t2.html" class="btn">T2</a>
+        <a href="rt.html" class="btn">RT</a>
+        <a href="omori.html" class="btn">OMORI</a>
+        <a href="t1.html" class="btn">T1</a>
+        <a href="sticks.html" class="btn">Sticks</a>
+        <a href="emballage.html" class="btn">Emballage</a>
+        <a href="des.html" class="btn">Dés</a>
+        <a href="filets.html" class="btn">Filets</a>
+        <a href="predecoupe.html" class="btn">Prédécoupé</a>
       </div>
     </section>
 
-    <!-- ===== SECTION PERSONNEL ===== -->
-    <section id="personnel" class="page fade">
+    <section id="personnel" class="section">
       <h2>Gestion du personnel</h2>
       <form id="personnelForm">
-        <label>Type :</label>
-        <select id="typePersonnel">
+        <select id="type">
           <option>Absence</option>
           <option>Retard</option>
           <option>Départ</option>
-          <option>RAH</option>
           <option>Autre</option>
         </select>
-        <label>Commentaire :</label>
-        <textarea id="commentPersonnel" placeholder="Détails..."></textarea>
-        <button type="button" onclick="ajouterPersonnel()">Enregistrer</button>
+        <textarea id="commentaire" placeholder="Commentaire..."></textarea>
+        <button type="button" onclick="savePersonnel()">💾 Enregistrer</button>
       </form>
-      <div id="historiquePersonnel"></div>
+      <table id="personnelTable">
+        <thead><tr><th>Date</th><th>Type</th><th>Commentaire</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <!-- ===== SECTION ORGANISATION ===== -->
-    <section id="organisation" class="page fade">
-      <h2>Consignes & Organisation</h2>
-      <form id="consigneForm">
-        <textarea id="texteConsigne" placeholder="Nouvelle consigne..."></textarea>
-        <button type="button" onclick="ajouterConsigne()">Enregistrer la consigne</button>
-      </form>
-      <div id="listeConsignes"></div>
+    <section id="organisation" class="section">
+      <h2>Consignes et organisation</h2>
+      <textarea id="noteOrg" placeholder="Consigne ou remarque..."></textarea>
+      <button onclick="saveOrganisation()">💾 Enregistrer</button>
+      <table id="orgTable">
+        <thead><tr><th>Date</th><th>Consigne</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <!-- ===== SECTION TABLEAU DE BORD ===== -->
-    <section id="dashboard" class="page fade">
-      <h2>Tableau de bord global</h2>
-      <div id="graphContainer">
-        <canvas id="globalChart"></canvas>
-      </div>
-      <button onclick="exportAll()">📤 Export Excel global</button>
-      <button onclick="resetAll()">🧹 Remise à zéro complète</button>
+    <section id="dashboard" class="section">
+      <h2>Tableau de bord Atelier</h2>
+      <canvas id="atelierChart" width="350" height="250"></canvas>
     </section>
-
-    <!-- ===== PIED DE PAGE ===== -->
-    <footer class="footer">
-      <p>Lactalis © 2025 — Application interne de suivi de production</p>
-    </footer>
   </main>
 
-  <!-- ===== BOUTONS FLOTTANTS ===== -->
-  <div class="fab-container">
-    <button id="fabArret" class="fab" title="Arrêts de ligne">⏸️</button>
-    <button id="fabGraph" class="fab" title="Graphiques">📈</button>
-    <button id="fabCalc" class="fab" title="Calculatrice">🧮</button>
-  </div>
-
-  <!-- ===== CALCULATRICE ===== -->
-  <div id="calculator" class="calculator hidden">
-    <input type="text" id="calc-display" readonly />
-    <div class="calc-buttons">
-      <button>7</button><button>8</button><button>9</button><button>/</button>
-      <button>4</button><button>5</button><button>6</button><button>*</button>
-      <button>1</button><button>2</button><button>3</button><button>-</button>
-      <button>0</button><button>.</button><button>=</button><button>+</button>
-      <button id="calc-clear">C</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js"></script>
+  <footer>
+    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+  </footer>
 </body>
 </html>
