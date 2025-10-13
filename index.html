@@ -19,30 +19,35 @@
     <p id="dateDisplay"></p>
   </header>
 
+  <!-- 🧭 MENU DE NAVIGATION -->
   <nav class="sidebar">
-    <button onclick="showSection('menu')">🏠</button>
-    <button onclick="showSection('Râpé')">🧀</button>
-    <button onclick="showSection('T2')">2️⃣</button>
-    <button onclick="showSection('RT')">♻️</button>
-    <button onclick="showSection('OMORI')">🌀</button>
-    <button onclick="showSection('T1')">1️⃣</button>
-    <button onclick="showSection('Sticks')">🍢</button>
-    <button onclick="showSection('Emballage')">📦</button>
-    <button onclick="showSection('Dés')">🧊</button>
-    <button onclick="showSection('Filets')">🧵</button>
-    <button onclick="showSection('Prédécoupé')">🔪</button>
-    <button onclick="showSection('dashboard')">📊</button>
+    <button onclick="showSection('menu')">Accueil</button>
+    <button onclick="showSection('Râpé')">Râpé</button>
+    <button onclick="showSection('T2')">T2</button>
+    <button onclick="showSection('RT')">RT</button>
+    <button onclick="showSection('OMORI')">OMORI</button>
+    <button onclick="showSection('T1')">T1</button>
+    <button onclick="showSection('Sticks')">Sticks</button>
+    <button onclick="showSection('Emballage')">Emballage</button>
+    <button onclick="showSection('Dés')">Dés</button>
+    <button onclick="showSection('Filets')">Filets</button>
+    <button onclick="showSection('Prédécoupé')">Prédécoupé</button>
+    <button onclick="showSection('Arrets')">Arrêts</button>
+    <button onclick="showSection('Personnel')">Personnel</button>
+    <button onclick="showSection('Organisation')">Organisation</button>
+    <button onclick="showSection('Atelier')">Atelier</button>
   </nav>
 
+  <!-- 🧩 CONTENU PRINCIPAL -->
   <main id="content">
 
-    <!-- 🔹 Page d'accueil -->
+    <!-- 🔹 PAGE ACCUEIL -->
     <section id="menu" class="section active">
       <h2>Bienvenue dans Synthèse Production</h2>
-      <p>Choisissez une ligne dans le menu à gauche pour enregistrer vos données de production.</p>
+      <p>Choisissez une ligne dans le menu à gauche pour commencer le suivi.</p>
     </section>
 
-    <!-- 🔹 Gabarit pour les 10 lignes -->
+    <!-- 🔹 10 LIGNES DE PRODUCTION -->
     <section id="Râpé" class="section hidden"></section>
     <section id="T2" class="section hidden"></section>
     <section id="RT" class="section hidden"></section>
@@ -54,11 +59,82 @@
     <section id="Filets" class="section hidden"></section>
     <section id="Prédécoupé" class="section hidden"></section>
 
-    <!-- 🔹 Tableau de bord atelier -->
-    <section id="dashboard" class="section hidden">
-      <h2>Tableau de bord global</h2>
+    <!-- 🔹 PAGE ARRÊTS (LIÉE À CHAQUE LIGNE) -->
+    <section id="Arrets" class="section hidden">
+      <h2>Gestion des arrêts de ligne</h2>
+      <form id="formArret">
+        <label>Ligne concernée :</label>
+        <select id="ligneArret">
+          <option>Râpé</option><option>T2</option><option>RT</option>
+          <option>OMORI</option><option>T1</option><option>Sticks</option>
+          <option>Emballage</option><option>Dés</option><option>Filets</option>
+          <option>Prédécoupé</option>
+        </select>
+
+        <label>Durée d'arrêt (minutes) :</label>
+        <input type="number" id="tempsArret" placeholder="Durée..." />
+
+        <label>Cause :</label>
+        <input type="text" id="causeArret" placeholder="Cause de l'arrêt..." />
+
+        <button type="button" onclick="saveArret()">💾 Enregistrer l'arrêt</button>
+      </form>
+
+      <table id="tableArrets">
+        <thead><tr><th>Date/Heure</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <button onclick="exportArrets()">📤 Exporter les arrêts</button>
+    </section>
+
+    <!-- 🔹 PAGE PERSONNEL -->
+    <section id="Personnel" class="section hidden">
+      <h2>Gestion du personnel</h2>
+      <form id="personnelForm">
+        <label>Type :</label>
+        <select id="type">
+          <option>Absence</option><option>Retard</option>
+          <option>Départ</option><option>Autre</option>
+        </select>
+
+        <label>Commentaire :</label>
+        <textarea id="commentaire" placeholder="Commentaire..."></textarea>
+
+        <button type="button" onclick="savePersonnel()">💾 Enregistrer</button>
+      </form>
+
+      <table id="personnelTable">
+        <thead><tr><th>Date</th><th>Type</th><th>Commentaire</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <button onclick="exportPersonnel()">📤 Exporter le personnel</button>
+    </section>
+
+    <!-- 🔹 PAGE ORGANISATION -->
+    <section id="Organisation" class="section hidden">
+      <h2>Consignes et organisation</h2>
+      <form>
+        <label>Consigne / Note :</label>
+        <textarea id="noteOrg" placeholder="Consigne ou remarque..."></textarea>
+        <button type="button" onclick="saveOrganisation()">💾 Enregistrer</button>
+      </form>
+
+      <table id="orgTable">
+        <thead><tr><th>Date</th><th>Consigne</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <button onclick="exportOrganisation()">📤 Exporter les consignes</button>
+    </section>
+
+    <!-- 🔹 PAGE ATELIER / DASHBOARD -->
+    <section id="Atelier" class="section hidden">
+      <h2>Tableau de bord Atelier</h2>
       <canvas id="atelierChart" width="350" height="250"></canvas>
       <button onclick="exportAllData()">📤 Export global</button>
+      <button onclick="resetAllData()">🧹 Remise à zéro totale</button>
     </section>
   </main>
 
