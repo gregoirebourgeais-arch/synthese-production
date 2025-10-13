@@ -1,162 +1,252 @@
-// === Variables globales ===
+/* ========= Variables globales ========= */
+let currentSection = "production";
 let currentLine = null;
-let data = JSON.parse(localStorage.getItem("syntheseData")) || {};
+
+// bases locales
+let dataProd = JSON.parse(localStorage.getItem("syntheseData")) || {};
+let dataPersonnel = JSON.parse(localStorage.getItem("personnelData")) || [];
+let dataConsignes = JSON.parse(localStorage.getItem("consignesData")) || [];
 let arrets = JSON.parse(localStorage.getItem("arretsData")) || [];
+
 const content = document.getElementById("content");
 
-// === Fonction d'initialisation ===
+/* ========= Initialisation ========= */
 window.addEventListener("load", () => {
-  renderMenu();
-  updateDateHeure();
-  setInterval(updateDateHeure, 1000);
-  registerServiceWorker();
+  setupMenu();
+  renderProduction();
   setupFAB();
   setupCalculator();
+  registerServiceWorker();
+  updateConsignesAutoExport();
 });
 
-// === Affichage de la date / heure ===
-function updateDateHeure() {
-  const el = document.getElementById("dateHeure");
-  if (!el) return;
-  const now = new Date();
-  const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
-  const semaine = `Semaine ${getWeekNumber(now)}`;
-  const heure = now.toLocaleTimeString("fr-FR", { hour12: false });
-  el.textContent = `${now.toLocaleDateString("fr-FR", options)} — ${semaine} — ${heure}`;
+/* ========= Gestion du menu ========= */
+function setupMenu() {
+  document.querySelectorAll(".menu-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentSection = btn.dataset.section;
+      if (currentSection === "production") renderProduction();
+      else if (currentSection === "personnel") renderPersonnel();
+      else if (currentSection === "organisation") renderOrganisation();
+      else if (currentSection === "dashboard") renderDashboard();
+    });
+  });
 }
 
-function getWeekNumber(date) {
-  const oneJan = new Date(date.getFullYear(), 0, 1);
-  const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
-  return Math.ceil((numberOfDays + oneJan.getDay() + 1) / 7);
-}
-
-// === Menu principal ===
-function renderMenu() {
-  pageTransition();
+/* ========= Section PRODUCTION ========= */
+function renderProduction() {
   const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
-  content.innerHTML = `
-    <div class="page fade">
-      <h2>Choisir une ligne de production</h2>
-      ${lignes.map(l => `<button class="ligne" onclick="openLine('${l}')">${l}</button>`).join("")}
-    </div>`;
+  let html = `<div class="page fade">
+    <h2>Production</h2>
+    <div class="card">
+      <h3>Choisir une ligne</h3>
+      ${lignes.map(l => `<button class="btn primary" onclick="openLine('${l}')">${l}</button>`).join("")}
+    </div>
+  </div>`;
+  content.innerHTML = html;
 }
 
-// === Transition de page ===
-function pageTransition() {
-  content.style.opacity = 0;
-  setTimeout(() => (content.style.opacity = 1), 200);
-}
-
-// === Ouvrir une ligne ===
 function openLine(line) {
   currentLine = line;
-  const d = data[line] || [];
+  const d = dataProd[line] || [];
   const total = d.reduce((s, x) => s + (x.produits || 0), 0);
   const cadence = d.length ? total / d.length : 0;
   const estimation = cadence > 0 && d.length > 0 ? (1000 / cadence).toFixed(1) : "_";
 
   content.innerHTML = `
-    <div class="page fade">
-      <h2>${line}</h2>
-      <button class="btn primary" onclick="renderMenu()">⬅️ Retour menu</button>
-
-      <div class="form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
-        <div class="form-row" style="display:flex;gap:10px;">
-          <div style="flex:1;">
-            <label>Heure début :</label>
-            <input id="debut" type="time" />
-          </div>
-          <div style="flex:1;">
-            <label>Heure fin :</label>
-            <input id="fin" type="time" />
-          </div>
-        </div>
-
-        <label>Quantité initiale :</label>
-        <input id="initiale" type="number" placeholder="0" />
-
-        <label>Quantité ajoutée :</label>
-        <input id="ajoutee" type="number" placeholder="0" />
-
-        <label>Quantité restante :</label>
-        <input id="restante" type="number" placeholder="0" />
-
-        <label>Minutes d'arrêt :</label>
-        <input id="arret" type="number" placeholder="0" />
-
-        <label>Cadence manuelle :</label>
-        <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
-          <button class="btn primary" onclick="saveData('${line}')">💾 Enregistrer</button>
-          <button class="btn ghost" onclick="remiseZero()">🧹 Remise à zéro</button>
-        </div>
-
-        <p id="estimation" style="text-align:center;margin-top:10px;font-weight:600;">
-          ⏱️ Estimation fin : ${estimation}
-        </p>
+  <div class="page fade">
+    <h2>${line}</h2>
+    <div class="card">
+      <label>Heure début :</label>
+      <input id="debut" type="time">
+      <label>Heure fin :</label>
+      <input id="fin" type="time">
+      <label>Quantité initiale :</label>
+      <input id="initiale" type="number" placeholder="0">
+      <label>Quantité ajoutée :</label>
+      <input id="ajoutee" type="number" placeholder="0">
+      <label>Quantité restante :</label>
+      <input id="restante" type="number" placeholder="0">
+      <label>Minutes d'arrêt :</label>
+      <input id="arret" type="number" placeholder="0">
+      <label>Cadence manuelle :</label>
+      <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle...">
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn primary" onclick="saveProd('${line}')">💾 Enregistrer</button>
+        <button class="btn ghost" onclick="renderProduction()">⬅️ Retour</button>
       </div>
-    </div>`;
+      <p id="estimation" style="text-align:center;margin-top:10px;">⏱️ Estimation fin : ${estimation}</p>
+    </div>
+  </div>`;
 }
 
-// === Sauvegarde des données ===
-function saveData(line) {
+function saveProd(line) {
   const debut = document.getElementById("debut").value;
   const fin = document.getElementById("fin").value;
   const initiale = +document.getElementById("initiale").value || 0;
   const ajoutee = +document.getElementById("ajoutee").value || 0;
   const restante = +document.getElementById("restante").value || 0;
   const arret = +document.getElementById("arret").value || 0;
-  const cadenceManuelle = +document.getElementById("cadenceManuelle").value || null;
-
+  const manuelle = +document.getElementById("cadenceManuelle").value || null;
   const produits = initiale + ajoutee - restante;
   const temps = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 60000 - arret;
   const cadence = temps > 0 ? produits / (temps / 60) : 0;
-  const cadenceFinale = cadenceManuelle || cadence;
-
-  const entry = { date: new Date().toLocaleString(), debut, fin, produits, cadence: cadenceFinale };
-  if (!data[line]) data[line] = [];
-  data[line].push(entry);
-  localStorage.setItem("syntheseData", JSON.stringify(data));
-  showToast("✅ Données enregistrées !");
+  const finalCadence = manuelle || cadence;
+  const record = { date: new Date().toLocaleString(), debut, fin, produits, cadence: finalCadence };
+  if (!dataProd[line]) dataProd[line] = [];
+  dataProd[line].push(record);
+  localStorage.setItem("syntheseData", JSON.stringify(dataProd));
+  toast("✅ Données enregistrées !");
 }
 
-// === Remise à zéro ===
-function remiseZero() {
-  if (!confirm("Voulez-vous vraiment tout remettre à zéro ?")) return;
-  const excel = exportExcel();
-  localStorage.clear();
-  showToast("♻️ Données remises à zéro !");
+/* ========= Section PERSONNEL ========= */
+function renderPersonnel() {
+  let html = `
+  <div class="page fade">
+    <h2>Personnel</h2>
+    <div class="card">
+      <label>Ligne :</label>
+      <select id="persLigne">
+        <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+        <option>T1</option><option>Sticks</option><option>Emballage</option><option>Dés</option>
+        <option>Filets</option><option>Prédécoupé</option>
+      </select>
+      <label>Nom :</label>
+      <input id="persNom" type="text" placeholder="Nom du salarié">
+      <label>Motif :</label>
+      <select id="persMotif">
+        <option>Absence</option>
+        <option>Retard</option>
+        <option>Départ</option>
+        <option>Autre</option>
+      </select>
+      <label>Commentaire :</label>
+      <textarea id="persComment"></textarea>
+      <button class="btn primary" onclick="savePersonnel()">💾 Enregistrer</button>
+    </div>
+    <div class="card">
+      <h3>Historique</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Ligne</th><th>Nom</th><th>Motif</th><th>Commentaire</th></tr></thead>
+          <tbody>
+            ${dataPersonnel.map(p => `<tr><td>${p.date}</td><td>${p.ligne}</td><td>${p.nom}</td><td>${p.motif}</td><td>${p.comment}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+  content.innerHTML = html;
 }
 
-// === Export Excel ===
-function exportExcel() {
-  const rows = [];
-  rows.push(["Ligne", "Date", "Début", "Fin", "Produits", "Cadence"]);
-  Object.keys(data).forEach(line => {
-    data[line].forEach(d => {
-      rows.push([line, d.date, d.debut, d.fin, d.produits, d.cadence]);
-    });
-  });
+function savePersonnel() {
+  const record = {
+    date: new Date().toLocaleString(),
+    ligne: document.getElementById("persLigne").value,
+    nom: document.getElementById("persNom").value,
+    motif: document.getElementById("persMotif").value,
+    comment: document.getElementById("persComment").value
+  };
+  dataPersonnel.push(record);
+  localStorage.setItem("personnelData", JSON.stringify(dataPersonnel));
+  toast("👥 Enregistré !");
+  renderPersonnel();
+}
+
+/* ========= Section ORGANISATION ========= */
+function renderOrganisation() {
+  let html = `
+  <div class="page fade">
+    <h2>Consignes / Organisation</h2>
+    <div class="card">
+      <label>Date :</label><input type="date" id="consDate" value="${new Date().toISOString().split("T")[0]}">
+      <label>Équipe :</label>
+      <select id="consEquipe">
+        <option>Matin</option><option>Après-midi</option><option>Nuit</option>
+      </select>
+      <label>Priorité :</label>
+      <select id="consPriorite">
+        <option>Basse</option><option>Moyenne</option><option>Haute</option>
+      </select>
+      <label>Consigne :</label><textarea id="consTexte"></textarea>
+      <button class="btn primary" onclick="saveConsigne()">💾 Enregistrer</button>
+    </div>
+    <div class="card">
+      <h3>Historique</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Équipe</th><th>Priorité</th><th>Consigne</th></tr></thead>
+          <tbody>
+            ${dataConsignes.map(c => `<tr><td>${c.date}</td><td>${c.equipe}</td><td>${c.priorite}</td><td>${c.texte}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+  content.innerHTML = html;
+}
+
+function saveConsigne() {
+  const record = {
+    date: document.getElementById("consDate").value,
+    equipe: document.getElementById("consEquipe").value,
+    priorite: document.getElementById("consPriorite").value,
+    texte: document.getElementById("consTexte").value
+  };
+  dataConsignes.push(record);
+  localStorage.setItem("consignesData", JSON.stringify(dataConsignes));
+  toast("🗒️ Consigne enregistrée !");
+  renderOrganisation();
+}
+
+/* ========= Section TABLEAU DE BORD ========= */
+function renderDashboard() {
+  const totalProd = Object.values(dataProd).flat().reduce((s, x) => s + (x.produits || 0), 0);
+  const totalArrets = arrets.reduce((s, x) => s + (x.duree || 0), 0);
+  const absences = dataPersonnel.filter(p => p.motif === "Absence").length;
+  const consignesJour = dataConsignes.filter(c => c.date === new Date().toISOString().split("T")[0]).length;
+  const html = `
+  <div class="page fade">
+    <h2>Tableau de bord du jour</h2>
+    <div class="card"><strong>Total colis :</strong> ${totalProd}</div>
+    <div class="card"><strong>Temps d'arrêt total :</strong> ${totalArrets} min</div>
+    <div class="card"><strong>Absences :</strong> ${absences}</div>
+    <div class="card"><strong>Consignes du jour :</strong> ${consignesJour}</div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn primary" onclick="exportAll()">📊 Export global Excel</button>
+    </div>
+  </div>`;
+  content.innerHTML = html;
+}
+
+/* ========= Export global ========= */
+function exportAll() {
+  const rows = [["Type","Date","Ligne","Détail","Valeur"]];
+  Object.keys(dataProd).forEach(l => dataProd[l].forEach(d => rows.push(["Production", d.date, l, "Produits", d.produits])));
+  dataPersonnel.forEach(p => rows.push(["Personnel", p.date, p.ligne, p.motif, p.comment]));
+  dataConsignes.forEach(c => rows.push(["Consigne", c.date, c.equipe, c.priorite, c.texte]));
   const csv = rows.map(r => r.join(";")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csv], {type:"text/csv"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `Synthese_${new Date().toLocaleString("fr-FR").replace(/[/:]/g, "-")}.csv`;
+  a.download = `Synthese_Global_${new Date().toLocaleString("fr-FR").replace(/[/:]/g,"-")}.csv`;
   a.click();
-  showToast("📊 Export Excel généré !");
+  toast("📤 Export global généré !");
 }
 
-// === FAB Setup ===
-function setupFAB() {
-  document.getElementById("fabCalc").addEventListener("click", toggleCalculator);
-  document.getElementById("fabExportAll").addEventListener("click", exportExcel);
-  document.getElementById("fabArret").addEventListener("click", showArretSheet);
+/* ========= Utilitaires ========= */
+function toast(msg) {
+  let t = document.createElement("div");
+  t.className = "toast show";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
 }
 
-// === Calculatrice ===
+/* ========= Calculatrice ========= */
 function setupCalculator() {
   const calc = document.getElementById("calculator");
   const display = document.getElementById("calcDisplay");
@@ -173,61 +263,32 @@ function toggleCalculator() {
   calc.classList.toggle("hidden");
 }
 
-// === Module Arrêts ===
-function showArretSheet() {
-  const line = currentLine || "Atelier";
-  const html = `
-    <div class="sheet-backdrop" id="sheetBack"></div>
-    <div class="sheet show" id="sheetArret">
-      <div class="sheet-handle"></div>
-      <h3>Nouvel arrêt - ${line}</h3>
-      <label>Durée (min):</label>
-      <input id="arretDuree" type="number" />
-      <label>Cause :</label>
-      <input id="arretCause" type="text" />
-      <label>Commentaire :</label>
-      <textarea id="arretComment"></textarea>
-      <div class="sheet-actions">
-        <button class="btn ghost" onclick="closeSheet()">Annuler</button>
-        <button class="btn primary" onclick="saveArret('${line}')">💾 Sauver</button>
-      </div>
-    </div>`;
-  document.body.insertAdjacentHTML("beforeend", html);
-  document.getElementById("sheetBack").addEventListener("click", closeSheet);
+/* ========= FAB ========= */
+function setupFAB() {
+  document.getElementById("fabCalc").addEventListener("click", toggleCalculator);
+  document.getElementById("fabExportAll").addEventListener("click", exportAll);
+  document.getElementById("fabArret").addEventListener("click", ()=>toast("🔧 Arrêts à venir (en développement)"));
 }
 
-function closeSheet() {
-  document.querySelectorAll(".sheet, .sheet-backdrop").forEach(e => e.remove());
-}
-
-function saveArret(line) {
-  const duree = +document.getElementById("arretDuree").value || 0;
-  const cause = document.getElementById("arretCause").value;
-  const commentaire = document.getElementById("arretComment").value;
-  arrets.push({
-    ligne: line,
-    duree,
-    cause,
-    commentaire,
-    date: new Date().toLocaleString("fr-FR")
-  });
-  localStorage.setItem("arretsData", JSON.stringify(arrets));
-  closeSheet();
-  showToast("🟠 Arrêt enregistré !");
-}
-
-// === Toast ===
-function showToast(msg) {
-  const t = document.createElement("div");
-  t.className = "toast show";
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-// === Service Worker ===
-function registerServiceWorker() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
+/* ========= Auto-export des consignes ========= */
+function updateConsignesAutoExport() {
+  const now = new Date();
+  const old = dataConsignes.filter(c => (now - new Date(c.date)) > 7*24*60*60*1000);
+  if (old.length) {
+    const csv = old.map(c => `${c.date};${c.equipe};${c.priorite};${c.texte}`).join("\n");
+    const blob = new Blob([csv], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Consignes_export_auto_${new Date().toLocaleDateString("fr-FR")}.csv`;
+    a.click();
+    dataConsignes = dataConsignes.filter(c => (now - new Date(c.date)) <= 7*24*60*60*1000);
+    localStorage.setItem("consignesData", JSON.stringify(dataConsignes));
+    toast("📦 Consignes exportées (auto)");
   }
 }
+
+/* ========= Service Worker ========= */
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+    }
