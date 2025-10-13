@@ -21,12 +21,12 @@ p {
 }
 
 /* =========================
-   EN-TÊTE
+   EN-TÊTE ET LOGO
 ========================= */
 .header {
   background: linear-gradient(180deg, #007bff, #5ab8ff);
   color: white;
-  padding: 15px 0;
+  padding: 15px 0 10px 0;
   text-align: center;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   position: sticky;
@@ -35,9 +35,40 @@ p {
 }
 
 .logo {
-  width: 120px;
+  width: 130px;
   display: block;
   margin: 0 auto 5px auto;
+}
+
+/* =========================
+   SÉLECTEUR D’ÉQUIPE
+========================= */
+.equipe-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: fit-content;
+  margin: 8px auto 5px auto;
+}
+
+.equipe-selector label {
+  font-weight: bold;
+  color: #fff;
+}
+
+.equipe-selector select {
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 15px;
+  background-color: #fff;
+  color: #002f6c;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 /* =========================
@@ -47,7 +78,7 @@ p {
   position: fixed;
   top: 0;
   left: 0;
-  width: 110px;
+  width: 120px;
   height: 100%;
   background-color: #007bff;
   display: flex;
@@ -82,7 +113,7 @@ p {
    CONTENU PRINCIPAL
 ========================= */
 main {
-  margin-left: 120px;
+  margin-left: 130px;
   padding: 20px;
   flex: 1;
   transition: all 0.3s ease;
@@ -107,7 +138,7 @@ main {
 }
 
 /* =========================
-   FORMULAIRES UNIFORMES
+   FORMULAIRES
 ========================= */
 form {
   display: flex;
@@ -126,6 +157,7 @@ form {
 label {
   font-weight: bold;
   margin-top: 5px;
+  color: #002f6c;
 }
 
 input[type="number"],
@@ -174,7 +206,7 @@ button:hover,
 }
 
 /* =========================
-   TABLEAUX (historique)
+   TABLEAUX
 ========================= */
 table {
   width: 100%;
@@ -252,6 +284,19 @@ footer {
   main {
     margin-left: 0;
     margin-bottom: 85px;
+  }
+
+  .header {
+    padding: 10px 0;
+  }
+
+  .logo {
+    width: 100px;
+  }
+
+  .equipe-selector {
+    flex-direction: row;
+    margin-top: 5px;
   }
 
   form {
