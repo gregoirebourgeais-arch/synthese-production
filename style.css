@@ -1,86 +1,97 @@
-/* =========================
-   STYLE GLOBAL
-========================= */
-body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f4f8ff;
-  color: #002f6c;
+/* === RESET GÉNÉRAL === */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
   display: flex;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-h1, h2 {
-  text-align: center;
+  height: 100vh;
+  background: #f5f8ff;
   color: #002f6c;
+  overflow: hidden;
 }
 
-p {
-  text-align: center;
-}
-
-/* =========================
-   BARRE LATÉRALE
-========================= */
+/* === BARRE LATÉRALE === */
 .sidebar {
-  width: 140px;
-  background: linear-gradient(180deg, #007bff, #3aa0ff);
-  color: white;
+  width: 90px;
+  background: linear-gradient(180deg, #007bff, #66b3ff);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 25px;
-  box-shadow: 3px 0 5px rgba(0, 0, 0, 0.15);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 10;
+  padding: 15px 10px;
+  border-right: 2px solid #e0e6f0;
 }
 
-.sidebar .logo {
-  width: 100px;
-  margin-bottom: 25px;
+.sidebar .logo img {
+  width: 60px;
+  margin-bottom: 20px;
 }
 
-.nav-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.nav-btn {
-  background: #ffffff;
-  color: #007bff;
+.sidebar button {
+  width: 100%;
+  background: white;
+  color: #0056b3;
   border: none;
-  border-radius: 8px;
-  padding: 10px;
-  font-weight: bold;
+  border-radius: 12px;
+  padding: 8px;
+  margin: 6px 0;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  width: 110px;
-  transition: 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
 }
 
-.nav-btn:hover {
-  background-color: #e8f0ff;
+.sidebar button:hover {
+  background: #eaf2ff;
   transform: scale(1.05);
 }
 
-/* =========================
-   CONTENU PRINCIPAL
-========================= */
+/* === CONTENU PRINCIPAL === */
 .main-content {
   flex: 1;
-  margin-left: 150px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px 20px;
 }
 
+header {
+  text-align: center;
+  background: linear-gradient(180deg, #3aa0ff, #007bff);
+  color: white;
+  padding: 15px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+#date-info {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#equipe-info {
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* === PAGES === */
 .page {
   display: none;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .page.active {
@@ -88,172 +99,122 @@ p {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* =========================
-   EN-TÊTE
-========================= */
-.header {
-  text-align: center;
-  background-color: #e9f3ff;
-  border-radius: 10px;
+/* === FORMULAIRES === */
+input,
+select,
+textarea {
+  width: 100%;
   padding: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 8px 0 12px 0;
+  border-radius: 10px;
+  border: 1px solid #d0d8e0;
+  font-size: 15px;
+  background: #fff;
 }
 
-/* =========================
-   BOUTONS
-========================= */
+textarea {
+  height: 100px;
+  resize: none;
+}
+
 button {
-  background-color: #007bff;
+  background: #007bff;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
 }
 
 button:hover {
-  background-color: #005fcc;
+  background: #0066d6;
 }
 
-/* =========================
-   FORMULAIRES
-========================= */
-form, textarea, input, select {
-  width: 100%;
-  max-width: 500px;
-  margin: 5px auto;
-  display: block;
-  border-radius: 8px;
-  padding: 8px;
-  box-sizing: border-box;
-  font-size: 15px;
-}
-
-textarea, input {
-  border: 1px solid #ccc;
-  background-color: #fff;
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  color: #002f6c;
+/* === TABLEAUX & HISTORIQUES === */
+#historiqueConsignes,
+#historiquePersonnel,
+#liste-arrets {
   margin-top: 10px;
 }
 
-/* =========================
-   TABLEAUX
-========================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 8px;
-  margin-top: 15px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-th, td {
-  border: 1px solid #ddd;
-  text-align: center;
-  padding: 8px;
+.card p {
+  margin: 4px 0;
   font-size: 14px;
 }
 
-th {
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-}
-
-tr:nth-child(even) {
-  background-color: #f5f9ff;
-}
-
-/* =========================
-   LIGNES DE PRODUCTION
-========================= */
-.line-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+/* === BOUTONS DES LIGNES === */
+.buttons-lignes {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin: 15px auto;
-  max-width: 600px;
+  justify-content: center;
+  margin-top: 15px;
 }
 
-.line-buttons button {
-  background-color: #ffffff;
-  color: #007bff;
-  border: 2px solid #007bff;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.line-buttons button:hover {
-  background-color: #007bff;
+.buttons-lignes button {
+  flex: 1 1 40%;
+  background: #007bff;
   color: white;
-  transform: scale(1.05);
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: 0.2s;
 }
 
-/* =========================
-   GRAPHIQUES
-========================= */
-canvas {
-  display: block;
-  width: 100%;
-  max-width: 600px;
-  margin: 15px auto;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+.buttons-lignes button:hover {
+  background: #005fcc;
 }
 
-/* =========================
-   PIED DE PAGE
-========================= */
+/* === FOOTER === */
 footer {
   text-align: center;
-  font-size: 12px;
-  color: #888;
-  padding: 10px 0;
+  font-size: 13px;
+  color: #003366;
+  padding: 10px;
+  margin-top: 20px;
+  border-top: 1px solid #ccd9f2;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .sidebar {
-    flex-direction: row;
-    width: 100%;
-    height: 70px;
-    bottom: 0;
-    top: auto;
-    justify-content: space-around;
+    width: 70px;
   }
 
-  .nav-btn {
-    width: auto;
-    font-size: 12px;
-    padding: 6px 8px;
+  .sidebar button {
+    font-size: 11px;
+    padding: 6px;
   }
 
   .main-content {
-    margin-left: 0;
-    margin-bottom: 80px;
+    padding: 8px;
   }
 
-  .line-buttons {
-    grid-template-columns: repeat(2, 1fr);
+  header h1 {
+    font-size: 20px;
   }
 }
