@@ -1,24 +1,23 @@
 {
   "name": "Synthèse Production Lactalis",
   "short_name": "Synthèse",
-  "description": "Application interne Lactalis pour le suivi de production, les lignes, les exports et les indicateurs atelier.",
+  "description": "Application interne Lactalis pour le suivi des lignes de production, arrêts, personnel et organisation.",
+  "lang": "fr-FR",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
   "background_color": "#f4f8ff",
   "theme_color": "#007bff",
   "orientation": "portrait-primary",
-  "lang": "fr-FR",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/d/de/Lactalis_logo_2023.svg",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/d/de/Lactalis_logo_2023.svg",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
