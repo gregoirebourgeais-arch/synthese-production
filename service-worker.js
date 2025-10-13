@@ -1,67 +1,49 @@
-// ===============================
-// SERVICE WORKER - SYNTHÈSE LACTALIS
-// ===============================
-
-const CACHE_NAME = "synthese-lactalis-v23";
-const FILES_TO_CACHE = [
+// ==========================
+// SERVICE WORKER — SYNTHÈSE PRODUCTION
+// ==========================
+const CACHE_NAME = "synthese-production-v24";
+const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
-// INSTALLATION DU SERVICE WORKER
+// 📦 INSTALLATION — mise en cache des fichiers principaux
 self.addEventListener("install", (event) => {
-  console.log("🧩 Installation du Service Worker...");
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("✅ Fichiers mis en cache");
-      return cache.addAll(FILES_TO_CACHE);
+      console.log("Mise en cache des fichiers...");
+      return cache.addAll(ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
-// ACTIVATION ET NETTOYAGE DES ANCIENNES VERSIONS
+// ♻️ ACTIVATION — suppression des anciens caches
 self.addEventListener("activate", (event) => {
-  console.log("⚙️ Activation du nouveau Service Worker");
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log("🧹 Suppression de l'ancien cache :", key);
-            return caches.delete(key);
-          }
-        })
-      )
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
-  self.clients.claim();
+  console.log("Service Worker actif !");
 });
 
-// INTERCEPTION DES REQUÊTES
+// 🌐 FETCH — lecture depuis le cache d'abord (offline-ready)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // ✅ Renvoie la ressource depuis le cache si dispo
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      // 🔄 Sinon, récupère en ligne et met à jour le cache
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== "basic") {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
+    caches.match(event.request).then((response) => {
+      return (
+        response ||
+        fetch(event.request).then((resp) => {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return resp;
         })
-        .catch(() => caches.match("./index.html"));
+      );
     })
   );
 });
