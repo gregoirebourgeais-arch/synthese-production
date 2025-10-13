@@ -271,7 +271,7 @@ function toggleCalculator() {
 function setupFAB() {
   document.getElementById("fabCalc").addEventListener("click", toggleCalculator);
   document.getElementById("fabExportAll").addEventListener("click", exportAll);
-  document.getElementById("fabArret").addEventListener("click", ()=>toast("🔧 Arrêts à venir (en développement)"));
+  document.getElementById("fabArret").addEventListener("click", renderArrets);
 }
 
 /* ========= Auto-export des consignes ========= */
