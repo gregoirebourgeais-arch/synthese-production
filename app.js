@@ -296,3 +296,48 @@ function updateConsignesAutoExport() {
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
     }
+function renderArrets() {
+  let html = `
+  <div class="page fade">
+    <h2>Arrêts de lignes</h2>
+    <div class="card">
+      <label>Ligne :</label>
+      <select id="arretLigne">
+        <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+        <option>T1</option><option>Sticks</option><option>Emballage</option><option>Dés</option>
+        <option>Filets</option><option>Prédécoupé</option>
+      </select>
+      <label>Durée (min) :</label>
+      <input id="arretDuree" type="number" placeholder="0" />
+      <label>Cause :</label>
+      <textarea id="arretCause"></textarea>
+      <button class="btn primary" onclick="saveArret()">💾 Enregistrer</button>
+    </div>
+
+    <div class="card">
+      <h3>Historique des arrêts</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th></tr></thead>
+          <tbody>
+            ${arrets.map(a => `<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.duree}</td><td>${a.cause}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+  content.innerHTML = html;
+}
+
+function saveArret() {
+  const record = {
+    date: new Date().toLocaleString(),
+    ligne: document.getElementById("arretLigne").value,
+    duree: +document.getElementById("arretDuree").value || 0,
+    cause: document.getElementById("arretCause").value
+  };
+  arrets.push(record);
+  localStorage.setItem("arretsData", JSON.stringify(arrets));
+  toast("⏸️ Arrêt enregistré !");
+  renderArrets();
+}
