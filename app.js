@@ -61,27 +61,41 @@ function openLine(line) {
       <h2>${line}</h2>
       <button class="btn primary" onclick="renderMenu()">⬅️ Retour menu</button>
 
-      <div class="form">
-        <label>Heure début :</label>
-        <input id="debut" type="time" />
-        <label>Heure fin :</label>
-        <input id="fin" type="time" />
+      <div class="form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
+        <div class="form-row" style="display:flex;gap:10px;">
+          <div style="flex:1;">
+            <label>Heure début :</label>
+            <input id="debut" type="time" />
+          </div>
+          <div style="flex:1;">
+            <label>Heure fin :</label>
+            <input id="fin" type="time" />
+          </div>
+        </div>
+
         <label>Quantité initiale :</label>
-        <input id="initiale" type="number" />
+        <input id="initiale" type="number" placeholder="0" />
+
         <label>Quantité ajoutée :</label>
-        <input id="ajoutee" type="number" />
+        <input id="ajoutee" type="number" placeholder="0" />
+
         <label>Quantité restante :</label>
-        <input id="restante" type="number" />
+        <input id="restante" type="number" placeholder="0" />
+
         <label>Minutes d'arrêt :</label>
-        <input id="arret" type="number" />
+        <input id="arret" type="number" placeholder="0" />
 
         <label>Cadence manuelle :</label>
         <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
 
-        <button class="btn primary" onclick="saveData('${line}')">💾 Enregistrer</button>
-        <button class="btn ghost" onclick="remiseZero()">🧹 Remise à zéro</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
+          <button class="btn primary" onclick="saveData('${line}')">💾 Enregistrer</button>
+          <button class="btn ghost" onclick="remiseZero()">🧹 Remise à zéro</button>
+        </div>
 
-        <p id="estimation">⏱️ Estimation fin : ${estimation}</p>
+        <p id="estimation" style="text-align:center;margin-top:10px;font-weight:600;">
+          ⏱️ Estimation fin : ${estimation}
+        </p>
       </div>
     </div>`;
 }
