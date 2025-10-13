@@ -3,28 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Synthèse Production Lactalis</title>
+  <title>Synthèse Production Manager</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <meta name="theme-color" content="#007bff" />
   <link rel="stylesheet" href="style.css" />
   <script defer src="app.js"></script>
 </head>
+
 <body>
-  <header>
-    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
-    <h1>Synthèse Production</h1>
-    <p id="dateHeure"></p>
-  </header>
+  <!-- === MENU VERTICAL === -->
+  <aside id="menu">
+    <div class="menu-header">
+      <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
+      <h1>Synthèse Manager</h1>
+    </div>
 
-  <main id="content"></main>
+    <nav>
+      <button class="menu-btn active" data-section="production">🏭 Production</button>
+      <button class="menu-btn" data-section="personnel">👥 Personnel</button>
+      <button class="menu-btn" data-section="organisation">🗒️ Organisation</button>
+      <button class="menu-btn" data-section="dashboard">📊 Tableau de bord</button>
+    </nav>
 
-  <!-- Boutons flottants -->
+    <footer>
+      <p class="small">Lactalis © 2025</p>
+    </footer>
+  </aside>
+
+  <!-- === CONTENU PRINCIPAL === -->
+  <main id="content">
+    <!-- L'application charge dynamiquement ici -->
+  </main>
+
+  <!-- === BOUTONS FLOTTANTS === -->
   <button class="fab" id="fabCalc" title="Calculatrice">🧮</button>
-  <button class="fab fab2" id="fabExportAll" title="Export Excel">📊</button>
+  <button class="fab fab2" id="fabExportAll" title="Export Excel global">📊</button>
   <button class="fab fab3" id="fabArret" title="Nouvel arrêt">⏸️</button>
 
-  <!-- Calculatrice -->
+  <!-- === CALCULATRICE === -->
   <div id="calculator" class="hidden">
     <input type="text" id="calcDisplay" readonly />
     <div class="calc-grid">
@@ -36,8 +53,8 @@
     </div>
   </div>
 
-  <footer>
-    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+  <footer class="global-footer">
+    <p>Application interne de suivi de production – Lactalis 2025</p>
   </footer>
 </body>
 </html>
