@@ -1,295 +1,69 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
-  <link rel="manifest" href="manifest.json">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f7fb;
-      color: #002f6c;
-    }
-
-    .header {
-      text-align: center;
-      background: linear-gradient(180deg, #007BFF, #5ab8ff);
-      color: white;
-      padding: 10px 0;
-      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
-    }
-
-    .logo {
-      width: 120px;
-    }
-
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 70px;
-      height: 100%;
-      background: #007BFF;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 100px;
-      gap: 10px;
-    }
-
-    .sidebar button {
-      background: #ffffff;
-      color: #007BFF;
-      border: none;
-      border-radius: 12px;
-      padding: 10px;
-      width: 60px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 22px;
-    }
-
-    .section {
-      margin-left: 90px;
-      padding: 15px;
-    }
-
-    .btn {
-      display: block;
-      background: #007BFF;
-      color: white;
-      border-radius: 10px;
-      padding: 12px;
-      margin: 10px auto;
-      text-decoration: none;
-      text-align: center;
-      width: 80%;
-      font-size: 18px;
-      transition: 0.3s;
-    }
-
-    .btn:hover {
-      background: #005fcc;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    input, select, textarea {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 13px;
-      color: gray;
-      margin: 25px 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-
-    th, td {
-      padding: 8px;
-      text-align: center;
-    }
-
-    .hidden { display: none; }
-  </style>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007bff" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="app.js"></script>
 </head>
 
 <body>
   <header class="header">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Lactalis_logo_2023.svg" alt="Lactalis" class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Lactalis_logo_2023.svg"
+         alt="Lactalis" class="logo" />
     <h1>Synthèse Production</h1>
     <p id="dateDisplay"></p>
   </header>
 
   <nav class="sidebar">
-    <button onclick="showSection('production')">🏭</button>
-    <button onclick="showSection('personnel')">👥</button>
-    <button onclick="showSection('organisation')">🗒️</button>
+    <button onclick="showSection('menu')">🏠</button>
+    <button onclick="showSection('Râpé')">🧀</button>
+    <button onclick="showSection('T2')">2️⃣</button>
+    <button onclick="showSection('RT')">♻️</button>
+    <button onclick="showSection('OMORI')">🌀</button>
+    <button onclick="showSection('T1')">1️⃣</button>
+    <button onclick="showSection('Sticks')">🍢</button>
+    <button onclick="showSection('Emballage')">📦</button>
+    <button onclick="showSection('Dés')">🧊</button>
+    <button onclick="showSection('Filets')">🧵</button>
+    <button onclick="showSection('Prédécoupé')">🔪</button>
     <button onclick="showSection('dashboard')">📊</button>
   </nav>
 
   <main id="content">
-    <section id="production" class="section active">
-      <h2>Choisir une ligne de production</h2>
-      <div class="lines">
-        <button class="btn" onclick="openLine('Râpé')">Râpé</button>
-        <button class="btn" onclick="openLine('T2')">T2</button>
-        <button class="btn" onclick="openLine('RT')">RT</button>
-        <button class="btn" onclick="openLine('OMORI')">OMORI</button>
-        <button class="btn" onclick="openLine('T1')">T1</button>
-        <button class="btn" onclick="openLine('Sticks')">Sticks</button>
-        <button class="btn" onclick="openLine('Emballage')">Emballage</button>
-        <button class="btn" onclick="openLine('Dés')">Dés</button>
-        <button class="btn" onclick="openLine('Filets')">Filets</button>
-        <button class="btn" onclick="openLine('Prédécoupé')">Prédécoupé</button>
-      </div>
 
-      <div id="lineFormContainer" class="hidden">
-        <h3 id="lineTitle"></h3>
-        <form id="productionForm">
-          <label>Heure début :</label><input type="time" id="heureDebut">
-          <label>Heure fin :</label><input type="time" id="heureFin">
-          <label>Quantité initiale :</label><input type="number" id="qInit">
-          <label>Quantité ajoutée :</label><input type="number" id="qAjout">
-          <label>Quantité restante :</label><input type="number" id="qRest">
-          <label>Minutes d'arrêt :</label><input type="number" id="arret">
-          <label>Cadence manuelle :</label><input type="number" id="cadenceManuelle">
-
-          <button type="button" onclick="saveData()">💾 Enregistrer</button>
-          <button type="button" onclick="resetLine()">🧹 Remise à zéro</button>
-          <button type="button" onclick="exportExcel()">📤 Export Excel</button>
-        </form>
-
-        <p>⏱️ Estimation fin : <span id="estimation">_</span></p>
-      </div>
+    <!-- 🔹 Page d'accueil -->
+    <section id="menu" class="section active">
+      <h2>Bienvenue dans Synthèse Production</h2>
+      <p>Choisissez une ligne dans le menu à gauche pour enregistrer vos données de production.</p>
     </section>
 
-    <section id="personnel" class="section hidden">
-      <h2>Gestion du personnel</h2>
-      <form id="personnelForm">
-        <select id="type">
-          <option>Absence</option>
-          <option>Retard</option>
-          <option>Départ</option>
-          <option>Autre</option>
-        </select>
-        <textarea id="commentaire" placeholder="Commentaire..."></textarea>
-        <button type="button" onclick="savePersonnel()">💾 Enregistrer</button>
-      </form>
-      <table id="personnelTable">
-        <thead><tr><th>Date</th><th>Type</th><th>Commentaire</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
+    <!-- 🔹 Gabarit pour les 10 lignes -->
+    <section id="Râpé" class="section hidden"></section>
+    <section id="T2" class="section hidden"></section>
+    <section id="RT" class="section hidden"></section>
+    <section id="OMORI" class="section hidden"></section>
+    <section id="T1" class="section hidden"></section>
+    <section id="Sticks" class="section hidden"></section>
+    <section id="Emballage" class="section hidden"></section>
+    <section id="Dés" class="section hidden"></section>
+    <section id="Filets" class="section hidden"></section>
+    <section id="Prédécoupé" class="section hidden"></section>
 
-    <section id="organisation" class="section hidden">
-      <h2>Consignes et organisation</h2>
-      <textarea id="noteOrg" placeholder="Consigne ou remarque..."></textarea>
-      <button onclick="saveOrganisation()">💾 Enregistrer</button>
-      <table id="orgTable">
-        <thead><tr><th>Date</th><th>Consigne</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
+    <!-- 🔹 Tableau de bord atelier -->
     <section id="dashboard" class="section hidden">
-      <h2>Tableau de bord Atelier</h2>
+      <h2>Tableau de bord global</h2>
       <canvas id="atelierChart" width="350" height="250"></canvas>
+      <button onclick="exportAllData()">📤 Export global</button>
     </section>
   </main>
 
   <footer>
     <p>Lactalis © 2025 — Application interne de suivi de production</p>
   </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const dateDisplay = document.getElementById("dateDisplay");
-    setInterval(() => {
-      const now = new Date();
-      const semaine = Math.ceil(((now - new Date(now.getFullYear(),0,1)) / 86400000 + new Date(now.getFullYear(),0,1).getDay()+1)/7);
-      dateDisplay.textContent = now.toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'}) + 
-        " — Semaine " + semaine + " — " + now.toLocaleTimeString();
-    }, 1000);
-
-    let currentLine = null;
-
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function openLine(name) {
-      currentLine = name;
-      document.getElementById("lineTitle").textContent = "Ligne " + name;
-      document.getElementById("lineFormContainer").classList.remove('hidden');
-    }
-
-    function saveData() {
-      const heureDebut = document.getElementById("heureDebut").value;
-      const heureFin = document.getElementById("heureFin").value;
-      const qInit = +document.getElementById("qInit").value || 0;
-      const qAjout = +document.getElementById("qAjout").value || 0;
-      const qRest = +document.getElementById("qRest").value || 0;
-      const arret = +document.getElementById("arret").value || 0;
-      const cadenceManuelle = +document.getElementById("cadenceManuelle").value || 0;
-
-      const total = qInit + qAjout - qRest;
-      const temps = (new Date(`1970-01-01T${heureFin}`) - new Date(`1970-01-01T${heureDebut}`)) / 60000 - arret;
-      const cadence = cadenceManuelle || (temps > 0 ? (total / temps) * 60 : 0);
-      const estimation = cadence > 0 ? (qRest / cadence).toFixed(2) + " h" : "_";
-
-      document.getElementById("estimation").textContent = estimation;
-
-      let data = JSON.parse(localStorage.getItem("lignesData") || "{}");
-      data[currentLine] = { heureDebut, heureFin, qInit, qAjout, qRest, arret, cadence, estimation };
-      localStorage.setItem("lignesData", JSON.stringify(data));
-      alert(`✅ Données enregistrées pour ${currentLine} (${cadence.toFixed(2)} u/h)`);
-    }
-
-    function resetLine() {
-      if (confirm("Remise à zéro complète ?")) {
-        let data = JSON.parse(localStorage.getItem("lignesData") || "{}");
-        delete data[currentLine];
-        localStorage.setItem("lignesData", JSON.stringify(data));
-        document.getElementById("productionForm").reset();
-        document.getElementById("estimation").textContent = "_";
-      }
-    }
-
-    function exportExcel() {
-      const data = JSON.parse(localStorage.getItem("lignesData") || "{}")[currentLine];
-      if (!data) return alert("Aucune donnée à exporter !");
-      let csv = "Champ;Valeur\n";
-      for (let [k, v] of Object.entries(data)) csv += `${k};${v}\n`;
-      const blob = new Blob([csv], { type: "text/csv" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${currentLine}-export.csv`;
-      a.click();
-    }
-
-    function savePersonnel() {
-      const type = document.getElementById("type").value;
-      const commentaire = document.getElementById("commentaire").value;
-      const date = new Date().toLocaleString();
-      const tbody = document.querySelector("#personnelTable tbody");
-      const row = `<tr><td>${date}</td><td>${type}</td><td>${commentaire}</td></tr>`;
-      tbody.insertAdjacentHTML("beforeend", row);
-      localStorage.setItem("personnelData", tbody.innerHTML);
-    }
-
-    function saveOrganisation() {
-      const note = document.getElementById("noteOrg").value;
-      const date = new Date().toLocaleString();
-      const tbody = document.querySelector("#orgTable tbody");
-      const row = `<tr><td>${date}</td><td>${note}</td></tr>`;
-      tbody.insertAdjacentHTML("beforeend", row);
-      localStorage.setItem("orgData", tbody.innerHTML);
-    }
-
-    window.onload = () => {
-      document.querySelector("#personnelTable tbody").innerHTML = localStorage.getItem("personnelData") || "";
-      document.querySelector("#orgTable tbody").innerHTML = localStorage.getItem("orgData") || "";
-    };
-  </script>
 </body>
 </html>
