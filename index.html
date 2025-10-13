@@ -4,98 +4,82 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#007bff" />
-  <link rel="icon" href="icons/icon-512.png" type="image/png" />
-
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
 </head>
 
 <body>
-  <div class="app-container">
-    <!-- Barre latérale -->
-    <aside class="sidebar">
-      <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
-      <nav class="nav-menu">
-        <button class="nav-btn" onclick="openSection('production')">🏭 Production</button>
-        <button class="nav-btn" onclick="openSection('arrets')">⏸️ Arrêts</button>
-        <button class="nav-btn" onclick="openSection('personnel')">👥 Personnel</button>
-        <button class="nav-btn" onclick="openSection('organisation')">🗒️ Organisation</button>
-        <button class="nav-btn" onclick="openSection('atelier')">📊 Atelier</button>
-      </nav>
-    </aside>
-
-    <!-- Contenu principal -->
-    <main id="content" class="main-content">
-      <header class="header">
-        <h1>Synthèse <span>Production</span></h1>
-        <p id="dateTime"></p>
-        <p id="equipe"></p>
-      </header>
-
-      <!-- Section Production -->
-      <section id="production" class="page active">
-        <h2>Choisir une ligne de production</h2>
-        <div class="line-buttons">
-          <button onclick="openLine('Râpé')">Râpé</button>
-          <button onclick="openLine('T2')">T2</button>
-          <button onclick="openLine('RT')">RT</button>
-          <button onclick="openLine('OMORI')">OMORI</button>
-          <button onclick="openLine('T1')">T1</button>
-          <button onclick="openLine('Sticks')">Sticks</button>
-          <button onclick="openLine('Emballage')">Emballage</button>
-          <button onclick="openLine('Dés')">Dés</button>
-          <button onclick="openLine('Filets')">Filets</button>
-          <button onclick="openLine('Prédécoupé')">Prédécoupé</button>
-        </div>
-      </section>
-
-      <!-- Section Arrêts -->
-      <section id="arrets" class="page">
-        <h2>Gestion des arrêts</h2>
-        <p>Sélectionnez une ligne pour consulter ou ajouter des arrêts.</p>
-        <div id="arretsContent"></div>
-      </section>
-
-      <!-- Section Personnel -->
-      <section id="personnel" class="page">
-        <h2>Suivi du personnel</h2>
-        <label>Type :</label>
-        <select id="typePersonnel">
-          <option value="absence">Absence</option>
-          <option value="retard">Retard</option>
-          <option value="depart">Départ</option>
-          <option value="autre">Autre</option>
-        </select>
-        <textarea id="commentPersonnel" placeholder="Commentaire..."></textarea>
-        <button onclick="savePersonnel()">Enregistrer</button>
-        <div id="personnelHistorique"></div>
-      </section>
-
-      <!-- Section Organisation -->
-      <section id="organisation" class="page">
-        <h2>Consignes & Organisation</h2>
-        <textarea id="consigne" placeholder="Nouvelle consigne..."></textarea>
-        <button onclick="saveConsigne()">💾 Enregistrer la consigne</button>
-        <div id="consigneListe"></div>
-      </section>
-
-      <!-- Section Atelier -->
-      <section id="atelier" class="page">
-        <h2>Vue Atelier</h2>
-        <canvas id="atelierChart"></canvas>
-        <button onclick="exportAtelier()">📤 Export Excel</button>
-        <button onclick="resetApplication()">🧹 Remise à zéro complète</button>
-      </section>
-    </main>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="img/lactalis.png" alt="Lactalis" />
+    </div>
+    <button onclick="openSection('production')">🏭 Production</button>
+    <button onclick="openSection('arrets')">⏸️ Arrêts</button>
+    <button onclick="openSection('personnel')">👥 Personnel</button>
+    <button onclick="openSection('organisation')">🗒️ Organisation</button>
+    <button onclick="openSection('tableau')">📊 Tableau de bord</button>
   </div>
 
+  <div class="main-content">
+    <header>
+      <h1>Synthèse Production</h1>
+      <p id="date-info"></p>
+      <div id="equipe-info"></div>
+    </header>
+
+    <!-- === PAGE PRODUCTION === -->
+    <section id="production" class="page active">
+      <h2>Production</h2>
+      <div class="buttons-lignes" id="buttons-lignes"></div>
+      <div id="ligne-content"></div>
+    </section>
+
+    <!-- === PAGE ARRETS === -->
+    <section id="arrets" class="page">
+      <h2>Arrêts</h2>
+      <div id="arrets-content">
+        <button onclick="ajouterArret()">+ Nouvel arrêt</button>
+        <div id="liste-arrets"></div>
+      </div>
+    </section>
+
+    <!-- === PAGE PERSONNEL === -->
+    <section id="personnel" class="page">
+      <h2>Personnel</h2>
+      <label>Type :</label>
+      <select id="typePersonnel">
+        <option value="Absence">Absence</option>
+        <option value="Retard">Retard</option>
+        <option value="Départ">Départ</option>
+        <option value="Autre">Autre</option>
+      </select>
+      <input id="commentairePersonnel" placeholder="Commentaire..." />
+      <button onclick="ajouterPersonnel()">Enregistrer</button>
+      <div id="historiquePersonnel"></div>
+    </section>
+
+    <!-- === PAGE ORGANISATION === -->
+    <section id="organisation" class="page">
+      <h2>Organisation / Consignes</h2>
+      <input id="auteurConsigne" placeholder="Rédigé par..." />
+      <textarea id="texteConsigne" placeholder="Nouvelle consigne..."></textarea>
+      <button onclick="ajouterConsigne()">Ajouter</button>
+      <div id="historiqueConsignes"></div>
+    </section>
+
+    <!-- === PAGE TABLEAU DE BORD === -->
+    <section id="tableau" class="page">
+      <h2>Tableau de bord</h2>
+      <canvas id="chartCadence" height="200"></canvas>
+    </section>
+
+    <footer>
+      <p>Lactalis © 2025 — Application interne de suivi de production</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
