@@ -3,58 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Synthèse Production Manager</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icons/icon-192.png" />
   <meta name="theme-color" content="#007bff" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="app.js"></script>
 </head>
 
 <body>
-  <!-- === MENU VERTICAL === -->
-  <aside id="menu">
-    <div class="menu-header">
-      <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
-      <h1>Synthèse Manager</h1>
-    </div>
-
-    <nav>
-      <button class="menu-btn active" data-section="production">🏭 Production</button>
-      <button class="menu-btn" data-section="personnel">👥 Personnel</button>
-      <button class="menu-btn" data-section="organisation">🗒️ Organisation</button>
-      <button class="menu-btn" data-section="dashboard">📊 Tableau de bord</button>
-    </nav>
-
-    <footer>
-      <p class="small">Lactalis © 2025</p>
-    </footer>
+  <!-- ====== MENU VERTICAL ====== -->
+  <aside class="menu-container">
+    <button class="menu-btn active" data-section="production">
+      <img src="icons/factory.png" alt="Production" />
+      <span>Production</span>
+    </button>
+    <button class="menu-btn" data-section="personnel">
+      <img src="icons/users.png" alt="Personnel" />
+      <span>Personnel</span>
+    </button>
+    <button class="menu-btn" data-section="organisation">
+      <img src="icons/note.png" alt="Organisation" />
+      <span>Organisation</span>
+    </button>
+    <button class="menu-btn" data-section="dashboard">
+      <img src="icons/chart.png" alt="Tableau de bord" />
+      <span>Tableau<br>de bord</span>
+    </button>
   </aside>
 
-  <!-- === CONTENU PRINCIPAL === -->
+  <!-- ====== CONTENU PRINCIPAL ====== -->
   <main id="content">
-    <!-- L'application charge dynamiquement ici -->
+    <header class="header">
+      <img src="icons/lactalis-logo.png" alt="Lactalis" class="logo" />
+      <h1>Synthèse Production</h1>
+      <p id="dateTime"></p>
+    </header>
+
+    <section id="mainPage" class="page fade">
+      <h2>Choisir une ligne de production</h2>
+      <div class="lines-container">
+        <button onclick="openLine('Râpé')">Râpé</button>
+        <button onclick="openLine('T2')">T2</button>
+        <button onclick="openLine('RT')">RT</button>
+        <button onclick="openLine('OMORI')">OMORI</button>
+        <button onclick="openLine('T1')">T1</button>
+        <button onclick="openLine('Sticks')">Sticks</button>
+        <button onclick="openLine('Emballage')">Emballage</button>
+        <button onclick="openLine('Dés')">Dés</button>
+        <button onclick="openLine('Filets')">Filets</button>
+        <button onclick="openLine('Prédécoupé')">Prédécoupé</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Lactalis © 2025 — Application interne de suivi de production</p>
+    </footer>
   </main>
 
-  <!-- === BOUTONS FLOTTANTS === -->
-  <button class="fab" id="fabCalc" title="Calculatrice">🧮</button>
-  <button class="fab fab2" id="fabExportAll" title="Export Excel global">📊</button>
-  <button class="fab fab3" id="fabArret" title="Nouvel arrêt">⏸️</button>
+  <!-- ====== BOUTONS FLOTTANTS ====== -->
+  <div class="fab-container">
+    <button id="fabArret" class="fab" title="Arrêts de ligne">⏸️</button>
+    <button id="fabGraph" class="fab" title="Graphiques">📊</button>
+    <button id="fabCalc" class="fab" title="Calculatrice">🧮</button>
+  </div>
 
-  <!-- === CALCULATRICE === -->
-  <div id="calculator" class="hidden">
-    <input type="text" id="calcDisplay" readonly />
-    <div class="calc-grid">
+  <!-- ====== CALCULATRICE ====== -->
+  <div id="calculator" class="calculator hidden">
+    <input type="text" id="calc-display" readonly />
+    <div class="calc-buttons">
       <button>7</button><button>8</button><button>9</button><button>/</button>
       <button>4</button><button>5</button><button>6</button><button>*</button>
       <button>1</button><button>2</button><button>3</button><button>-</button>
       <button>0</button><button>.</button><button>=</button><button>+</button>
-      <button class="clear">C</button>
+      <button id="calc-clear">C</button>
     </div>
   </div>
 
-  <footer class="global-footer">
-    <p>Application interne de suivi de production – Lactalis 2025</p>
-  </footer>
+  <script src="app.js"></script>
+  <script src="service-worker.js"></script>
 </body>
 </html>
