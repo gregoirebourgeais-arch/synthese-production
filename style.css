@@ -79,6 +79,14 @@ button:hover, .bouton-principal:hover {
   background: #00b5ff;
 }
 
+button.danger {
+  background: #ff5252;
+}
+
+button.danger:hover {
+  background: #d80000;
+}
+
 /* === Champs de saisie === */
 label {
   display: block;
@@ -88,7 +96,7 @@ label {
   color: #004080;
 }
 
-input {
+input, select, textarea {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
@@ -98,7 +106,7 @@ input {
   box-sizing: border-box;
 }
 
-input:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 4px #007bff88;
@@ -152,7 +160,7 @@ tr:last-child td {
   border-bottom: none;
 }
 
-/* === Boutons flottants (PWA style) === */
+/* === Boutons flottants === */
 .fab-row {
   position: fixed;
   bottom: 20px;
@@ -228,6 +236,24 @@ tr:last-child td {
   background: #005fcc;
 }
 
+/* === Page Arrêts === */
+.page-arrets {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.page-arrets h2 {
+  text-align: center;
+  color: #005fcc;
+}
+
+.table-arrets {
+  margin-top: 15px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
 /* === Responsive === */
 @media (max-width: 768px) {
   .logo-lactalis { width: 110px; }
@@ -238,6 +264,6 @@ tr:last-child td {
     font-size: 1rem;
     padding: 12px;
   }
-  input { font-size: 0.95rem; }
+  input, select, textarea { font-size: 0.95rem; }
   .stats p { font-size: 0.95rem; }
 }
