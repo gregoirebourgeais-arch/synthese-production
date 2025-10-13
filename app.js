@@ -1,16 +1,43 @@
 // ==============================
-// 🔹 INITIALISATION
+// 🔹 INIT GÉNÉRALE
 // ==============================
 const lignes = [
   "Râpé", "T2", "RT", "OMORI", "T1",
   "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"
 ];
 
+let currentEquipe = "M"; // Valeur par défaut
 let currentSection = "menu";
 const dateDisplay = document.getElementById("dateDisplay");
+const equipeSelect = document.getElementById("equipe");
+const teamDisplay = document.getElementById("teamDisplay");
 
 // ==============================
-// 🔹 AFFICHAGE DATE / HEURE / SEMAINE
+// 🔹 DETECTION AUTOMATIQUE DE L’ÉQUIPE
+// ==============================
+function detectEquipeAuto() {
+  const now = new Date();
+  const heure = now.getHours();
+
+  if (heure >= 5 && heure < 13) currentEquipe = "M";
+  else if (heure >= 13 && heure < 21) currentEquipe = "AM";
+  else currentEquipe = "N";
+
+  // Persistance locale
+  const saved = localStorage.getItem("currentEquipe");
+  currentEquipe = saved || currentEquipe;
+  equipeSelect.value = currentEquipe;
+  teamDisplay.textContent = currentEquipe;
+}
+
+function changeEquipe(equipe) {
+  currentEquipe = equipe;
+  localStorage.setItem("currentEquipe", equipe);
+  teamDisplay.textContent = equipe;
+}
+
+// ==============================
+// 🔹 DATE + HEURE + SEMAINE
 // ==============================
 setInterval(() => {
   const now = new Date();
@@ -32,7 +59,7 @@ setInterval(() => {
 }, 1000);
 
 // ==============================
-// 🔹 NAVIGATION ENTRE LES SECTIONS
+// 🔹 NAVIGATION ENTRE SECTIONS
 // ==============================
 function showSection(id) {
   document.querySelectorAll(".section").forEach((s) => s.classList.add("hidden"));
@@ -48,9 +75,10 @@ function showSection(id) {
 }
 
 // ==============================
-// 🔹 CRÉATION AUTOMATIQUE DES LIGNES
+// 🔹 INITIALISATION DES LIGNES
 // ==============================
 window.onload = () => {
+  detectEquipeAuto();
   lignes.forEach((line) => {
     const section = document.getElementById(line);
     section.innerHTML = `
@@ -74,6 +102,11 @@ window.onload = () => {
       <canvas id="chart-${line}" width="350" height="200"></canvas>
       <button class="btn" onclick="showSection('menu')">⬅️ Retour menu</button>
     `;
+
+    // Écouteur de changement pour persistance automatique
+    document.querySelectorAll(`#form-${line} input`).forEach((input) => {
+      input.addEventListener("input", () => saveTempData(line));
+    });
   });
 
   restoreLocalData();
@@ -81,7 +114,42 @@ window.onload = () => {
 };
 
 // ==============================
-// 🔹 SAUVEGARDE ET CALCUL
+// 🔹 PERSISTANCE AUTOMATIQUE DES SAISIES
+// ==============================
+function saveTempData(line) {
+  let tmpData = JSON.parse(localStorage.getItem("tempData") || "{}");
+  tmpData[line] = {
+    hD: document.getElementById(`hD-${line}`).value,
+    hF: document.getElementById(`hF-${line}`).value,
+    qI: document.getElementById(`qI-${line}`).value,
+    qA: document.getElementById(`qA-${line}`).value,
+    qR: document.getElementById(`qR-${line}`).value,
+    aR: document.getElementById(`aR-${line}`).value,
+    cM: document.getElementById(`cM-${line}`).value,
+  };
+  localStorage.setItem("tempData", JSON.stringify(tmpData));
+}
+
+function restoreLocalData() {
+  const d = JSON.parse(localStorage.getItem("lignesData") || "{}");
+  const tmp = JSON.parse(localStorage.getItem("tempData") || "{}");
+  Object.entries(d).forEach(([line, v]) => {
+    if (document.getElementById(`form-${line}`)) {
+      document.getElementById(`cad-${line}`).textContent = v.cadence?.toFixed(2) || "0";
+      document.getElementById(`est-${line}`).textContent = v.estimation || "_";
+      updateLineChart(line, v.cadence || 0);
+    }
+  });
+  Object.entries(tmp).forEach(([line, v]) => {
+    for (let k in v) {
+      const el = document.getElementById(`${k}-${line}`);
+      if (el) el.value = v[k];
+    }
+  });
+}
+
+// ==============================
+// 🔹 SAUVEGARDE VALIDÉE
 // ==============================
 function saveData(line) {
   const hD = document.getElementById(`hD-${line}`).value;
@@ -98,12 +166,16 @@ function saveData(line) {
   const estimation = cadence > 0 ? (qR / cadence).toFixed(2) + " h" : "_";
 
   let data = JSON.parse(localStorage.getItem("lignesData") || "{}");
-  data[line] = { hD, hF, qI, qA, qR, aR, cM, cadence, estimation, time: new Date().toLocaleString() };
+  data[line] = { hD, hF, qI, qA, qR, aR, cM, cadence, estimation, equipe: currentEquipe, time: new Date().toLocaleString() };
   localStorage.setItem("lignesData", JSON.stringify(data));
+
+  // Nettoyage des temporaires
+  let tmp = JSON.parse(localStorage.getItem("tempData") || "{}");
+  delete tmp[line];
+  localStorage.setItem("tempData", JSON.stringify(tmp));
 
   document.getElementById(`cad-${line}`).textContent = cadence.toFixed(2);
   document.getElementById(`est-${line}`).textContent = estimation;
-
   updateLineChart(line, cadence);
 }
 
@@ -126,7 +198,7 @@ function updateLineChart(line, cadence) {
 }
 
 // ==============================
-// 🔹 EXPORTS
+// 🔹 EXPORT ET RESET
 // ==============================
 function exportLine(line) {
   const d = JSON.parse(localStorage.getItem("lignesData") || "{}")[line];
@@ -136,140 +208,22 @@ function exportLine(line) {
   const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `${line}-export-${new Date().toISOString().slice(0, 19)}.csv`;
+  a.download = `${line}-${d.equipe}-export-${new Date().toISOString().slice(0, 19)}.csv`;
   a.click();
 }
 
 function exportAllData() {
   const d = JSON.parse(localStorage.getItem("lignesData") || "{}");
   if (!Object.keys(d).length) return alert("Aucune donnée à exporter !");
-  let csv = "Ligne;HeureDébut;HeureFin;QuantitéInitiale;QuantitéAjoutée;QuantitéRestante;Arrêts;Cadence;Estimation;Date\n";
+  let csv = "Ligne;Équipe;HeureDébut;HeureFin;QuantitéInitiale;QuantitéAjoutée;QuantitéRestante;Arrêts;Cadence;Estimation;Date\n";
   for (const [line, v] of Object.entries(d)) {
-    csv += `${line};${v.hD};${v.hF};${v.qI};${v.qA};${v.qR};${v.aR};${v.cadence.toFixed(2)};${v.estimation};${v.time}\n`;
+    csv += `${line};${v.equipe};${v.hD};${v.hF};${v.qI};${v.qA};${v.qR};${v.aR};${v.cadence.toFixed(2)};${v.estimation};${v.time}\n`;
   }
   const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `atelier-export-${new Date().toISOString().slice(0, 19)}.csv`;
+  a.download = `atelier-export-${currentEquipe}-${new Date().toISOString().slice(0, 19)}.csv`;
   a.click();
-}
-
-// ==============================
-// 🔹 ARRÊTS
-// ==============================
-function saveArret() {
-  const ligne = document.getElementById("ligneArret").value;
-  const temps = document.getElementById("tempsArret").value;
-  const cause = document.getElementById("causeArret").value;
-  const date = new Date().toLocaleString();
-
-  let arr = JSON.parse(localStorage.getItem("arretsData") || "[]");
-  arr.push({ ligne, temps, cause, date });
-  localStorage.setItem("arretsData", JSON.stringify(arr));
-  refreshArrets();
-}
-
-function refreshArrets() {
-  const tbody = document.querySelector("#tableArrets tbody");
-  const arr = JSON.parse(localStorage.getItem("arretsData") || "[]");
-  tbody.innerHTML = arr
-    .map((a) => `<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.temps}</td><td>${a.cause}</td></tr>`)
-    .join("");
-}
-
-function exportArrets() {
-  const arr = JSON.parse(localStorage.getItem("arretsData") || "[]");
-  if (!arr.length) return alert("Aucun arrêt enregistré !");
-  let csv = "Date;Ligne;Durée;Cause\n";
-  arr.forEach((a) => (csv += `${a.date};${a.ligne};${a.temps};${a.cause}\n`));
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `arrets-export-${new Date().toISOString().slice(0, 19)}.csv`;
-  a.click();
-}
-
-// ==============================
-// 🔹 PERSONNEL
-// ==============================
-function savePersonnel() {
-  const type = document.getElementById("type").value;
-  const com = document.getElementById("commentaire").value;
-  const date = new Date().toLocaleString();
-
-  let pers = JSON.parse(localStorage.getItem("personnelData") || "[]");
-  pers.push({ date, type, com });
-  localStorage.setItem("personnelData", JSON.stringify(pers));
-  refreshPersonnel();
-}
-
-function refreshPersonnel() {
-  const tbody = document.querySelector("#personnelTable tbody");
-  const pers = JSON.parse(localStorage.getItem("personnelData") || "[]");
-  tbody.innerHTML = pers.map((p) => `<tr><td>${p.date}</td><td>${p.type}</td><td>${p.com}</td></tr>`).join("");
-}
-
-function exportPersonnel() {
-  const pers = JSON.parse(localStorage.getItem("personnelData") || "[]");
-  if (!pers.length) return alert("Aucune donnée à exporter !");
-  let csv = "Date;Type;Commentaire\n";
-  pers.forEach((p) => (csv += `${p.date};${p.type};${p.com}\n`));
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `personnel-export-${new Date().toISOString().slice(0, 19)}.csv`;
-  a.click();
-}
-
-// ==============================
-// 🔹 ORGANISATION
-// ==============================
-function saveOrganisation() {
-  const note = document.getElementById("noteOrg").value;
-  const date = new Date().toLocaleString();
-  let org = JSON.parse(localStorage.getItem("orgData") || "[]");
-  org.push({ date, note });
-  localStorage.setItem("orgData", JSON.stringify(org));
-  refreshOrganisation();
-}
-
-function refreshOrganisation() {
-  const tbody = document.querySelector("#orgTable tbody");
-  const org = JSON.parse(localStorage.getItem("orgData") || "[]");
-  tbody.innerHTML = org.map((o) => `<tr><td>${o.date}</td><td>${o.note}</td></tr>`).join("");
-}
-
-function exportOrganisation() {
-  const org = JSON.parse(localStorage.getItem("orgData") || "[]");
-  if (!org.length) return alert("Aucune consigne !");
-  let csv = "Date;Consigne\n";
-  org.forEach((o) => (csv += `${o.date};${o.note}\n`));
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `organisation-export-${new Date().toISOString().slice(0, 19)}.csv`;
-  a.click();
-}
-
-// ==============================
-// 🔹 RESTAURATION + RESET
-// ==============================
-function restoreLocalData() {
-  const d = JSON.parse(localStorage.getItem("lignesData") || "{}");
-  Object.entries(d).forEach(([line, v]) => {
-    if (document.getElementById(`form-${line}`)) {
-      document.getElementById(`hD-${line}`).value = v.hD || "";
-      document.getElementById(`hF-${line}`).value = v.hF || "";
-      document.getElementById(`qI-${line}`).value = v.qI || "";
-      document.getElementById(`qA-${line}`).value = v.qA || "";
-      document.getElementById(`qR-${line}`).value = v.qR || "";
-      document.getElementById(`aR-${line}`).value = v.aR || "";
-      document.getElementById(`cM-${line}`).value = v.cM || "";
-      document.getElementById(`cad-${line}`).textContent = v.cadence?.toFixed(2) || "0";
-      document.getElementById(`est-${line}`).textContent = v.estimation || "_";
-      updateLineChart(line, v.cadence || 0);
-    }
-  });
 }
 
 function resetLine(line) {
@@ -292,7 +246,60 @@ function resetAllData() {
 }
 
 // ==============================
-// 🔹 TABLEAU DE BORD GLOBAL
+// 🔹 ARRÊTS, PERSONNEL, ORGANISATION
+// ==============================
+function saveArret() {
+  const ligne = document.getElementById("ligneArret").value;
+  const temps = document.getElementById("tempsArret").value;
+  const cause = document.getElementById("causeArret").value;
+  const date = new Date().toLocaleString();
+
+  let arr = JSON.parse(localStorage.getItem("arretsData") || "[]");
+  arr.push({ ligne, temps, cause, equipe: currentEquipe, date });
+  localStorage.setItem("arretsData", JSON.stringify(arr));
+  refreshArrets();
+}
+
+function refreshArrets() {
+  const tbody = document.querySelector("#tableArrets tbody");
+  const arr = JSON.parse(localStorage.getItem("arretsData") || "[]").filter(a => a.equipe === currentEquipe);
+  tbody.innerHTML = arr.map(a => `<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.temps}</td><td>${a.cause}</td></tr>`).join("");
+}
+
+function savePersonnel() {
+  const type = document.getElementById("type").value;
+  const com = document.getElementById("commentaire").value;
+  const date = new Date().toLocaleString();
+
+  let pers = JSON.parse(localStorage.getItem("personnelData") || "[]");
+  pers.push({ date, type, com, equipe: currentEquipe });
+  localStorage.setItem("personnelData", JSON.stringify(pers));
+  refreshPersonnel();
+}
+
+function refreshPersonnel() {
+  const tbody = document.querySelector("#personnelTable tbody");
+  const pers = JSON.parse(localStorage.getItem("personnelData") || "[]").filter(p => p.equipe === currentEquipe);
+  tbody.innerHTML = pers.map(p => `<tr><td>${p.date}</td><td>${p.type}</td><td>${p.com}</td></tr>`).join("");
+}
+
+function saveOrganisation() {
+  const note = document.getElementById("noteOrg").value;
+  const date = new Date().toLocaleString();
+  let org = JSON.parse(localStorage.getItem("orgData") || "[]");
+  org.push({ date, note, equipe: currentEquipe });
+  localStorage.setItem("orgData", JSON.stringify(org));
+  refreshOrganisation();
+}
+
+function refreshOrganisation() {
+  const tbody = document.querySelector("#orgTable tbody");
+  const org = JSON.parse(localStorage.getItem("orgData") || "[]").filter(o => o.equipe === currentEquipe);
+  tbody.innerHTML = org.map(o => `<tr><td>${o.date}</td><td>${o.note}</td></tr>`).join("");
+}
+
+// ==============================
+// 🔹 DASHBOARD ATELIER
 // ==============================
 function updateDashboard() {
   const d = JSON.parse(localStorage.getItem("lignesData") || "{}");
@@ -305,14 +312,8 @@ function updateDashboard() {
     type: "bar",
     data: {
       labels,
-      datasets: [
-        {
-          label: "Cadence moyenne (colis/h)",
-          data: values,
-          backgroundColor: "#007bff",
-        },
-      ],
+      datasets: [{ label: `Cadence moyenne ${currentEquipe} (colis/h)`, data: values, backgroundColor: "#007bff" }],
     },
     options: { scales: { y: { beginAtZero: true } } },
   });
-                                      }
+}
