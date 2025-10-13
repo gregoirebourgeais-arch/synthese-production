@@ -1,81 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Synthèse Production</title>
-  <meta name="theme-color" content="#007bff" />
-
-  <!-- Librairies -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-  <!-- PWA -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synthèse Production Lactalis</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/png" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="icons/icon-512.png" />
-
-  <!-- Styles -->
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#007bff" />
   <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
 </head>
-
 <body>
-  <header class="site-header">
-    <img src="Lactalis2023Logo.svg" class="logo-lactalis" alt="Lactalis" />
-    <h1><span class="titre-bleu">Synthèse</span> Production</h1>
-    <div id="topClock" class="top-clock"></div>
+  <header>
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
+    <h1>Synthèse Production</h1>
+    <p id="dateHeure"></p>
   </header>
 
-  <main>
-    <section id="content" class="fade"></section>
-  </main>
+  <main id="content"></main>
 
-  <footer>
-    <p>© Lactalis 2025 — Application interne de suivi de production</p>
-  </footer>
+  <!-- Boutons flottants -->
+  <button class="fab" id="fabCalc" title="Calculatrice">🧮</button>
+  <button class="fab fab2" id="fabExportAll" title="Export Excel">📊</button>
+  <button class="fab fab3" id="fabArret" title="Nouvel arrêt">⏸️</button>
 
-  <!-- Calculatrice flottante -->
+  <!-- Calculatrice -->
   <div id="calculator" class="hidden">
-    <input id="calcDisplay" readonly />
-    <div class="calc-buttons">
-      <button onclick="calcPress('7')">7</button>
-      <button onclick="calcPress('8')">8</button>
-      <button onclick="calcPress('9')">9</button>
-      <button onclick="calcPress('/')">/</button>
-      <button onclick="calcPress('4')">4</button>
-      <button onclick="calcPress('5')">5</button>
-      <button onclick="calcPress('6')">6</button>
-      <button onclick="calcPress('*')">*</button>
-      <button onclick="calcPress('1')">1</button>
-      <button onclick="calcPress('2')">2</button>
-      <button onclick="calcPress('3')">3</button>
-      <button onclick="calcPress('-')">-</button>
-      <button onclick="calcPress('0')">0</button>
-      <button onclick="calcPress('.')">.</button>
-      <button onclick="calcEqual()">=</button>
-      <button onclick="calcPress('+')">+</button>
-      <button onclick="calcClear()">C</button>
-      <button onclick="toggleCalc()">Fermer</button>
+    <input type="text" id="calcDisplay" readonly />
+    <div class="calc-grid">
+      <button>7</button><button>8</button><button>9</button><button>/</button>
+      <button>4</button><button>5</button><button>6</button><button>*</button>
+      <button>1</button><button>2</button><button>3</button><button>-</button>
+      <button>0</button><button>.</button><button>=</button><button>+</button>
+      <button class="clear">C</button>
     </div>
   </div>
 
-  <!-- Boutons flottants -->
-  <div class="fab-row">
-    <button class="fab" onclick="toggleCalc()">🧮</button>
-    <button class="fab" onclick="showAtelier()">🏭</button>
-    <button class="fab" onclick="openArretsGlobal()">⏸️</button>
-  </div>
-
-  <!-- Script principal -->
-  <script src="app.js"></script>
-
-  <!-- Service worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("✅ Service Worker actif"))
-        .catch(e => console.warn("Erreur SW :", e));
-    }
-  </script>
+  <footer>
+    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+  </footer>
 </body>
 </html>
