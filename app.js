@@ -304,4 +304,17 @@ function calcEqual() {
 function calcClear() {
   calcValue = "";
   document.getElementById("calcDisplay").value = "";
+/* === Bouton flottant Arrêt global === */
+document.addEventListener("DOMContentLoaded", () => {
+  const fabArret = document.getElementById("fabArret");
+  if (fabArret) {
+    fabArret.addEventListener("click", () => {
+      if (!currentLine) {
+        alert("📋 Choisissez d'abord une ligne pour enregistrer un arrêt.");
+      } else {
+        ouvrirArrets(currentLine);
+      }
+    });
+  }
+});
     }
