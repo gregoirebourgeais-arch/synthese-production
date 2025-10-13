@@ -4,156 +4,97 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/png" href="icons/logo-lactalis.png" />
+  <meta name="theme-color" content="#007bff" />
+  <link rel="icon" href="icons/icon-512.png" type="image/png" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-  <!-- ======= EN-TÊTE ======= -->
-  <header class="header">
-    <img src="icons/logo-lactalis.png" alt="Lactalis Logo" class="logo" />
-    <h1>Synthèse Production</h1>
-    <p id="dateDisplay">Chargement...</p>
+  <div class="app-container">
+    <!-- Barre latérale -->
+    <aside class="sidebar">
+      <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
+      <nav class="nav-menu">
+        <button class="nav-btn" onclick="openSection('production')">🏭 Production</button>
+        <button class="nav-btn" onclick="openSection('arrets')">⏸️ Arrêts</button>
+        <button class="nav-btn" onclick="openSection('personnel')">👥 Personnel</button>
+        <button class="nav-btn" onclick="openSection('organisation')">🗒️ Organisation</button>
+        <button class="nav-btn" onclick="openSection('atelier')">📊 Atelier</button>
+      </nav>
+    </aside>
 
-    <div class="equipe-selector">
-      <label for="equipe">Équipe :</label>
-      <select id="equipe" onchange="changeEquipe(this.value)">
-        <option value="M">M (5h-13h)</option>
-        <option value="AM">AM (13h-21h)</option>
-        <option value="N">N (21h-5h)</option>
-      </select>
-    </div>
-  </header>
+    <!-- Contenu principal -->
+    <main id="content" class="main-content">
+      <header class="header">
+        <h1>Synthèse <span>Production</span></h1>
+        <p id="dateTime"></p>
+        <p id="equipe"></p>
+      </header>
 
-  <!-- ======= MENU ======= -->
-  <nav class="sidebar">
-    <button onclick="showSection('menu')">🏠 Menu</button>
-    <button onclick="showSection('Râpé')">Râpé</button>
-    <button onclick="showSection('T2')">T2</button>
-    <button onclick="showSection('RT')">RT</button>
-    <button onclick="showSection('OMORI')">OMORI</button>
-    <button onclick="showSection('T1')">T1</button>
-    <button onclick="showSection('Sticks')">Sticks</button>
-    <button onclick="showSection('Emballage')">Emballage</button>
-    <button onclick="showSection('Dés')">Dés</button>
-    <button onclick="showSection('Filets')">Filets</button>
-    <button onclick="showSection('Prédécoupé')">Prédécoupé</button>
-    <button onclick="showSection('Arrets')">Arrêts</button>
-    <button onclick="showSection('Personnel')">Personnel</button>
-    <button onclick="showSection('Organisation')">Organisation</button>
-    <button onclick="showSection('Atelier')">Atelier</button>
-  </nav>
+      <!-- Section Production -->
+      <section id="production" class="page active">
+        <h2>Choisir une ligne de production</h2>
+        <div class="line-buttons">
+          <button onclick="openLine('Râpé')">Râpé</button>
+          <button onclick="openLine('T2')">T2</button>
+          <button onclick="openLine('RT')">RT</button>
+          <button onclick="openLine('OMORI')">OMORI</button>
+          <button onclick="openLine('T1')">T1</button>
+          <button onclick="openLine('Sticks')">Sticks</button>
+          <button onclick="openLine('Emballage')">Emballage</button>
+          <button onclick="openLine('Dés')">Dés</button>
+          <button onclick="openLine('Filets')">Filets</button>
+          <button onclick="openLine('Prédécoupé')">Prédécoupé</button>
+        </div>
+      </section>
 
-  <!-- ======= CONTENU ======= -->
-  <main>
-    <!-- MENU PRINCIPAL -->
-    <section id="menu" class="section active">
-      <h2>Bienvenue dans l'application Synthèse Production</h2>
-      <p>Sélectionnez une ligne ou un module dans le menu à gauche.</p>
-      <p>L'équipe active est automatiquement détectée selon l'heure du jour.</p>
-      <p>Vous pouvez la modifier manuellement si besoin.</p>
-    </section>
+      <!-- Section Arrêts -->
+      <section id="arrets" class="page">
+        <h2>Gestion des arrêts</h2>
+        <p>Sélectionnez une ligne pour consulter ou ajouter des arrêts.</p>
+        <div id="arretsContent"></div>
+      </section>
 
-    <!-- SECTIONS DES LIGNES DE PRODUCTION -->
-    <section id="Râpé" class="section"></section>
-    <section id="T2" class="section"></section>
-    <section id="RT" class="section"></section>
-    <section id="OMORI" class="section"></section>
-    <section id="T1" class="section"></section>
-    <section id="Sticks" class="section"></section>
-    <section id="Emballage" class="section"></section>
-    <section id="Dés" class="section"></section>
-    <section id="Filets" class="section"></section>
-    <section id="Prédécoupé" class="section"></section>
-
-    <!-- PAGE ARRÊTS -->
-    <section id="Arrets" class="section">
-      <h2>Suivi des arrêts</h2>
-      <form>
-        <label for="ligneArret">Ligne concernée :</label>
-        <select id="ligneArret">
-          <option value="">-- Choisir une ligne --</option>
-          <option>Râpé</option><option>T2</option><option>RT</option>
-          <option>OMORI</option><option>T1</option><option>Sticks</option>
-          <option>Emballage</option><option>Dés</option>
-          <option>Filets</option><option>Prédécoupé</option>
+      <!-- Section Personnel -->
+      <section id="personnel" class="page">
+        <h2>Suivi du personnel</h2>
+        <label>Type :</label>
+        <select id="typePersonnel">
+          <option value="absence">Absence</option>
+          <option value="retard">Retard</option>
+          <option value="depart">Départ</option>
+          <option value="autre">Autre</option>
         </select>
+        <textarea id="commentPersonnel" placeholder="Commentaire..."></textarea>
+        <button onclick="savePersonnel()">Enregistrer</button>
+        <div id="personnelHistorique"></div>
+      </section>
 
-        <label for="tempsArret">Durée (min) :</label>
-        <input type="number" id="tempsArret" placeholder="Ex: 15" />
+      <!-- Section Organisation -->
+      <section id="organisation" class="page">
+        <h2>Consignes & Organisation</h2>
+        <textarea id="consigne" placeholder="Nouvelle consigne..."></textarea>
+        <button onclick="saveConsigne()">💾 Enregistrer la consigne</button>
+        <div id="consigneListe"></div>
+      </section>
 
-        <label for="causeArret">Cause :</label>
-        <textarea id="causeArret" placeholder="Description de l'arrêt..."></textarea>
-
-        <button type="button" onclick="saveArret()">💾 Enregistrer</button>
-        <button type="button" onclick="exportArrets()">📤 Exporter</button>
-      </form>
-
-      <h3>Historique des arrêts</h3>
-      <table id="tableArrets">
-        <thead><tr><th>Date</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- PAGE PERSONNEL -->
-    <section id="Personnel" class="section">
-      <h2>Suivi du personnel</h2>
-      <form>
-        <label for="type">Type :</label>
-        <select id="type">
-          <option>Absence</option>
-          <option>Retard</option>
-          <option>Départ anticipé</option>
-          <option>Autre</option>
-        </select>
-
-        <label for="commentaire">Commentaire :</label>
-        <textarea id="commentaire" placeholder="Précisez..."></textarea>
-
-        <button type="button" onclick="savePersonnel()">💾 Enregistrer</button>
-        <button type="button" onclick="exportPersonnel()">📤 Exporter</button>
-      </form>
-
-      <h3>Historique du personnel</h3>
-      <table id="personnelTable">
-        <thead><tr><th>Date</th><th>Type</th><th>Commentaire</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- PAGE ORGANISATION -->
-    <section id="Organisation" class="section">
-      <h2>Consignes et organisation</h2>
-      <form>
-        <label for="noteOrg">Nouvelle consigne :</label>
-        <textarea id="noteOrg" placeholder="Écrivez votre consigne ici..."></textarea>
-        <button type="button" onclick="saveOrganisation()">💾 Enregistrer</button>
-        <button type="button" onclick="exportOrganisation()">📤 Exporter</button>
-      </form>
-
-      <h3>Consignes récentes</h3>
-      <table id="orgTable">
-        <thead><tr><th>Date</th><th>Consigne</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- PAGE ATELIER -->
-    <section id="Atelier" class="section">
-      <h2>Tableau de bord atelier</h2>
-      <p>Vue d'ensemble des cadences par ligne — Équipe : <span id="teamDisplay">_</span></p>
-      <canvas id="atelierChart" width="350" height="220"></canvas>
-      <button class="btn" onclick="exportAllData()">📤 Export complet</button>
-      <button class="btn" onclick="resetAllData()">🧹 Remise à zéro générale</button>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; Lactalis 2025 — Application Synthèse Production (V25)</p>
-  </footer>
+      <!-- Section Atelier -->
+      <section id="atelier" class="page">
+        <h2>Vue Atelier</h2>
+        <canvas id="atelierChart"></canvas>
+        <button onclick="exportAtelier()">📤 Export Excel</button>
+        <button onclick="resetApplication()">🧹 Remise à zéro complète</button>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
