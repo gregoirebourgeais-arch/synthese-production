@@ -11,30 +11,30 @@
 </head>
 
 <body>
-  <!-- ====== MENU VERTICAL ====== -->
+  <!-- ===== MENU VERTICAL ===== -->
   <aside class="menu-container">
     <button class="menu-btn active" data-section="production">
-      <img src="icons/factory.png" alt="Production" />
+      <img src="icons/factory.png" alt="Production" class="menu-icon" />
       <span>Production</span>
     </button>
     <button class="menu-btn" data-section="personnel">
-      <img src="icons/users.png" alt="Personnel" />
+      <img src="icons/users.png" alt="Personnel" class="menu-icon" />
       <span>Personnel</span>
     </button>
     <button class="menu-btn" data-section="organisation">
-      <img src="icons/note.png" alt="Organisation" />
+      <img src="icons/note.png" alt="Organisation" class="menu-icon" />
       <span>Organisation</span>
     </button>
     <button class="menu-btn" data-section="dashboard">
-      <img src="icons/chart.png" alt="Tableau de bord" />
+      <img src="icons/chart.png" alt="Tableau de bord" class="menu-icon" />
       <span>Tableau<br>de bord</span>
     </button>
   </aside>
 
-  <!-- ====== CONTENU PRINCIPAL ====== -->
+  <!-- ===== CONTENU PRINCIPAL ===== -->
   <main id="content">
     <header class="header">
-      <img src="icons/lactalis-logo.png" alt="Lactalis" class="logo" />
+      <img src="icons/lactalis2023logo.png" alt="Lactalis" class="logo" />
       <h1>Synthèse Production</h1>
       <p id="dateTime"></p>
     </header>
@@ -60,14 +60,14 @@
     </footer>
   </main>
 
-  <!-- ====== BOUTONS FLOTTANTS ====== -->
+  <!-- ===== BOUTONS FLOTTANTS ===== -->
   <div class="fab-container">
     <button id="fabArret" class="fab" title="Arrêts de ligne">⏸️</button>
     <button id="fabGraph" class="fab" title="Graphiques">📊</button>
     <button id="fabCalc" class="fab" title="Calculatrice">🧮</button>
   </div>
 
-  <!-- ====== CALCULATRICE ====== -->
+  <!-- ===== CALCULATRICE ===== -->
   <div id="calculator" class="calculator hidden">
     <input type="text" id="calc-display" readonly />
     <div class="calc-buttons">
