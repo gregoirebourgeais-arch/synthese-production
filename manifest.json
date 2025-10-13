@@ -1,21 +1,21 @@
 {
   "name": "Synthèse Production Lactalis",
   "short_name": "Synthèse",
-  "description": "Application interne Lactalis pour le suivi des lignes de production, arrêts, personnel et organisation.",
+  "description": "Application interne Lactalis pour le suivi des lignes de production, arrêts, personnel et organisation (Équipe M / AM / N).",
   "lang": "fr-FR",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f4f8ff",
   "theme_color": "#007bff",
-  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "icons/logo-lactalis.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/logo-lactalis.png",
       "sizes": "512x512",
       "type": "image/png"
     }
