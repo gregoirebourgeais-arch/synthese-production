@@ -1,343 +1,228 @@
-/* ========= Variables globales ========= */
-let currentSection = "production";
-let currentLine = null;
-
-// bases locales
-let dataProd = JSON.parse(localStorage.getItem("syntheseData")) || {};
-let dataPersonnel = JSON.parse(localStorage.getItem("personnelData")) || [];
-let dataConsignes = JSON.parse(localStorage.getItem("consignesData")) || [];
+// ====== VARIABLES GLOBALES ======
+let dataProduction = JSON.parse(localStorage.getItem("dataProduction")) || [];
 let arrets = JSON.parse(localStorage.getItem("arretsData")) || [];
+let personnels = JSON.parse(localStorage.getItem("personnelData")) || [];
+let consignes = JSON.parse(localStorage.getItem("consignesData")) || [];
+let chart;
 
-const content = document.getElementById("content");
-
-/* ========= Initialisation ========= */
-window.addEventListener("load", () => {
+// ====== INITIALISATION ======
+document.addEventListener("DOMContentLoaded", () => {
   setupMenu();
-  renderProduction();
   setupFAB();
-  setupCalculator();
-  registerServiceWorker();
-  updateConsignesAutoExport();
+  afficherDateHeure();
+  renderProduction();
+  setInterval(afficherDateHeure, 1000);
 });
 
-/* ========= Gestion du menu ========= */
+// ====== DATE / HEURE ======
+function afficherDateHeure() {
+  const d = new Date();
+  const semaine = getWeekNumber(d);
+  document.getElementById("dateTime").textContent =
+    d.toLocaleString("fr-FR") + ` — Semaine ${semaine}`;
+}
+
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+}
+
+// ====== MENU ======
 function setupMenu() {
   document.querySelectorAll(".menu-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      const section = btn.dataset.section;
-
-      // gestion de navigation
-      switch (section) {
-        case "production": renderProduction(); break;
-        case "personnel": renderPersonnel(); break;
-        case "organisation": renderOrganisation(); break;
-        case "dashboard": renderDashboard(); break;
-        default: renderProduction(); break;
-      }
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(btn.dataset.section).classList.add("active");
+      if (btn.dataset.section === "dashboard") renderDashboard();
     });
   });
 }
-/* ========= Section PRODUCTION ========= */
+
+// ====== PAGE PRODUCTION ======
 function renderProduction() {
-  const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
-  let html = `<div class="page fade">
-    <h2>Production</h2>
-    <div class="card">
-      <h3>Choisir une ligne</h3>
-      ${lignes.map(l => `<button class="btn primary" onclick="openLine('${l}')">${l}</button>`).join("")}
-    </div>
-  </div>`;
-  content.innerHTML = html;
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("production").classList.add("active");
 }
 
 function openLine(line) {
-  currentLine = line;
-  const d = dataProd[line] || [];
-  const total = d.reduce((s, x) => s + (x.produits || 0), 0);
-  const cadence = d.length ? total / d.length : 0;
-  const estimation = cadence > 0 && d.length > 0 ? (1000 / cadence).toFixed(1) : "_";
+  const qty = prompt(`Quantité produite sur la ligne ${line} :`, "0");
+  const start = prompt("Heure de début (HH:MM)", "08:00");
+  const end = prompt("Heure de fin (HH:MM)", "16:00");
+  const q = parseFloat(qty) || 0;
 
-  content.innerHTML = `
-  <div class="page fade">
-    <h2>${line}</h2>
-    <div class="card">
-      <label>Heure début :</label>
-      <input id="debut" type="time">
-      <label>Heure fin :</label>
-      <input id="fin" type="time">
-      <label>Quantité initiale :</label>
-      <input id="initiale" type="number" placeholder="0">
-      <label>Quantité ajoutée :</label>
-      <input id="ajoutee" type="number" placeholder="0">
-      <label>Quantité restante :</label>
-      <input id="restante" type="number" placeholder="0">
-      <label>Minutes d'arrêt :</label>
-      <input id="arret" type="number" placeholder="0">
-      <label>Cadence manuelle :</label>
-      <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle...">
-      <div style="text-align:center;margin-top:10px;">
-        <button class="btn primary" onclick="saveProd('${line}')">💾 Enregistrer</button>
-        <button class="btn ghost" onclick="renderProduction()">⬅️ Retour</button>
-      </div>
-      <p id="estimation" style="text-align:center;margin-top:10px;">⏱️ Estimation fin : ${estimation}</p>
-    </div>
-  </div>`;
-}
+  if (!q) return;
+  const t1 = parseHeure(start);
+  const t2 = parseHeure(end);
+  const diffHeure = (t2 - t1) / 3600000;
+  const cadence = diffHeure > 0 ? q / diffHeure : 0;
 
-function saveProd(line) {
-  const debut = document.getElementById("debut").value;
-  const fin = document.getElementById("fin").value;
-  const initiale = +document.getElementById("initiale").value || 0;
-  const ajoutee = +document.getElementById("ajoutee").value || 0;
-  const restante = +document.getElementById("restante").value || 0;
-  const arret = +document.getElementById("arret").value || 0;
-  const manuelle = +document.getElementById("cadenceManuelle").value || null;
-  const produits = initiale + ajoutee - restante;
-  const temps = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 60000 - arret;
-  const cadence = temps > 0 ? produits / (temps / 60) : 0;
-  const finalCadence = manuelle || cadence;
-  const record = { date: new Date().toLocaleString(), debut, fin, produits, cadence: finalCadence };
-  if (!dataProd[line]) dataProd[line] = [];
-  dataProd[line].push(record);
-  localStorage.setItem("syntheseData", JSON.stringify(dataProd));
-  toast("✅ Données enregistrées !");
-}
-
-/* ========= Section PERSONNEL ========= */
-function renderPersonnel() {
-  let html = `
-  <div class="page fade">
-    <h2>Personnel</h2>
-    <div class="card">
-      <label>Ligne :</label>
-      <select id="persLigne">
-        <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
-        <option>T1</option><option>Sticks</option><option>Emballage</option><option>Dés</option>
-        <option>Filets</option><option>Prédécoupé</option>
-      </select>
-      <label>Nom :</label>
-      <input id="persNom" type="text" placeholder="Nom du salarié">
-      <label>Motif :</label>
-      <select id="persMotif">
-        <option>Absence</option>
-        <option>Retard</option>
-        <option>Départ</option>
-        <option>Autre</option>
-      </select>
-      <label>Commentaire :</label>
-      <textarea id="persComment"></textarea>
-      <button class="btn primary" onclick="savePersonnel()">💾 Enregistrer</button>
-    </div>
-    <div class="card">
-      <h3>Historique</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Ligne</th><th>Nom</th><th>Motif</th><th>Commentaire</th></tr></thead>
-          <tbody>
-            ${dataPersonnel.map(p => `<tr><td>${p.date}</td><td>${p.ligne}</td><td>${p.nom}</td><td>${p.motif}</td><td>${p.comment}</td></tr>`).join("")}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>`;
-  content.innerHTML = html;
-}
-
-function savePersonnel() {
   const record = {
-    date: new Date().toLocaleString(),
-    ligne: document.getElementById("persLigne").value,
-    nom: document.getElementById("persNom").value,
-    motif: document.getElementById("persMotif").value,
-    comment: document.getElementById("persComment").value
+    ligne: line,
+    debut: start,
+    fin: end,
+    quantite: q,
+    cadence: cadence.toFixed(2),
+    date: new Date().toLocaleString()
   };
-  dataPersonnel.push(record);
-  localStorage.setItem("personnelData", JSON.stringify(dataPersonnel));
-  toast("👥 Enregistré !");
-  renderPersonnel();
+
+  dataProduction.push(record);
+  localStorage.setItem("dataProduction", JSON.stringify(dataProduction));
+  alert(`✅ Données enregistrées pour ${line}\nCadence : ${record.cadence} colis/h`);
 }
 
-/* ========= Section ORGANISATION ========= */
-function renderOrganisation() {
-  let html = `
-  <div class="page fade">
-    <h2>Consignes / Organisation</h2>
-    <div class="card">
-      <label>Date :</label><input type="date" id="consDate" value="${new Date().toISOString().split("T")[0]}">
-      <label>Équipe :</label>
-      <select id="consEquipe">
-        <option>Matin</option><option>Après-midi</option><option>Nuit</option>
-      </select>
-      <label>Priorité :</label>
-      <select id="consPriorite">
-        <option>Basse</option><option>Moyenne</option><option>Haute</option>
-      </select>
-      <label>Consigne :</label><textarea id="consTexte"></textarea>
-      <button class="btn primary" onclick="saveConsigne()">💾 Enregistrer</button>
-    </div>
-    <div class="card">
-      <h3>Historique</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Équipe</th><th>Priorité</th><th>Consigne</th></tr></thead>
-          <tbody>
-            ${dataConsignes.map(c => `<tr><td>${c.date}</td><td>${c.equipe}</td><td>${c.priorite}</td><td>${c.texte}</td></tr>`).join("")}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>`;
-  content.innerHTML = html;
+function parseHeure(str) {
+  const [h, m] = str.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
 }
 
-function saveConsigne() {
-  const record = {
-    date: document.getElementById("consDate").value,
-    equipe: document.getElementById("consEquipe").value,
-    priorite: document.getElementById("consPriorite").value,
-    texte: document.getElementById("consTexte").value
-  };
-  dataConsignes.push(record);
-  localStorage.setItem("consignesData", JSON.stringify(dataConsignes));
-  toast("🗒️ Consigne enregistrée !");
-  renderOrganisation();
-}
-
-/* ========= Section TABLEAU DE BORD ========= */
-function renderDashboard() {
-  const totalProd = Object.values(dataProd).flat().reduce((s, x) => s + (x.produits || 0), 0);
-  const totalArrets = arrets.reduce((s, x) => s + (x.duree || 0), 0);
-  const absences = dataPersonnel.filter(p => p.motif === "Absence").length;
-  const consignesJour = dataConsignes.filter(c => c.date === new Date().toISOString().split("T")[0]).length;
-  const html = `
-  <div class="page fade">
-    <h2>Tableau de bord du jour</h2>
-    <div class="card"><strong>Total colis :</strong> ${totalProd}</div>
-    <div class="card"><strong>Temps d'arrêt total :</strong> ${totalArrets} min</div>
-    <div class="card"><strong>Absences :</strong> ${absences}</div>
-    <div class="card"><strong>Consignes du jour :</strong> ${consignesJour}</div>
-    <div style="text-align:center;margin-top:10px;">
-      <button class="btn primary" onclick="exportAll()">📊 Export global Excel</button>
-    </div>
-  </div>`;
-  content.innerHTML = html;
-}
-
-/* ========= Export global ========= */
-function exportAll() {
-  const rows = [["Type","Date","Ligne","Détail","Valeur"]];
-  Object.keys(dataProd).forEach(l => dataProd[l].forEach(d => rows.push(["Production", d.date, l, "Produits", d.produits])));
-  dataPersonnel.forEach(p => rows.push(["Personnel", p.date, p.ligne, p.motif, p.comment]));
-  dataConsignes.forEach(c => rows.push(["Consigne", c.date, c.equipe, c.priorite, c.texte]));
-  const csv = rows.map(r => r.join(";")).join("\n");
-  const blob = new Blob([csv], {type:"text/csv"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Synthese_Global_${new Date().toLocaleString("fr-FR").replace(/[/:]/g,"-")}.csv`;
-  a.click();
-  toast("📤 Export global généré !");
-}
-
-/* ========= Utilitaires ========= */
-function toast(msg) {
-  let t = document.createElement("div");
-  t.className = "toast show";
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2000);
-}
-
-/* ========= Calculatrice ========= */
-function setupCalculator() {
-  const calc = document.getElementById("calculator");
-  const display = document.getElementById("calcDisplay");
-  calc.addEventListener("click", e => {
-    if (e.target.tagName !== "BUTTON") return;
-    const val = e.target.textContent;
-    if (val === "=") display.value = eval(display.value || "0");
-    else if (val === "C") display.value = "";
-    else display.value += val;
-  });
-}
-function toggleCalculator() {
-  const calc = document.getElementById("calculator");
-  calc.classList.toggle("hidden");
-}
-
-/* ========= FAB ========= */
+// ====== ARRÊTS ======
 function setupFAB() {
-  document.getElementById("fabCalc").addEventListener("click", toggleCalculator);
-  document.getElementById("fabExportAll").addEventListener("click", exportAll);
   document.getElementById("fabArret").addEventListener("click", renderArrets);
+  document.getElementById("fabGraph").addEventListener("click", renderDashboard);
+  document.getElementById("fabCalc").addEventListener("click", toggleCalculator);
 }
 
-/* ========= Auto-export des consignes ========= */
-function updateConsignesAutoExport() {
-  const now = new Date();
-  const old = dataConsignes.filter(c => (now - new Date(c.date)) > 7*24*60*60*1000);
-  if (old.length) {
-    const csv = old.map(c => `${c.date};${c.equipe};${c.priorite};${c.texte}`).join("\n");
-    const blob = new Blob([csv], {type:"text/csv"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Consignes_export_auto_${new Date().toLocaleDateString("fr-FR")}.csv`;
-    a.click();
-    dataConsignes = dataConsignes.filter(c => (now - new Date(c.date)) <= 7*24*60*60*1000);
-    localStorage.setItem("consignesData", JSON.stringify(dataConsignes));
-    toast("📦 Consignes exportées (auto)");
-  }
-}
-
-/* ========= Service Worker ========= */
-function registerServiceWorker() {
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
-    }
 function renderArrets() {
-  let html = `
-  <div class="page fade">
+  const main = document.getElementById("content");
+  main.innerHTML = `
+  <section class="page fade active">
     <h2>Arrêts de lignes</h2>
-    <div class="card">
+    <form id="formArret">
       <label>Ligne :</label>
       <select id="arretLigne">
         <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
-        <option>T1</option><option>Sticks</option><option>Emballage</option><option>Dés</option>
-        <option>Filets</option><option>Prédécoupé</option>
+        <option>T1</option><option>Sticks</option><option>Emballage</option>
+        <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
       </select>
-      <label>Durée (min) :</label>
-      <input id="arretDuree" type="number" placeholder="0" />
+      <label>Durée (minutes) :</label>
+      <input id="arretDuree" type="number" min="0" />
       <label>Cause :</label>
-      <textarea id="arretCause"></textarea>
-      <button class="btn primary" onclick="saveArret()">💾 Enregistrer</button>
-    </div>
-
+      <textarea id="arretCause" placeholder="Détail de la cause..."></textarea>
+      <button type="button" onclick="saveArret()">💾 Enregistrer</button>
+    </form>
     <div class="card">
-      <h3>Historique des arrêts</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th></tr></thead>
-          <tbody>
-            ${arrets.map(a => `<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.duree}</td><td>${a.cause}</td></tr>`).join("")}
-          </tbody>
-        </table>
-      </div>
+      <h3>Historique</h3>
+      <table><thead><tr><th>Date</th><th>Ligne</th><th>Durée</th><th>Cause</th></tr></thead>
+      <tbody>${arrets.map(a=>`<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.duree}</td><td>${a.cause}</td></tr>`).join("")}</tbody>
+      </table>
     </div>
-  </div>`;
-  content.innerHTML = html;
+  </section>`;
 }
 
 function saveArret() {
-  const record = {
+  const rec = {
     date: new Date().toLocaleString(),
     ligne: document.getElementById("arretLigne").value,
     duree: +document.getElementById("arretDuree").value || 0,
     cause: document.getElementById("arretCause").value
   };
-  arrets.push(record);
+  arrets.push(rec);
   localStorage.setItem("arretsData", JSON.stringify(arrets));
-  toast("⏸️ Arrêt enregistré !");
+  alert("⏸️ Arrêt enregistré !");
   renderArrets();
 }
+
+// ====== PERSONNEL ======
+function ajouterPersonnel() {
+  const type = document.getElementById("typePersonnel").value;
+  const com = document.getElementById("commentPersonnel").value;
+  const rec = { date: new Date().toLocaleString(), type, commentaire: com };
+  personnels.push(rec);
+  localStorage.setItem("personnelData", JSON.stringify(personnels));
+  document.getElementById("commentPersonnel").value = "";
+  renderPersonnel();
+}
+
+function renderPersonnel() {
+  const zone = document.getElementById("historiquePersonnel");
+  zone.innerHTML = `<h3>Historique</h3><table><thead><tr><th>Date</th><th>Type</th><th>Commentaire</th></tr></thead>
+  <tbody>${personnels.map(p=>`<tr><td>${p.date}</td><td>${p.type}</td><td>${p.commentaire}</td></tr>`).join("")}</tbody></table>`;
+}
+
+// ====== CONSIGNES ======
+function ajouterConsigne() {
+  const texte = document.getElementById("texteConsigne").value.trim();
+  if (!texte) return;
+  const rec = { date: new Date().toLocaleString(), texte };
+  consignes.push(rec);
+  localStorage.setItem("consignesData", JSON.stringify(consignes));
+  document.getElementById("texteConsigne").value = "";
+  renderConsignes();
+}
+
+function renderConsignes() {
+  const zone = document.getElementById("listeConsignes");
+  zone.innerHTML = `<h3>Historique des consignes</h3>
+  ${consignes.map(c=>`<div class="card"><b>${c.date}</b><br>${c.texte}</div>`).join("")}`;
+}
+setInterval(()=>{
+  const now=Date.now();
+  consignes=consignes.filter(c=>now - new Date(c.date).getTime() < 7*24*3600*1000);
+  localStorage.setItem("consignesData", JSON.stringify(consignes));
+},3600000);
+
+// ====== TABLEAU DE BORD ======
+function renderDashboard() {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("dashboard").classList.add("active");
+
+  const ctx = document.getElementById("globalChart");
+  if (!ctx) return;
+
+  const labels = dataProduction.map(d=>d.ligne);
+  const valeurs = dataProduction.map(d=>+d.cadence);
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label:"Cadence (colis/h)", data: valeurs }] },
+    options: { responsive:true, scales:{ y:{ beginAtZero:true } } }
+  });
+}
+
+// ====== EXPORT EXCEL + REMISE À ZÉRO ======
+function exportAll() {
+  let csv = "Section;Date;Ligne;Quantité;Cadence;Durée;Cause;Type;Commentaire;Consigne\n";
+  dataProduction.forEach(d=> csv += `Production;${d.date};${d.ligne};${d.quantite};${d.cadence};;;;;\n`);
+  arrets.forEach(a=> csv += `Arrêt;${a.date};${a.ligne};;;${a.duree};${a.cause};;;;\n`);
+  personnels.forEach(p=> csv += `Personnel;${p.date};;;;;;${p.type};${p.commentaire};\n`);
+  consignes.forEach(c=> csv += `Consigne;${c.date};;;;;;;;;${c.texte}\n`);
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Synthese_Lactalis_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+  a.click();
+}
+
+function resetAll() {
+  exportAll();
+  localStorage.clear();
+  dataProduction = [];
+  arrets = [];
+  personnels = [];
+  consignes = [];
+  alert("🔄 Données exportées et base réinitialisée !");
+  location.reload();
+}
+
+// ====== CALCULATRICE ======
+function toggleCalculator() {
+  document.getElementById("calculator").classList.toggle("hidden");
+}
+
+document.querySelectorAll(".calc-buttons button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const disp = document.getElementById("calc-display");
+    if (btn.textContent === "=") {
+      try { disp.value = eval(disp.value) } catch { disp.value = "Erreur" }
+    } else if (btn.textContent === "C") disp.value = "";
+    else disp.value += btn.textContent;
+  });
+});
