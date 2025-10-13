@@ -1,7 +1,8 @@
-// ===========================
-// SERVICE WORKER — V26
-// ===========================
-const CACHE_NAME = "synthese-production-v26";
+// ==================================
+// 🧠 SERVICE WORKER — V27 STABILISÉE
+// ==================================
+
+const CACHE_NAME = "synthese-production-v27";
 const ASSETS = [
   "./",
   "./index.html",
@@ -12,27 +13,27 @@ const ASSETS = [
   "./icons/icon-512.png"
 ];
 
-// 📦 INSTALLATION — Mise en cache initiale
+// 📦 INSTALLATION — mise en cache initiale
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("Mise en cache des fichiers essentiels...");
+      console.log("📥 Mise en cache initiale...");
       return cache.addAll(ASSETS);
     })
   );
 });
 
-// ♻️ ACTIVATION — Suppression anciens caches
+// ♻️ ACTIVATION — suppression des anciens caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
-  console.log("Service Worker actif — V26 !");
+  console.log("✅ Service Worker actif — V27 !");
 });
 
-// 🌐 FETCH — Lecture depuis le cache d'abord
+// 🌐 FETCH — lecture depuis le cache (offline)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
