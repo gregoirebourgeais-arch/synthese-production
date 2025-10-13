@@ -1,22 +1,21 @@
 // ==========================
-// SERVICE WORKER — SYNTHÈSE PRODUCTION
+// SERVICE WORKER — SYNTHÈSE PRODUCTION V25
 // ==========================
-const CACHE_NAME = "synthese-production-v24";
+const CACHE_NAME = "synthese-production-v25";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/logo-lactalis.png"
 ];
 
 // 📦 INSTALLATION — mise en cache des fichiers principaux
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("Mise en cache des fichiers...");
+      console.log("Mise en cache initiale...");
       return cache.addAll(ASSETS);
     })
   );
@@ -29,10 +28,10 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
-  console.log("Service Worker actif !");
+  console.log("Service Worker actif — V25 !");
 });
 
-// 🌐 FETCH — lecture depuis le cache d'abord (offline-ready)
+// 🌐 FETCH — lecture depuis le cache d'abord (offline)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
