@@ -26,15 +26,19 @@ function setupMenu() {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      currentSection = btn.dataset.section;
-      if (currentSection === "production") renderProduction();
-      else if (currentSection === "personnel") renderPersonnel();
-      else if (currentSection === "organisation") renderOrganisation();
-      else if (currentSection === "dashboard") renderDashboard();
+      const section = btn.dataset.section;
+
+      // gestion de navigation
+      switch (section) {
+        case "production": renderProduction(); break;
+        case "personnel": renderPersonnel(); break;
+        case "organisation": renderOrganisation(); break;
+        case "dashboard": renderDashboard(); break;
+        default: renderProduction(); break;
+      }
     });
   });
 }
-
 /* ========= Section PRODUCTION ========= */
 function renderProduction() {
   const lignes = ["Râpé", "T2", "RT", "OMORI", "T1", "Sticks", "Emballage", "Dés", "Filets", "Prédécoupé"];
