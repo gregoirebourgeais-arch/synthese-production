@@ -1,8 +1,8 @@
 {
-  "name": "Synthèse Production Lactalis",
-  "short_name": "Synthèse Prod",
-  "description": "Application interne de suivi de production Lactalis : lignes, cadences, arrêts, export Excel.",
-  "start_url": "index.html",
+  "name": "Synthèse Production Manager",
+  "short_name": "Synthèse Manager",
+  "description": "Application Lactalis de gestion de production, personnel et organisation",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
