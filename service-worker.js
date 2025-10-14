@@ -1,6 +1,6 @@
 // === Service Worker – Synthèse Production Lactalis ===
-const CACHE_NAME = "synthese-cache-v1";
-const ASSETS = [
+const CACHE_NAME = "synthese-cache-v3";
+const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
@@ -10,10 +10,10 @@ const ASSETS = [
   "./icon-512.png"
 ];
 
-// Installation du SW et mise en cache
+// Installation et mise en cache
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
   self.skipWaiting();
 });
@@ -28,11 +28,9 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// Interception des requêtes
+// Interception des requêtes réseau
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request)
-    )
+    caches.match(event.request).then(resp => resp || fetch(event.request))
   );
 });
