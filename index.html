@@ -4,190 +4,140 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#007bff" />
-  <link rel="icon" type="image/png" href="icons/icon-192.png" />
-
-  <!-- Style -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
 
+<body>
   <!-- MENU LATÉRAL -->
   <aside class="sidebar">
     <div class="logo">
-      <img src="icons/icon-512.png" alt="Lactalis" />
+      <img src="img/lactalis.png" alt="Lactalis" />
     </div>
     <button onclick="openSection('production')">🏭 Production</button>
-    <button onclick="openSection('arrets')">⏸️ Arrêts</button>
+    <button onclick="openSection('page-arrets')">⏸️ Arrêts</button>
     <button onclick="openSection('personnel')">👥 Personnel</button>
-    <button onclick="openSection('organisation')">🗒️ Organisation</button>
+    <button onclick="openSection('page-organisation')">🗒️ Organisation</button>
     <button onclick="openSection('atelier')">📊 Atelier</button>
   </aside>
 
   <!-- CONTENU PRINCIPAL -->
   <main class="main-content">
-
-    <!-- En-tête -->
     <header>
       <h1>Synthèse Production</h1>
       <p id="date-info">—</p>
       <div id="equipe-info">Équipe : —</div>
     </header>
 
-    <!-- PRODUCTION -->
+    <!-- Production -->
     <section id="production" class="page active">
       <h2>Production</h2>
       <div id="buttons-lignes" class="buttons-lignes"></div>
       <div id="ligne-content"></div>
     </section>
 
-    <!-- ARRETS -->
-    <section id="arrets" class="page">
-      <h2>Arrêts</h2>
-      <form id="form-arret" onsubmit="event.preventDefault(); saveArret();">
-        <label>Ligne :</label>
-        <select id="arret-ligne">
-          <option value="">— Choisir —</option>
+    <!-- Arrêts -->
+    <section id="page-arrets" class="page">
+      <h2>Arrêts de ligne</h2>
+      <div class="card">
+        <h3>Déclarer un arrêt</h3>
+        <label>Ligne</label>
+        <select id="arLigne">
           <option>Râpé</option><option>T2</option><option>RT</option>
           <option>OMORI</option><option>T1</option><option>Sticks</option>
-          <option>Emballage</option><option>Dés</option><option>Filets</option>
-          <option>Prédécoupé</option>
+          <option>Emballage</option><option>Dés</option>
+          <option>Filets</option><option>Prédécoupé</option>
         </select>
+        <label>Durée (min)</label>
+        <input id="arDuree" type="number" min="0" />
+        <label>Cause</label>
+        <input id="arCause" type="text" />
+        <label>Commentaire</label>
+        <input id="arComment" type="text" />
+        <div class="row-actions">
+          <button class="primary" id="arSaveBtn">💾 Enregistrer</button>
+          <button id="arExportBtn">🧾 Exporter CSV</button>
+        </div>
+      </div>
 
-        <label>Durée (min) :</label>
-        <input type="number" id="arret-duree" placeholder="Ex : 15" />
-
-        <label>Cause :</label>
-        <input type="text" id="arret-cause" placeholder="Ex : Panne, changement..." />
-
-        <label>Commentaire (optionnel) :</label>
-        <input type="text" id="arret-com" placeholder="Détails..." />
-
-        <button type="submit">💾 Enregistrer</button>
-      </form>
-
-      <h3>Historique des arrêts</h3>
-      <div id="liste-arrets"></div>
+      <div class="card">
+        <h3>Historique des arrêts</h3>
+        <div class="tablewrap">
+          <table class="mini" id="arTable">
+            <thead>
+              <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée</th><th>Cause</th><th>Commentaire</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
-    <!-- PERSONNEL -->
+    <!-- Personnel -->
     <section id="personnel" class="page">
       <h2>Personnel</h2>
       <form id="form-pers" onsubmit="event.preventDefault(); savePersonnel();">
         <label>Type :</label>
         <select id="typePersonnel">
-          <option>Absence</option>
-          <option>Retard</option>
-          <option>Départ</option>
-          <option>Autre</option>
+          <option>Absence</option><option>Retard</option>
+          <option>Départ</option><option>Autre</option>
         </select>
-
         <label>Commentaire :</label>
         <input id="commentairePersonnel" placeholder="Commentaire..." />
-
         <button type="submit">💾 Enregistrer</button>
       </form>
-
       <h3>Historique du personnel</h3>
       <div id="historiquePersonnel"></div>
     </section>
-    
-    <!-- ================= Organisation ================= -->
-<section id="page-organisation" class="page">
-  <h2>Organisation</h2>
 
-  <div class="card">
-    <h3>Nouvelle consigne</h3>
-    <label>Ligne concernée</label>
-    <select id="orgLigne">
-      <option value="Atelier">Atelier (global)</option>
-      <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
-      <option>T1</option><option>Sticks</option><option>Emballage</option>
-      <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
-    </select>
+    <!-- Organisation -->
+    <section id="page-organisation" class="page">
+      <h2>Organisation</h2>
+      <div class="card">
+        <h3>Nouvelle consigne</h3>
+        <label>Ligne concernée</label>
+        <select id="orgLigne">
+          <option value="Atelier">Atelier (global)</option>
+          <option>Râpé</option><option>T2</option><option>RT</option>
+          <option>OMORI</option><option>T1</option><option>Sticks</option>
+          <option>Emballage</option><option>Dés</option>
+          <option>Filets</option><option>Prédécoupé</option>
+        </select>
+        <label>Consigne</label>
+        <textarea id="orgTexte" placeholder="Saisir une consigne claire..."></textarea>
+        <div class="row-actions">
+          <button class="primary" id="orgSaveBtn">💾 Enregistrer</button>
+          <button id="orgExportBtn">🧾 Exporter CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Historique des consignes</h3>
+        <div class="tablewrap">
+          <table class="mini" id="orgTable">
+            <thead>
+              <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Message</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    <label>Consigne</label>
-    <textarea id="orgTexte" placeholder="Saisir une consigne claire..."></textarea>
-
-    <div class="row-actions">
-      <button class="primary" id="orgSaveBtn">💾 Enregistrer</button>
-      <button id="orgExportBtn">🧾 Exporter CSV</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Historique des consignes</h3>
-    <div class="tablewrap">
-      <table class="mini" id="orgTable">
-        <thead>
-          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Message</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ================= Arrêts ================= -->
-<section id="page-arrets" class="page">
-  <h2>Arrêts de ligne</h2>
-
-  <div class="card">
-    <h3>Déclarer un arrêt</h3>
-    <label>Ligne</label>
-    <select id="arLigne">
-      <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
-      <option>T1</option><option>Sticks</option><option>Emballage</option>
-      <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
-    </select>
-
-    <label>Durée (min)</label>
-    <input id="arDuree" type="number" min="0" placeholder="ex : 12">
-
-    <label>Cause</label>
-    <input id="arCause" type="text" placeholder="ex : Maintenance, Manque matières...">
-
-    <label>Commentaire</label>
-    <input id="arComment" type="text" placeholder="Optionnel">
-
-    <div class="row-actions">
-      <button class="primary" id="arSaveBtn">💾 Enregistrer</button>
-      <button id="arExportBtn">🧾 Exporter CSV</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Historique des arrêts</h3>
-    <div class="tablewrap">
-      <table class="mini" id="arTable">
-        <thead>
-          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th><th>Commentaire</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-    <!-- ATELIER -->
+    <!-- Atelier -->
     <section id="atelier" class="page">
       <h2>Tableau de bord Atelier</h2>
-      <canvas id="atelierChart" height="240"></canvas>
-      <div style="text-align:center; margin-top:15px;">
+      <canvas id="atelierChart" height="250"></canvas>
+      <div style="text-align:center;margin-top:15px;">
         <button onclick="exportAtelier()">📤 Export Excel</button>
         <button onclick="resetAll()">🧹 Remise à zéro</button>
       </div>
     </section>
 
-    <!-- Pied de page -->
     <footer>
-      <p>Lactalis © 2025 — Application interne de suivi de production</p>
+      <p>Lactalis © 2025 — Application interne</p>
     </footer>
   </main>
 
@@ -195,36 +145,19 @@
   <div id="calculator">
     <input id="calcDisplay" type="text" readonly />
     <div class="calc-grid">
-      <button onclick="calcPress('7')">7</button>
-      <button onclick="calcPress('8')">8</button>
-      <button onclick="calcPress('9')">9</button>
-      <button onclick="calcPress('/')">/</button>
-
-      <button onclick="calcPress('4')">4</button>
-      <button onclick="calcPress('5')">5</button>
-      <button onclick="calcPress('6')">6</button>
-      <button onclick="calcPress('*')">*</button>
-
-      <button onclick="calcPress('1')">1</button>
-      <button onclick="calcPress('2')">2</button>
-      <button onclick="calcPress('3')">3</button>
-      <button onclick="calcPress('-')">-</button>
-
-      <button onclick="calcPress('0')">0</button>
-      <button onclick="calcPress('.')">.</button>
-      <button class="equal" onclick="calcEqual()">=</button>
-      <button onclick="calcPress('+')">+</button>
-
-      <button onclick="calcClear()">C</button>
-      <button onclick="toggleCalc()">Fermer</button>
+      <button onclick="calcPress('7')">7</button><button onclick="calcPress('8')">8</button>
+      <button onclick="calcPress('9')">9</button><button onclick="calcPress('/')">/</button>
+      <button onclick="calcPress('4')">4</button><button onclick="calcPress('5')">5</button>
+      <button onclick="calcPress('6')">6</button><button onclick="calcPress('*')">*</button>
+      <button onclick="calcPress('1')">1</button><button onclick="calcPress('2')">2</button>
+      <button onclick="calcPress('3')">3</button><button onclick="calcPress('-')">-</button>
+      <button onclick="calcPress('0')">0</button><button onclick="calcPress('.')">.</button>
+      <button class="equal" onclick="calcEqual()">=</button><button onclick="calcPress('+')">+</button>
+      <button onclick="calcClear()">C</button><button onclick="toggleCalc()">Fermer</button>
     </div>
   </div>
 
-  <!-- Bouton d’accès rapide calculatrice -->
-  <button class="fab" title="Calculatrice" onclick="toggleCalc()">🧮</button>
-
-  <!-- JS principal -->
+  <button class="fab" onclick="toggleCalc()">🧮</button>
   <script src="app.js"></script>
-
 </body>
-</html>
+  </html>
