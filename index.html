@@ -38,11 +38,12 @@
       <h2>Arrêts</h2>
       <table id="tableArrets">
         <thead>
-          <tr><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Motif</th></tr>
+          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Motif</th></tr>
         </thead>
         <tbody></tbody>
       </table>
-      <button onclick="ajouterArret()">Ajouter un arrêt</button>
+      <button onclick="ajouterArret()">➕ Ajouter un arrêt</button>
+      <button onclick="exporterArrets()">📊 Export Arrêts</button>
     </section>
 
     <!-- === PAGE PERSONNEL === -->
@@ -57,22 +58,30 @@
           <option>Autre</option>
         </select>
         <input type="text" id="commentairePersonnel" placeholder="Commentaire" />
-        <button type="button" onclick="ajouterPersonnel()">Enregistrer</button>
+        <button type="button" onclick="ajouterPersonnel()">💾 Enregistrer</button>
       </form>
       <div id="listePersonnel"></div>
+      <button onclick="exporterPersonnel()">📊 Export Personnel</button>
     </section>
 
     <!-- === PAGE ORGANISATION === -->
     <section id="organisation" class="page">
       <h2>Organisation</h2>
+      <form id="formOrganisation">
+        <textarea id="noteOrganisation" placeholder="Écrire une consigne..."></textarea>
+        <button type="button" onclick="ajouterOrganisation()">💾 Enregistrer</button>
+      </form>
       <div id="historiqueOrganisation"></div>
+      <button onclick="exporterOrganisation()">📊 Export Consignes</button>
     </section>
 
     <!-- === PAGE ATELIER === -->
     <section id="atelier" class="page">
       <h2>Atelier</h2>
-      <p>Vue globale de la production et export complet.</p>
-      <button id="exportAllBtn" class="export-all">📦 Export général (Excel)</button>
+      <p>Vue globale et export complet.</p>
+      <div id="graphiqueAtelier"></div>
+      <button id="exportAllBtn">📦 Export général (Excel)</button>
+      <button onclick="remiseZero()">🧹 Remise à zéro (avec sauvegarde Excel)</button>
     </section>
   </main>
 
