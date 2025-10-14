@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production – Lactalis 2025</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
   <header>
@@ -43,7 +43,6 @@
         <tbody></tbody>
       </table>
       <button onclick="ajouterArret()">Ajouter un arrêt</button>
-      <button id="exportArrets">Export Excel</button>
     </section>
 
     <!-- === PAGE PERSONNEL === -->
@@ -66,15 +65,14 @@
     <!-- === PAGE ORGANISATION === -->
     <section id="organisation" class="page">
       <h2>Organisation</h2>
-      <p>Consignes, retards, absences, incidents, etc. affichés ici.</p>
       <div id="historiqueOrganisation"></div>
     </section>
 
     <!-- === PAGE ATELIER === -->
     <section id="atelier" class="page">
       <h2>Atelier</h2>
-      <p>Vue globale de la production et exports Excel.</p>
-      <button id="exportAllBtn" class="export-all">📦 Export général</button>
+      <p>Vue globale de la production et export complet.</p>
+      <button id="exportAllBtn" class="export-all">📦 Export général (Excel)</button>
     </section>
   </main>
 
