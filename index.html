@@ -1,138 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synthèse Production – Lactalis 2025</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0066cc" />
+  <link rel="manifest" href="manifest.json" />
+  <title>Synthèse Production Lactalis</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
 </head>
-<body>
 
-  <div class="sidebar">
-    <img src="logo.png" alt="Lactalis" class="logo">
-    <button class="nav-btn" onclick="showPage('production')">📊 Production</button>
-    <button class="nav-btn" onclick="showPage('arrets')">⏸️ Arrêts</button>
-    <button class="nav-btn" onclick="showPage('personnel')">👥 Personnel</button>
-    <button class="nav-btn" onclick="showPage('organisation')">🗒️ Organisation</button>
-    <button class="nav-btn" onclick="showPage('atelier')">🏭 Atelier</button>
-  </div>
+<body>
+  <aside class="sidebar">
+    <img src="logo.png" alt="Lactalis" class="logo" />
+    <button class="nav-btn active" data-section="production">📊 Production</button>
+    <button class="nav-btn" data-section="arrets">⏸️ Arrêts</button>
+    <button class="nav-btn" data-section="personnel">👥 Personnel</button>
+    <button class="nav-btn" data-section="organisation">🗒️ Organisation</button>
+    <button class="nav-btn" data-section="atelier">🏭 Atelier</button>
+    <button class="export-all">📤 Export général</button>
+  </aside>
 
   <main>
     <header>
       <h1>Synthèse Production</h1>
-      <div id="dateTime"></div>
-      <div id="equipeDisplay"></div>
+      <p id="dateInfo"></p>
+      <p id="equipe"></p>
     </header>
 
-    <!-- PAGE PRODUCTION -->
+    <!-- === SECTION PRODUCTION === -->
     <section id="production" class="page active">
       <h2>Production</h2>
-      <div id="lineButtons">
-        <button onclick="selectLine('Râpé')">Râpé</button>
-        <button onclick="selectLine('T2')">T2</button>
-        <button onclick="selectLine('RT')">RT</button>
-        <button onclick="selectLine('OMORI')">OMORI</button>
-        <button onclick="selectLine('T1')">T1</button>
-        <button onclick="selectLine('Sticks')">Sticks</button>
-        <button onclick="selectLine('Emballage')">Emballage</button>
-        <button onclick="selectLine('Dés')">Dés</button>
-        <button onclick="selectLine('Filets')">Filets</button>
-        <button onclick="selectLine('Prédécoupé')">Prédécoupé</button>
-      </div>
+      <div id="ligneButtons"></div>
 
-      <div id="lineForm" class="formulaire hidden">
-        <h3 id="lineTitle"></h3>
-
-        <label>Heure début :</label>
-        <input type="time" id="startTime">
-
-        <label>Heure fin :</label>
-        <input type="time" id="endTime">
-
-        <label>Quantité réalisée :</label>
-        <input type="number" id="quantite" placeholder="Nombre de colis">
-
-        <label>Cadence manuelle (colis/h) :</label>
-        <input type="number" id="cadenceManuelle" placeholder="Optionnel">
-
-        <label>Cadence calculée :</label>
-        <input type="text" id="cadenceCalculee" readonly>
-
-        <label>Quantité restante :</label>
-        <input type="number" id="reste" placeholder="À produire">
-
-        <label>Estimation fin :</label>
-        <input type="text" id="estimationFin" readonly>
-
-        <button onclick="enregistrer()">💾 Enregistrer</button>
-        <button onclick="retour()">⬅️ Retour</button>
-      </div>
+      <div id="formContainer"></div>
     </section>
 
-    <!-- PAGE ARRETS -->
+    <!-- === SECTION ARRETS === -->
     <section id="arrets" class="page">
       <h2>Arrêts</h2>
-      <p>Enregistrer un arrêt de ligne :</p>
-      <label>Ligne :</label>
-      <select id="ligneArret">
-        <option value="">Sélectionner...</option>
-        <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
-        <option>T1</option><option>Sticks</option><option>Emballage</option>
-        <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
-      </select>
-
-      <label>Durée (minutes) :</label>
-      <input type="number" id="dureeArret" placeholder="Durée de l'arrêt">
-
-      <label>Motif :</label>
-      <input type="text" id="motifArret" placeholder="Motif de l'arrêt">
-
-      <button onclick="ajouterArret()">💾 Enregistrer arrêt</button>
-      <button onclick="exportArrets()">📤 Export Excel</button>
-
-      <h3>Historique des arrêts</h3>
-      <div id="historiqueArrets"></div>
+      <div id="arretForm">
+        <label>Ligne :</label>
+        <select id="ligneArret">
+          <option value="">Sélectionner</option>
+          <option>Râpé</option>
+          <option>T2</option>
+          <option>RT</option>
+          <option>OMORI</option>
+          <option>T1</option>
+          <option>Sticks</option>
+          <option>Emballage</option>
+          <option>Dés</option>
+          <option>Filets</option>
+          <option>Prédécoupé</option>
+        </select>
+        <input type="text" id="causeArret" placeholder="Cause" />
+        <input type="number" id="dureeArret" placeholder="Durée (min)" />
+        <textarea id="commentaireArret" placeholder="Commentaire"></textarea>
+        <button id="saveArret">💾 Enregistrer</button>
+      </div>
+      <table id="tableArrets">
+        <thead>
+          <tr><th>Date</th><th>Ligne</th><th>Cause</th><th>Durée</th><th>Commentaire</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <!-- PAGE PERSONNEL -->
+    <!-- === SECTION PERSONNEL === -->
     <section id="personnel" class="page">
       <h2>Personnel</h2>
-      <label>Nom :</label>
-      <input type="text" id="nomPersonnel">
-
-      <label>Type :</label>
       <select id="typePersonnel">
+        <option value="">Type d’événement</option>
         <option>Absence</option>
         <option>Retard</option>
-        <option>Départ anticipé</option>
+        <option>Départ</option>
         <option>Autre</option>
       </select>
+      <textarea id="commentPersonnel" placeholder="Commentaire"></textarea>
+      <button id="savePersonnel">💾 Enregistrer</button>
 
-      <label>Commentaire :</label>
-      <textarea id="commentairePersonnel"></textarea>
-
-      <button onclick="ajouterPersonnel()">💾 Enregistrer</button>
-      <button onclick="exportPersonnel()">📤 Export Excel</button>
-
-      <h3>Historique du personnel</h3>
-      <div id="historiquePersonnel"></div>
+      <table id="tablePersonnel">
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Commentaire</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <!-- PAGE ORGANISATION -->
+    <!-- === SECTION ORGANISATION === -->
     <section id="organisation" class="page">
       <h2>Organisation</h2>
       <p>Consignes, retards, absences, incidents, etc. affichés ici.</p>
-      <div id="historiqueOrganisation"></div>
-      <button onclick="exportOrganisation()">📤 Export Excel</button>
+      <table id="tableOrganisation">
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Détails</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <!-- PAGE ATELIER -->
+    <!-- === SECTION ATELIER === -->
     <section id="atelier" class="page">
-      <h2>Atelier</h2>
-      <button onclick="remiseZero()">🧹 Remise à zéro générale</button>
-      <p>Tous les historiques seront exportés puis effacés.</p>
-      <button onclick="exportAll()">📤 Export complet</button>
+      <h2>Vue Atelier</h2>
+      <div id="atelierData"></div>
     </section>
 
     <footer>
@@ -140,6 +111,10 @@
     </footer>
   </main>
 
-  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 </html>
