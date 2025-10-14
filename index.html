@@ -3,98 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Synthèse Production – Lactalis 2025</title>
+  <title>Synthèse Production</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
 </head>
+
 <body>
   <header>
     <h1>Synthèse Production</h1>
-    <p id="date"></p>
+    <p id="dateHeure"></p>
     <p id="equipe"></p>
   </header>
 
-  <main id="content">
-    <!-- === PAGE PRODUCTION === -->
-    <section id="production" class="page active">
+  <main>
+    <!-- Page Production -->
+    <section id="pageProduction" class="page active">
       <h2>Production</h2>
-      <div class="ligne-buttons">
-        <button onclick="afficherFormulaireLigne('Râpé')">Râpé</button>
-        <button onclick="afficherFormulaireLigne('T2')">T2</button>
-        <button onclick="afficherFormulaireLigne('RT')">RT</button>
-        <button onclick="afficherFormulaireLigne('OMORI')">OMORI</button>
-        <button onclick="afficherFormulaireLigne('T1')">T1</button>
-        <button onclick="afficherFormulaireLigne('Sticks')">Sticks</button>
-        <button onclick="afficherFormulaireLigne('Emballage')">Emballage</button>
-        <button onclick="afficherFormulaireLigne('Dés')">Dés</button>
-        <button onclick="afficherFormulaireLigne('Filets')">Filets</button>
-        <button onclick="afficherFormulaireLigne('Prédécoupé')">Prédécoupé</button>
+      <div class="boutons-lignes">
+        <button onclick="selectLine('Râpé')">Râpé</button>
+        <button onclick="selectLine('T2')">T2</button>
+        <button onclick="selectLine('RT')">RT</button>
+        <button onclick="selectLine('OMORI')">OMORI</button>
+        <button onclick="selectLine('T1')">T1</button>
+        <button onclick="selectLine('Sticks')">Sticks</button>
+        <button onclick="selectLine('Emballage')">Emballage</button>
+        <button onclick="selectLine('Dés')">Dés</button>
+        <button onclick="selectLine('Filets')">Filets</button>
+        <button onclick="selectLine('Prédécoupé')">Prédécoupé</button>
       </div>
-      <div id="formulaireLigne"></div>
+
+      <div id="formulaireProduction" class="formulaire">
+        <h3 id="titreLigne">Sélectionnez une ligne</h3>
+        <label>Heure début :</label>
+        <select id="heureDebut"></select>
+        <label>Heure fin :</label>
+        <select id="heureFin"></select>
+        <label>Quantité réalisée :</label>
+        <input type="number" id="quantiteRealisee" placeholder="Colis réalisés" />
+        <label>Quantité restante :</label>
+        <input type="number" id="quantiteRestante" placeholder="À produire" />
+        <label>Cadence manuelle (colis/h) :</label>
+        <input type="number" id="cadenceManuelle" placeholder="Optionnel" />
+        <label>Estimation de fin :</label>
+        <input type="text" id="estimationFin" readonly />
+
+        <div class="boutons-formulaire">
+          <button onclick="enregistrerProduction()">💾 Enregistrer</button>
+          <button onclick="annulerDernier()">❌ Annuler dernier</button>
+        </div>
+
+        <div id="historiqueProduction"></div>
+      </div>
     </section>
 
-    <!-- === PAGE ARRETS === -->
-    <section id="arrets" class="page">
+    <!-- Page Arrêts -->
+    <section id="pageArrets" class="page">
       <h2>Arrêts</h2>
       <table id="tableArrets">
         <thead>
-          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Motif</th></tr>
+          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée</th><th>Motif</th></tr>
         </thead>
         <tbody></tbody>
       </table>
-      <button onclick="ajouterArret()">➕ Ajouter un arrêt</button>
-      <button onclick="exporterArrets()">📊 Export Arrêts</button>
+      <div class="boutons-formulaire">
+        <button onclick="ajouterArret()">➕ Ajouter</button>
+        <button onclick="exporterArrets()">📤 Export Arrêts</button>
+      </div>
     </section>
 
-    <!-- === PAGE PERSONNEL === -->
-    <section id="personnel" class="page">
+    <!-- Page Personnel -->
+    <section id="pagePersonnel" class="page">
       <h2>Personnel</h2>
-      <form id="formPersonnel">
-        <label>Type :</label>
-        <select id="typePersonnel">
-          <option>Absence</option>
-          <option>Retard</option>
-          <option>Départ</option>
-          <option>Autre</option>
-        </select>
-        <input type="text" id="commentairePersonnel" placeholder="Commentaire" />
-        <button type="button" onclick="ajouterPersonnel()">💾 Enregistrer</button>
-      </form>
+      <select id="typePersonnel">
+        <option value="Absence">Absence</option>
+        <option value="Retard">Retard</option>
+        <option value="Incident">Incident</option>
+      </select>
+      <textarea id="commentairePersonnel" placeholder="Commentaire..."></textarea>
+      <div class="boutons-formulaire">
+        <button onclick="ajouterPersonnel()">💾 Enregistrer</button>
+        <button onclick="exporterPersonnel()">📤 Export Personnel</button>
+      </div>
       <div id="listePersonnel"></div>
-      <button onclick="exporterPersonnel()">📊 Export Personnel</button>
     </section>
 
-    <!-- === PAGE ORGANISATION === -->
-    <section id="organisation" class="page">
+    <!-- Page Organisation -->
+    <section id="pageOrganisation" class="page">
       <h2>Organisation</h2>
-      <form id="formOrganisation">
-        <textarea id="noteOrganisation" placeholder="Écrire une consigne..."></textarea>
-        <button type="button" onclick="ajouterOrganisation()">💾 Enregistrer</button>
-      </form>
+      <textarea id="noteOrganisation" placeholder="Écrire une consigne..."></textarea>
+      <div class="boutons-formulaire">
+        <button onclick="ajouterOrganisation()">💾 Enregistrer</button>
+        <button onclick="exporterOrganisation()">📤 Export Consignes</button>
+      </div>
       <div id="historiqueOrganisation"></div>
-      <button onclick="exporterOrganisation()">📊 Export Consignes</button>
     </section>
 
-    <!-- === PAGE ATELIER === -->
-    <section id="atelier" class="page">
+    <!-- Page Atelier -->
+    <section id="pageAtelier" class="page">
       <h2>Atelier</h2>
-      <p>Vue globale et export complet.</p>
-      <div id="graphiqueAtelier"></div>
-      <button id="exportAllBtn">📦 Export général (Excel)</button>
-      <button onclick="remiseZero()">🧹 Remise à zéro (avec sauvegarde Excel)</button>
+      <p>Exporter toutes les données de l'équipe :</p>
+      <div class="boutons-formulaire">
+        <button id="exportAllBtn">📊 Export Excel global</button>
+        <button onclick="remiseZero()">♻️ Remise à zéro</button>
+      </div>
     </section>
   </main>
 
-  <nav>
-    <button class="nav-btn active" data-section="production">📊 Production</button>
-    <button class="nav-btn" data-section="arrets">⏸️ Arrêts</button>
-    <button class="nav-btn" data-section="personnel">👥 Personnel</button>
-    <button class="nav-btn" data-section="organisation">🗒️ Organisation</button>
-    <button class="nav-btn" data-section="atelier">🏭 Atelier</button>
-  </nav>
-
+  <!-- Menu bas -->
   <footer>
-    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+    <button onclick="changerPage('Production')">📈 Production</button>
+    <button onclick="changerPage('Arrets')">⏸️ Arrêts</button>
+    <button onclick="changerPage('Personnel')">👥 Personnel</button>
+    <button onclick="changerPage('Organisation')">🗒️ Organisation</button>
+    <button onclick="changerPage('Atelier')">🏭 Atelier</button>
   </footer>
 
   <script src="app.js"></script>
