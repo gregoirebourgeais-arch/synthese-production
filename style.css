@@ -1,284 +1,198 @@
-/* ======================
-   Synthèse Production – Lactalis
-   Version 27.3
-   ====================== */
+/* === style.css (V30 complète) === */
 
-:root {
-  --bleu: #007bff;
-  --bleu-clair: #e8f0ff;
-  --texte: #0d1b2a;
-  --fond: #f5f8fc;
-  --arrondi: 18px;
-}
-
-* {
-  box-sizing: border-box;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  color: var(--texte);
-}
-
-html, body {
+/* RESET + FOND GLOBAL */
+body {
   margin: 0;
-  padding: 0;
-  height: 100%;
-  background: var(--fond);
-  overflow-x: hidden;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #f7f9fc;
+  color: #222;
+  display: flex;
+  min-height: 100vh;
 }
 
-/* =============== SIDEBAR =============== */
+/* === BARRE LATERALE === */
 .sidebar {
-  position: fixed;
-  top: 0; left: 0;
-  width: 95px;
-  height: 100%;
-  background: var(--bleu);
+  background: linear-gradient(180deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  width: 210px;
+  padding: 15px;
+  box-shadow: 3px 0 8px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  gap: 10px;
-  box-shadow: 3px 0 10px rgba(0,0,0,0.1);
-  z-index: 5;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
 }
 
-.sidebar img {
-  width: 70px;
-  margin-bottom: 10px;
+.logo {
+  width: 140px;
+  margin: 10px auto 25px;
+  display: block;
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
 }
 
-.sidebar button {
-  width: 80px;
-  height: 70px;
+.nav-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
   border: none;
-  border-radius: var(--arrondi);
-  background: white;
-  color: var(--bleu);
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-align: center;
-  line-height: 1.1rem;
+  margin: 6px 0;
+  padding: 10px 15px;
+  width: 100%;
+  border-radius: 10px;
+  font-size: 16px;
   cursor: pointer;
-  transition: transform .15s, background .15s;
+  transition: 0.2s;
 }
-
-.sidebar button:hover {
+.nav-btn:hover {
+  background: rgba(255,255,255,0.4);
   transform: scale(1.05);
-  background: var(--bleu-clair);
 }
 
-/* =============== CONTENU PRINCIPAL =============== */
-.main-content {
-  margin-left: 100px;
-  padding: 10px 16px 60px 16px;
+/* === CONTENU PRINCIPAL === */
+main {
+  flex: 1;
+  margin-left: 230px;
+  padding: 25px 20px;
+  overflow-y: auto;
 }
 
 header {
   text-align: center;
   margin-bottom: 15px;
 }
-
 header h1 {
-  font-size: 1.7rem;
-  color: var(--bleu);
-  margin-bottom: 4px;
+  margin: 0;
+  color: #1565c0;
+  font-size: 1.8em;
 }
-
-#equipe-info {
-  font-weight: 600;
+#dateTime {
+  color: #555;
+  font-size: 0.9em;
   margin-top: 4px;
-  color: var(--bleu);
+}
+#equipeDisplay {
+  font-weight: bold;
+  color: #1976d2;
+  font-size: 1em;
 }
 
-/* =============== SECTIONS =============== */
+/* === SECTIONS === */
 .page {
   display: none;
+  animation: fadeIn 0.4s ease-in;
 }
 .page.active {
   display: block;
-  animation: fadeIn .3s ease;
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-h2, h3, h4 {
-  color: var(--bleu);
-}
-
-.buttons-lignes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.line-btn {
-  padding: 12px;
-  border: none;
-  border-radius: var(--arrondi);
-  background: var(--bleu);
-  color: #fff;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: opacity .2s;
-}
-.line-btn:hover {
-  opacity: 0.9;
-}
-
-/* =============== FORMULAIRES =============== */
-label {
-  font-weight: 600;
-  display: block;
-  margin-top: 10px;
-}
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #d0d8e0;
-  margin-top: 5px;
-  font-size: 1rem;
-}
-textarea {
-  min-height: 70px;
-  resize: vertical;
+h2 {
+  color: #1976d2;
+  border-left: 4px solid #1976d2;
+  padding-left: 10px;
 }
 
 button {
-  cursor: pointer;
-}
-
-button.primary {
-  background: var(--bleu);
-  color: #fff;
+  background-color: #2196f3;
+  color: white;
   border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  margin: 5px 3px;
+  transition: 0.2s;
+}
+button:hover {
+  background-color: #1976d2;
+  transform: scale(1.05);
 }
 
-.row-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 15px;
+/* === FORMULAIRES === */
+input, select, textarea {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+label {
+  font-weight: 600;
+  color: #333;
 }
 
+/* === CARTES D'HISTORIQUE === */
 .card {
   background: white;
-  border-radius: var(--arrondi);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-  padding: 14px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  padding: 10px 15px;
+  margin: 8px 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 14px;
+}
+.card strong {
+  color: #1976d2;
 }
 
-/* =============== TABLE HISTORIQUE =============== */
-.tablewrap {
-  overflow-x: auto;
+/* === FORMULAIRE DE LIGNE === */
+.formulaire {
+  margin-top: 15px;
+  padding: 15px;
+  background: #e3f2fd;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-table.mini {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: .9rem;
-}
-table.mini th, table.mini td {
-  border-bottom: 1px solid #e7eef9;
-  padding: .35rem .5rem;
-  text-align: center;
-}
-table.mini th {
-  background: var(--bleu-clair);
-  color: var(--bleu);
-}
-
-/* =============== CALCULATRICE FLOTTANTE =============== */
-#calculator {
-  position: fixed;
-  right: 16px;
-  bottom: 90px;
-  width: 280px;
-  background: #fff;
-  border-radius: var(--arrondi);
-  box-shadow: 0 10px 30px rgba(0,0,0,.2);
-  padding: 10px;
+.hidden {
   display: none;
-  z-index: 999;
 }
 
-#calculator input {
-  width: 100%;
-  margin-bottom: 8px;
-  height: 42px;
-  font-size: 18px;
-  text-align: right;
-  border: 1px solid #ccc;
+/* === SCROLLING === */
+main::-webkit-scrollbar {
+  width: 8px;
+}
+main::-webkit-scrollbar-thumb {
+  background: #90caf9;
   border-radius: 10px;
-  padding: 5px 10px;
 }
 
-.calc-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-.calc-grid button {
-  height: 44px;
-  border-radius: 10px;
-  font-size: 18px;
-  border: none;
-  background: var(--bleu);
-  color: #fff;
-}
-.calc-grid button.equal {
-  grid-column: span 2;
-  background: #28a745;
-}
-
-/* =============== FAB =============== */
-.fab {
-  position: fixed;
-  bottom: 22px;
-  right: 22px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--bleu);
-  color: #fff;
-  font-size: 24px;
-  border: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.fab:hover {
-  background: #0062cc;
-}
-
-/* =============== FOOTER =============== */
-footer {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #777;
-  margin-top: 25px;
-}
-
-/* =============== RESPONSIVE =============== */
-@media (max-width: 700px) {
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
   .sidebar {
-    width: 70px;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    position: relative;
+    box-shadow: none;
   }
-  .sidebar button {
-    width: 60px;
-    font-size: 0.65rem;
-    height: 60px;
+  .logo {
+    width: 90px;
+    margin: 8px;
   }
-  .sidebar img {
-    width: 60px;
+  main {
+    margin-left: 0;
+    padding: 15px;
   }
-  .main-content {
-    margin-left: 80px;
-    padding: 10px;
+  .nav-btn {
+    width: auto;
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+  h2 {
+    font-size: 1.2em;
   }
 }
