@@ -1,198 +1,208 @@
-/* === style.css (V30 complète) === */
-
-/* RESET + FOND GLOBAL */
+/* === GLOBAL === */
 body {
   margin: 0;
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-  background: #f7f9fc;
-  color: #222;
+  font-family: "Segoe UI", sans-serif;
+  background: #f6f9fc;
+  color: #08346c;
   display: flex;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* === BARRE LATERALE === */
-.sidebar {
-  background: linear-gradient(180deg, #1976d2 0%, #42a5f5 100%);
-  color: white;
-  width: 210px;
-  padding: 15px;
-  box-shadow: 3px 0 8px rgba(0,0,0,0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-}
-
-.logo {
-  width: 140px;
-  margin: 10px auto 25px;
-  display: block;
-  filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
-}
-
-.nav-btn {
-  background: rgba(255,255,255,0.2);
-  color: white;
-  border: none;
-  margin: 6px 0;
-  padding: 10px 15px;
-  width: 100%;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.nav-btn:hover {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.05);
-}
-
-/* === CONTENU PRINCIPAL === */
-main {
-  flex: 1;
-  margin-left: 230px;
-  padding: 25px 20px;
-  overflow-y: auto;
-}
-
-header {
+h1, h2 {
+  color: #0057c2;
   text-align: center;
-  margin-bottom: 15px;
-}
-header h1 {
-  margin: 0;
-  color: #1565c0;
-  font-size: 1.8em;
-}
-#dateTime {
-  color: #555;
-  font-size: 0.9em;
-  margin-top: 4px;
-}
-#equipeDisplay {
-  font-weight: bold;
-  color: #1976d2;
-  font-size: 1em;
-}
-
-/* === SECTIONS === */
-.page {
-  display: none;
-  animation: fadeIn 0.4s ease-in;
-}
-.page.active {
-  display: block;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-h2 {
-  color: #1976d2;
-  border-left: 4px solid #1976d2;
-  padding-left: 10px;
 }
 
 button {
-  background-color: #2196f3;
-  color: white;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 15px;
-  margin: 5px 3px;
-  transition: 0.2s;
-}
-button:hover {
-  background-color: #1976d2;
-  transform: scale(1.05);
-}
-
-/* === FORMULAIRES === */
-input, select, textarea {
-  width: 100%;
-  padding: 8px;
-  margin: 5px 0 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-textarea {
-  resize: vertical;
-  min-height: 70px;
-}
-label {
-  font-weight: 600;
-  color: #333;
-}
-
-/* === CARTES D'HISTORIQUE === */
-.card {
-  background: white;
   border-radius: 10px;
   padding: 10px 15px;
-  margin: 8px 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  font-size: 14px;
-}
-.card strong {
-  color: #1976d2;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* === FORMULAIRE DE LIGNE === */
-.formulaire {
-  margin-top: 15px;
-  padding: 15px;
-  background: #e3f2fd;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+/* === SIDEBAR === */
+.sidebar {
+  width: 100px;
+  background: linear-gradient(180deg, #007bff, #009dff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  gap: 15px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
-.hidden {
+
+.sidebar .logo {
+  width: 70px;
+  margin-bottom: 10px;
+}
+
+.nav-btn {
+  width: 80px;
+  background: #fff;
+  color: #007bff;
+  text-align: center;
+  font-size: 13px;
+  padding: 10px 5px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.nav-btn.active {
+  background: #0057c2;
+  color: #fff;
+}
+
+.export-all {
+  background: #004a99;
+  color: white;
+  font-size: 12px;
+  margin-top: auto;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+/* === MAIN AREA === */
+main {
+  margin-left: 110px;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+header {
+  background: linear-gradient(90deg, #007bff, #009dff);
+  color: white;
+  text-align: center;
+  border-radius: 0 0 20px 20px;
+  padding: 15px 0;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+header p {
+  margin: 3px;
+}
+
+.page {
   display: none;
 }
 
-/* === SCROLLING === */
-main::-webkit-scrollbar {
-  width: 8px;
-}
-main::-webkit-scrollbar-thumb {
-  background: #90caf9;
-  border-radius: 10px;
+.page.active {
+  display: block;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  body {
-    flex-direction: column;
-  }
+/* === BUTTONS === */
+button:hover {
+  opacity: 0.85;
+}
+
+#ligneButtons {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#ligneButtons button {
+  background: #007bff;
+  color: white;
+  margin: 5px;
+  border-radius: 8px;
+}
+
+/* === FORMS === */
+input, select, textarea {
+  width: 95%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: block;
+  margin: 8px auto;
+  font-size: 15px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+table {
+  width: 95%;
+  margin: 15px auto;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #007bff;
+  color: white;
+}
+
+/* === FOOTER === */
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-top: 40px;
+}
+
+/* === SPLASH SCREEN === */
+body.loading::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: #e7f1fb;
+  background-image: url('logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 180px;
+  z-index: 9999;
+}
+
+/* === MOBILE === */
+@media (max-width: 700px) {
   .sidebar {
-    width: 100%;
-    height: auto;
     flex-direction: row;
+    width: 100%;
+    height: 80px;
+    position: fixed;
+    bottom: 0;
+    top: auto;
     justify-content: space-around;
-    position: relative;
-    box-shadow: none;
+    padding: 5px 0;
   }
-  .logo {
-    width: 90px;
-    margin: 8px;
-  }
-  main {
-    margin-left: 0;
-    padding: 15px;
-  }
+
   .nav-btn {
     width: auto;
-    font-size: 14px;
-    padding: 8px 10px;
+    font-size: 12px;
+    padding: 8px;
   }
-  h2 {
-    font-size: 1.2em;
+
+  main {
+    margin-left: 0;
+    margin-bottom: 90px;
+    padding: 10px;
+  }
+
+  .export-all {
+    display: none;
+  }
+
+  table {
+    font-size: 13px;
   }
 }
