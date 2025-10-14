@@ -218,3 +218,34 @@ footer {
     font-size: 20px;
   }
 }
+/* Transition d’apparition des pages */
+.fade-in { animation: fadeIn .25s ease-out; }
+@keyframes fadeIn { from {opacity:.0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+
+/* Historique compact */
+.tablewrap { overflow-x:auto; }
+table.mini { width:100%; border-collapse: collapse; font-size: .9rem; }
+table.mini th, table.mini td { border-bottom: 1px solid #e7eef9; padding:.35rem .5rem; text-align:left; }
+
+/* Boutons lignes */
+.line-btn { width: 100%; padding: .9rem 1rem; border-radius: 14px; }
+
+/* Colonne latérale : éviter le dépassement */
+.sidenav .nav-link .label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 86px;          /* adapte si besoin */
+  display: inline-block;
+}
+
+/* Calculatrice flottante */
+#calculator {
+  position: fixed; right: 16px; bottom: 92px; z-index: 50;
+  width: 280px; background: #fff; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 10px; display: none;
+}
+#calculator input { width: 100%; margin-bottom: 8px; height: 42px; font-size: 18px; text-align: right; }
+.calc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.calc-grid button { height: 44px; border-radius: 10px; font-size: 18px; }
+.calc-grid button.equal { grid-column: span 2; }
