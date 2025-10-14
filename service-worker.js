@@ -1,50 +1,38 @@
-// ==================================
-// 🧠 SERVICE WORKER — V27 STABILISÉE
-// ==================================
-
-const CACHE_NAME = "synthese-production-v27";
+// === Service Worker – Synthèse Production Lactalis ===
+const CACHE_NAME = "synthese-cache-v1";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-// 📦 INSTALLATION — mise en cache initiale
-self.addEventListener("install", (event) => {
+// Installation du SW et mise en cache
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("📥 Mise en cache initiale...");
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
-// ♻️ ACTIVATION — suppression des anciens caches
-self.addEventListener("activate", (event) => {
+// Activation et nettoyage des anciens caches
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then((keys) =>
+    caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
-  console.log("✅ Service Worker actif — V27 !");
+  self.clients.claim();
 });
 
-// 🌐 FETCH — lecture depuis le cache (offline)
-self.addEventListener("fetch", (event) => {
+// Interception des requêtes
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return (
-        response ||
-        fetch(event.request).then((resp) => {
-          const clone = resp.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return resp;
-        })
-      );
-    })
+    caches.match(event.request).then(response =>
+      response || fetch(event.request)
+    )
   );
 });
