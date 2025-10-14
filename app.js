@@ -1,5 +1,5 @@
 /* ======================================================
-   SYNTHÈSE PRODUCTION - VERSION 28 INTÉGRALE
+   SYNTHÈSE PRODUCTION - VERSION 28 INTÉGRALE (PARTIE 1/2)
    Lactalis © 2025
    ====================================================== */
 
@@ -45,7 +45,7 @@ function getEquipe(dt){
 }
 
 /* ======================================================
-   NAVIGATION
+   NAVIGATION ENTRE PAGES
    ====================================================== */
 function openSection(id){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -110,6 +110,7 @@ function openLigne(ligne){
   renderLineHistory(ligne);
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
 function majCalculs(ligne){
   const deb=document.getElementById(`deb-${ligne}`).value;
   const fin=document.getElementById(`fin-${ligne}`).value;
@@ -117,17 +118,22 @@ function majCalculs(ligne){
   const cadM=+document.getElementById(`cad-${ligne}`).value||0;
   const rest=+document.getElementById(`rest-${ligne}`).value||0;
   let cadAuto=0;
-  if(deb&&fin&&qte>0){const diff=hoursBetween(deb,fin);if(diff>0)cadAuto=+(qte/diff).toFixed(1);}
+  if(deb&&fin&&qte>0){
+    const diff=hoursBetween(deb,fin);
+    if(diff>0)cadAuto=+(qte/diff).toFixed(1);
+  }
   document.getElementById(`cadAuto-${ligne}`).value=cadAuto||"";
   const baseCad=cadM||cadAuto;
   let est="";
   if(baseCad>0&&rest>0){
     const minutes=(rest/baseCad)*60;
-    const t=new Date();t.setMinutes(t.getMinutes()+minutes);
+    const t=new Date();
+    t.setMinutes(t.getMinutes()+minutes);
     est=t.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
   }
   document.getElementById(`est-${ligne}`).value=est;
 }
+
 function saveLigne(ligne){
   const d={
     deb:document.getElementById(`deb-${ligne}`).value||"",
@@ -151,6 +157,7 @@ function saveLigne(ligne){
   renderAtelier();
   alert("✅ Enregistré");
 }
+
 function renderLineHistory(ligne){
   const body=document.getElementById(`hist-body-${ligne}`);
   if(!body)return;
@@ -160,6 +167,7 @@ function renderLineHistory(ligne){
   <td>${e.cadMan||e.cadAuto}</td><td>${e.reste}</td><td>${e.estimation}</td></tr>`).join("")||
   `<tr><td colspan="7">Aucun enregistrement.</td></tr>`;
 }
+
 function hoursBetween(a,b){
   if(!a||!b)return 0;
   const [h1,m1]=a.split(":").map(Number);
@@ -168,7 +176,11 @@ function hoursBetween(a,b){
   if(d<0)d+=24;
   return d;
 }
-function retourMenu(){document.getElementById("ligne-content").innerHTML="";openSection("production");}
+
+function retourMenu(){
+  document.getElementById("ligne-content").innerHTML="";
+  openSection("production");
+}
 
 /* ======================================================
    ARRÊTS
@@ -181,6 +193,7 @@ function renderArretsTable(){
   <tr><td>${fmtDate(e.ts)}</td><td>${fmtHeure(e.ts)}</td><td>${e.ligne}</td><td>${e.duree}</td><td>${e.cause}</td><td>${e.comment}</td></tr>`).join("")||
   `<tr><td colspan="6">Aucun arrêt.</td></tr>`;
 }
+
 function addArret(ligne,duree,cause,comment){
   const d=Number(duree);if(isNaN(d)||d<=0)return;
   const list=JSON.parse(localStorage.getItem("arretsHistory"))||[];
@@ -188,6 +201,7 @@ function addArret(ligne,duree,cause,comment){
   localStorage.setItem("arretsHistory",JSON.stringify(list));
   renderArretsTable();
 }
+
 document.addEventListener("DOMContentLoaded",()=>{
   const saveBtn=document.getElementById("arSaveBtn");
   const expBtn=document.getElementById("arExportBtn");
@@ -203,6 +217,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(expBtn)expBtn.onclick=exportArretsCSV;
   renderArretsTable();
 });
+
 function exportArretsCSV(){
   const list=JSON.parse(localStorage.getItem("arretsHistory"))||[];
   const rows=[["Date","Heure","Ligne","Durée","Cause","Commentaire"],...list.map(e=>[fmtDate(e.ts),fmtHeure(e.ts),e.ligne,e.duree,e.cause,e.comment])];
@@ -220,6 +235,7 @@ function savePersonnel(){
   document.getElementById("form-pers").reset();
   renderPersonnel();
 }
+
 function renderPersonnel(){
   const z=document.getElementById("historiquePersonnel");
   if(!z)return;
@@ -238,41 +254,44 @@ function addConsigne(ligne,texte){if(!texte||!texte.trim())return;const list=loa
 function renderOrgTable(){const tbody=document.querySelector("#orgTable tbody");if(!tbody)return;const list=loadOrg().sort((a,b)=>b.ts-a.ts);
   tbody.innerHTML=list.map(e=>`<tr><td>${fmtDate(e.ts)}</td><td>${fmtHeure(e.ts)}</td><td>${e.ligne}</td><td>${e.texte}</td></tr>`).join("")||
   `<tr><td colspan="4">Aucune consigne.</td></tr>`;}
-function exportOrganisationCSV(list=loadOrg(),suffix=""){const rows=[["Date","Heure","Ligne","Consigne"],...list.map(e=>[fmtDate(e.ts),fmtHeure(e.ts),e.ligne,e.texte.replace(/\r?\n/g," ")])];
-  downloadCSV(rows,"organisation"+suffix+"_"+todayForFile()+".csv");}
-function archiveOldConsignes(){
-  const list=loadOrg();const now=Date.now(),seven=7*24*3600*1000;
-  const old=list.filter(i=>now-i.ts>seven), recent=list.filter(i=>now-i.ts<=seven);
-  if(old.length){exportOrganisationCSV(old,"_archive");saveOrg(recent);}
-}
-function initOrganisation(){
-  const s=document.getElementById("orgSaveBtn"), e=document.getElementById("orgExportBtn");
-  if(s)s.onclick=()=>{addConsigne(document.getElementById("orgLigne").value,document.getElementById("orgTexte").value);document.getElementById("orgTexte").value="";};
-  if(e)e.onclick=()=>exportOrganisationCSV();
-  archiveOldConsignes();renderOrgTable();
-}
-document.addEventListener("DOMContentLoaded",initOrganisation);
-
 /* ======================================================
    ATELIER (Graphique + Export global)
    ====================================================== */
 let atelierChart=null;
 function renderAtelier(){
-  const ctx=document.getElementById("atelierChart");if(!ctx)return;
-  const labels=lignes, vals=labels.map(l=>+(prod[l]?.cadMan||prod[l]?.cadAuto||0));
+  const ctx=document.getElementById("atelierChart");
+  if(!ctx)return;
+  const labels=lignes;
+  const vals=labels.map(l=>+(prod[l]?.cadMan||prod[l]?.cadAuto||0));
   if(atelierChart)atelierChart.destroy();
-  atelierChart=new Chart(ctx,{type:"bar",data:{labels,datasets:[{label:"Cadence (colis/h)",data:vals,backgroundColor:"#007bff"}]},options:{scales:{y:{beginAtZero:true}}}});
+  atelierChart=new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{label:"Cadence (colis/h)",data:vals,backgroundColor:"#007bff"}]
+    },
+    options:{scales:{y:{beginAtZero:true}}}
+  });
 }
+
 function exportAtelier(){
   let csv="Ligne;Début;Fin;Quantité;CadenceAuto;CadenceMan;Reste;Estimation;Date\n";
-  lignes.forEach(l=>{const d=prod[l];if(d)csv+=`${l};${d.deb};${d.fin};${d.qte};${d.cadAuto};${d.cadMan};${d.reste};${d.estimation};${d.date}\n`;});
-  const blob=new Blob([csv],{type:"text/csv"});const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download=`export-atelier-${new Date().toISOString().slice(0,19)}.csv`;a.click();
+  lignes.forEach(l=>{
+    const d=prod[l];
+    if(d)csv+=`${l};${d.deb};${d.fin};${d.qte};${d.cadAuto};${d.cadMan};${d.reste};${d.estimation};${d.date}\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`export-atelier-${new Date().toISOString().slice(0,19)}.csv`;
+  a.click();
 }
+
 function resetAll(){
   if(!confirm("Exporter puis réinitialiser l'application ?"))return;
   exportAtelier();
-  prod={};prodHistory={};arrets=[];personnel=[];localStorage.clear();
+  prod={};prodHistory={};arrets=[];personnel=[];
+  localStorage.clear();
   renderAtelier();renderPersonnel();renderOrgTable();renderArretsTable();
   alert("✅ Données exportées et application réinitialisée.");
 }
@@ -281,19 +300,73 @@ function resetAll(){
    CALCULATRICE FLOTTANTE
    ====================================================== */
 let calcOpen=false;
-function toggleCalc(){const c=document.getElementById("calculator");if(!c)return;calcOpen=!calcOpen;c.style.display=calcOpen?"block":"none";}
-function calcPress(ch){document.getElementById("calcDisplay").value+=ch;}
-function calcClear(){document.getElementById("calcDisplay").value="";}
+function toggleCalc(){
+  const c=document.getElementById("calculator");
+  if(!c)return;
+  calcOpen=!calcOpen;
+  c.style.display=calcOpen?"block":"none";
+}
+function calcPress(ch){
+  document.getElementById("calcDisplay").value+=ch;
+}
+function calcClear(){
+  document.getElementById("calcDisplay").value="";
+}
 function calcEqual(){
   const d=document.getElementById("calcDisplay");
-  try{if(!/^[0-9+\-*/().\s]+$/.test(d.value))throw 0;d.value=String(Function(`"use strict";return (${d.value})`)());}
-  catch(e){d.value="Err";}
+  try{
+    if(!/^[0-9+\-*/().\s]+$/.test(d.value))throw 0;
+    d.value=String(Function(`"use strict";return (${d.value})`)());
+  }catch(e){d.value="Err";}
 }
+
+/* ======================================================
+   ARCHIVAGE AUTOMATIQUE DES CONSIGNES
+   ====================================================== */
+function exportOrganisationCSV(list=loadOrg(),suffix=""){
+  const rows=[["Date","Heure","Ligne","Consigne"],...list.map(e=>[fmtDate(e.ts),fmtHeure(e.ts),e.ligne,e.texte.replace(/\r?\n/g," ")])];
+  downloadCSV(rows,"organisation"+suffix+"_"+todayForFile()+".csv");
+}
+function archiveOldConsignes(){
+  const list=loadOrg();
+  const now=Date.now(), seven=7*24*3600*1000;
+  const old=list.filter(i=>now-i.ts>seven), recent=list.filter(i=>now-i.ts<=seven);
+  if(old.length){
+    exportOrganisationCSV(old,"_archive");
+    saveOrg(recent);
+  }
+}
+function initOrganisation(){
+  const s=document.getElementById("orgSaveBtn"), e=document.getElementById("orgExportBtn");
+  if(s)s.onclick=()=>{
+    addConsigne(document.getElementById("orgLigne").value,
+                document.getElementById("orgTexte").value);
+    document.getElementById("orgTexte").value="";
+  };
+  if(e)e.onclick=()=>exportOrganisationCSV();
+  archiveOldConsignes();
+  renderOrgTable();
+}
+document.addEventListener("DOMContentLoaded",initOrganisation);
 
 /* ======================================================
    OUTILS COMMUNS
    ====================================================== */
-function todayForFile(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}_${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}`;}
-function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\r\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);
-  const a=document.createElement
+function todayForFile(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}_${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}`;
+}
+function downloadCSV(rows,filename){
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=filename;
+  a.click();
+}
+
+/* ======================================================
+   FIN DU SCRIPT PRINCIPAL
+   ====================================================== */
+console.log("✅ Synthèse Production V28 chargée avec succès");
