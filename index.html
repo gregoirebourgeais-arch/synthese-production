@@ -3,118 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0066cc" />
-  <link rel="manifest" href="manifest.json" />
-  <title>Synthèse Production Lactalis</title>
+  <title>Synthèse Production – Lactalis 2025</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="app.js"></script>
+  <link rel="manifest" href="manifest.json" />
 </head>
-
 <body>
-  <aside class="sidebar">
-    <img src="logo.png" alt="Lactalis" class="logo" />
+  <header>
+    <h1>Synthèse Production</h1>
+    <p id="date"></p>
+    <p id="equipe"></p>
+  </header>
+
+  <main id="content">
+    <!-- === PAGE PRODUCTION === -->
+    <section id="production" class="page active">
+      <h2>Production</h2>
+      <div class="ligne-buttons">
+        <button onclick="afficherFormulaireLigne('Râpé')">Râpé</button>
+        <button onclick="afficherFormulaireLigne('T2')">T2</button>
+        <button onclick="afficherFormulaireLigne('RT')">RT</button>
+        <button onclick="afficherFormulaireLigne('OMORI')">OMORI</button>
+        <button onclick="afficherFormulaireLigne('T1')">T1</button>
+        <button onclick="afficherFormulaireLigne('Sticks')">Sticks</button>
+        <button onclick="afficherFormulaireLigne('Emballage')">Emballage</button>
+        <button onclick="afficherFormulaireLigne('Dés')">Dés</button>
+        <button onclick="afficherFormulaireLigne('Filets')">Filets</button>
+        <button onclick="afficherFormulaireLigne('Prédécoupé')">Prédécoupé</button>
+      </div>
+      <div id="formulaireLigne"></div>
+    </section>
+
+    <!-- === PAGE ARRETS === -->
+    <section id="arrets" class="page">
+      <h2>Arrêts</h2>
+      <table id="tableArrets">
+        <thead>
+          <tr><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Motif</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button onclick="ajouterArret()">Ajouter un arrêt</button>
+      <button id="exportArrets">Export Excel</button>
+    </section>
+
+    <!-- === PAGE PERSONNEL === -->
+    <section id="personnel" class="page">
+      <h2>Personnel</h2>
+      <form id="formPersonnel">
+        <label>Type :</label>
+        <select id="typePersonnel">
+          <option>Absence</option>
+          <option>Retard</option>
+          <option>Départ</option>
+          <option>Autre</option>
+        </select>
+        <input type="text" id="commentairePersonnel" placeholder="Commentaire" />
+        <button type="button" onclick="ajouterPersonnel()">Enregistrer</button>
+      </form>
+      <div id="listePersonnel"></div>
+    </section>
+
+    <!-- === PAGE ORGANISATION === -->
+    <section id="organisation" class="page">
+      <h2>Organisation</h2>
+      <p>Consignes, retards, absences, incidents, etc. affichés ici.</p>
+      <div id="historiqueOrganisation"></div>
+    </section>
+
+    <!-- === PAGE ATELIER === -->
+    <section id="atelier" class="page">
+      <h2>Atelier</h2>
+      <p>Visualisation globale des lignes de production.</p>
+      <button id="exportAllBtn" class="export-all">📦 Export général</button>
+    </section>
+  </main>
+
+  <nav>
     <button class="nav-btn active" data-section="production">📊 Production</button>
     <button class="nav-btn" data-section="arrets">⏸️ Arrêts</button>
     <button class="nav-btn" data-section="personnel">👥 Personnel</button>
     <button class="nav-btn" data-section="organisation">🗒️ Organisation</button>
     <button class="nav-btn" data-section="atelier">🏭 Atelier</button>
-    <button class="export-all">📤 Export général</button>
-  </aside>
+  </nav>
 
-  <main>
-    <header>
-      <h1>Synthèse Production</h1>
-      <p id="dateInfo"></p>
-      <p id="equipe"></p>
-    </header>
+  <footer>
+    <p>Lactalis © 2025 — Application interne de suivi de production</p>
+  </footer>
 
-    <!-- === SECTION PRODUCTION === -->
-    <section id="production" class="page active">
-      <h2>Production</h2>
-      <div id="ligneButtons"></div>
-
-      <div id="formContainer"></div>
-    </section>
-
-    <!-- === SECTION ARRETS === -->
-    <section id="arrets" class="page">
-      <h2>Arrêts</h2>
-      <div id="arretForm">
-        <label>Ligne :</label>
-        <select id="ligneArret">
-          <option value="">Sélectionner</option>
-          <option>Râpé</option>
-          <option>T2</option>
-          <option>RT</option>
-          <option>OMORI</option>
-          <option>T1</option>
-          <option>Sticks</option>
-          <option>Emballage</option>
-          <option>Dés</option>
-          <option>Filets</option>
-          <option>Prédécoupé</option>
-        </select>
-        <input type="text" id="causeArret" placeholder="Cause" />
-        <input type="number" id="dureeArret" placeholder="Durée (min)" />
-        <textarea id="commentaireArret" placeholder="Commentaire"></textarea>
-        <button id="saveArret">💾 Enregistrer</button>
-      </div>
-      <table id="tableArrets">
-        <thead>
-          <tr><th>Date</th><th>Ligne</th><th>Cause</th><th>Durée</th><th>Commentaire</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- === SECTION PERSONNEL === -->
-    <section id="personnel" class="page">
-      <h2>Personnel</h2>
-      <select id="typePersonnel">
-        <option value="">Type d’événement</option>
-        <option>Absence</option>
-        <option>Retard</option>
-        <option>Départ</option>
-        <option>Autre</option>
-      </select>
-      <textarea id="commentPersonnel" placeholder="Commentaire"></textarea>
-      <button id="savePersonnel">💾 Enregistrer</button>
-
-      <table id="tablePersonnel">
-        <thead>
-          <tr><th>Date</th><th>Type</th><th>Commentaire</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- === SECTION ORGANISATION === -->
-    <section id="organisation" class="page">
-      <h2>Organisation</h2>
-      <p>Consignes, retards, absences, incidents, etc. affichés ici.</p>
-      <table id="tableOrganisation">
-        <thead>
-          <tr><th>Date</th><th>Type</th><th>Détails</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- === SECTION ATELIER === -->
-    <section id="atelier" class="page">
-      <h2>Vue Atelier</h2>
-      <div id="atelierData"></div>
-    </section>
-
-    <footer>
-      <p>Lactalis © 2025 — Application interne de suivi de production</p>
-    </footer>
-  </main>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
