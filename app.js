@@ -73,6 +73,166 @@ function renderButtons(){
   });
 }
 renderButtons();
+/* ===============================
+   Historique Organisation + Arrêts
+   =============================== */
+
+const ORG_KEY = "orgHistory";
+const ARRETS_KEY = "arretsHistory";
+
+/* utilitaires date/heure courts */
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth()+1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+function fmtHeure(ts) {
+  const d = new Date(ts);
+  return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+/* ========= ORGANISATION ========= */
+function loadOrg() {
+  try { return JSON.parse(localStorage.getItem(ORG_KEY)) || []; }
+  catch { return []; }
+}
+function saveOrg(list) {
+  localStorage.setItem(ORG_KEY, JSON.stringify(list));
+}
+function addConsigne(ligne, texte) {
+  if (!texte || !texte.trim()) return;
+  const list = loadOrg();
+  list.push({ ts: Date.now(), ligne, texte: texte.trim() });
+  saveOrg(list);
+}
+function renderOrgTable() {
+  const tbody = document.querySelector("#orgTable tbody");
+  if (!tbody) return;
+  const list = loadOrg().sort((a,b)=>b.ts-a.ts);
+  tbody.innerHTML = list.map(e => `
+    <tr>
+      <td>${fmtDate(e.ts)}</td>
+      <td>${fmtHeure(e.ts)}</td>
+      <td>${e.ligne}</td>
+      <td style="text-align:left">${escapeHTML(e.texte)}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="4">Aucune consigne pour le moment.</td></tr>`;
+}
+function exportOrganisationCSV() {
+  const list = loadOrg().sort((a,b)=>a.ts-b.ts);
+  const rows = [
+    ["Date","Heure","Ligne","Consigne"],
+    ...list.map(e => [fmtDate(e.ts), fmtHeure(e.ts), e.ligne, e.texte.replace(/\r?\n/g," ")])
+  ];
+  downloadCSV(rows, `organisation_${todayForFile()}.csv`);
+}
+
+/* ========= ARRETS ========= */
+function loadArrets() {
+  try { return JSON.parse(localStorage.getItem(ARRETS_KEY)) || []; }
+  catch { return []; }
+}
+function saveArrets(list) {
+  localStorage.setItem(ARRETS_KEY, JSON.stringify(list));
+}
+function addArret(ligne, duree, cause, comment) {
+  const d = Number(duree);
+  if (isNaN(d) || d<=0) return;
+  const list = loadArrets();
+  list.push({ ts: Date.now(), ligne, duree: d, cause: (cause||"").trim(), comment: (comment||"").trim() });
+  saveArrets(list);
+}
+function renderArretsTable() {
+  const tbody = document.querySelector("#arTable tbody");
+  if (!tbody) return;
+  const list = loadArrets().sort((a,b)=>b.ts-a.ts);
+  tbody.innerHTML = list.map(e => `
+    <tr>
+      <td>${fmtDate(e.ts)}</td>
+      <td>${fmtHeure(e.ts)}</td>
+      <td>${e.ligne}</td>
+      <td>${e.duree}</td>
+      <td>${escapeHTML(e.cause)}</td>
+      <td>${escapeHTML(e.comment)}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="6">Aucun arrêt enregistré.</td></tr>`;
+}
+function exportArretsCSV() {
+  const list = loadArrets().sort((a,b)=>a.ts-b.ts);
+  const rows = [
+    ["Date","Heure","Ligne","Durée (min)","Cause","Commentaire"],
+    ...list.map(e => [fmtDate(e.ts), fmtHeure(e.ts), e.ligne, String(e.duree), e.cause.replace(/\r?\n/g," "), e.comment.replace(/\r?\n/g," ")])
+  ];
+  downloadCSV(rows, `arrets_${todayForFile()}.csv`);
+}
+
+/* ========= UTIL CSV ========= */
+function todayForFile() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}_${hh}${mi}`;
+}
+function downloadCSV(rows, filename) {
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(";")).join("\r\n");
+  const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+
+/* petite protection XSS pour l’historique */
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ========= WIRING (listeners) ========= */
+function bindOrganisationUI() {
+  const saveBtn = document.getElementById("orgSaveBtn");
+  const exportBtn = document.getElementById("orgExportBtn");
+  if (saveBtn) saveBtn.onclick = () => {
+    const ligne = document.getElementById("orgLigne").value;
+    const txt = document.getElementById("orgTexte").value;
+    addConsigne(ligne, txt);
+    document.getElementById("orgTexte").value = "";
+    renderOrgTable();
+  };
+  if (exportBtn) exportBtn.onclick = exportOrganisationCSV;
+}
+function bindArretsUI() {
+  const saveBtn = document.getElementById("arSaveBtn");
+  const exportBtn = document.getElementById("arExportBtn");
+  if (saveBtn) saveBtn.onclick = () => {
+    const l = document.getElementById("arLigne").value;
+    const d = document.getElementById("arDuree").value;
+    const c = document.getElementById("arCause").value;
+    const m = document.getElementById("arComment").value;
+    addArret(l, d, c, m);
+    document.getElementById("arDuree").value = "";
+    document.getElementById("arCause").value = "";
+    document.getElementById("arComment").value = "";
+    renderArretsTable();
+  };
+  if (exportBtn) exportBtn.onclick = exportArretsCSV;
+}
+
+/* appelle ces 4 fonctions à l’init ET à l’ouverture des pages */
+function initOrganisationAndArrets() {
+  bindOrganisationUI();
+  bindArretsUI();
+  renderOrgTable();
+  renderArretsTable();
+}
+
+/* si tu as déjà un init() global, ajoute juste initOrganisationAndArrets() dedans */
+document.addEventListener("DOMContentLoaded", initOrganisationAndArrets);
 
 /* =========================
    Page d’une ligne
