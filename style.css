@@ -1,251 +1,284 @@
-/* === RESET GÉNÉRAL === */
+/* ======================
+   Synthèse Production – Lactalis
+   Version 27.3
+   ====================== */
+
+:root {
+  --bleu: #007bff;
+  --bleu-clair: #e8f0ff;
+  --texte: #0d1b2a;
+  --fond: #f5f8fc;
+  --arrondi: 18px;
+}
+
 * {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--texte);
+}
+
+html, body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Arial, sans-serif;
+  height: 100%;
+  background: var(--fond);
+  overflow-x: hidden;
 }
 
-body {
-  display: flex;
-  height: 100vh;
-  background: #f5f8ff;
-  color: #002f6c;
-  overflow: hidden;
-}
-
-/* === BARRE LATÉRALE === */
+/* =============== SIDEBAR =============== */
 .sidebar {
-  width: 90px;
-  background: linear-gradient(180deg, #007bff, #66b3ff);
+  position: fixed;
+  top: 0; left: 0;
+  width: 95px;
+  height: 100%;
+  background: var(--bleu);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px 10px;
-  border-right: 2px solid #e0e6f0;
+  padding-top: 10px;
+  gap: 10px;
+  box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+  z-index: 5;
 }
 
-.sidebar .logo img {
-  width: 60px;
-  margin-bottom: 20px;
+.sidebar img {
+  width: 70px;
+  margin-bottom: 10px;
 }
 
 .sidebar button {
-  width: 100%;
-  background: white;
-  color: #0056b3;
+  width: 80px;
+  height: 70px;
   border: none;
-  border-radius: 12px;
-  padding: 8px;
-  margin: 6px 0;
+  border-radius: var(--arrondi);
+  background: white;
+  color: var(--bleu);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8rem;
+  text-align: center;
+  line-height: 1.1rem;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
+  transition: transform .15s, background .15s;
 }
 
 .sidebar button:hover {
-  background: #eaf2ff;
   transform: scale(1.05);
+  background: var(--bleu-clair);
 }
 
-/* === CONTENU PRINCIPAL === */
+/* =============== CONTENU PRINCIPAL =============== */
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding: 10px 20px;
+  margin-left: 100px;
+  padding: 10px 16px 60px 16px;
 }
 
 header {
   text-align: center;
-  background: linear-gradient(180deg, #3aa0ff, #007bff);
-  color: white;
-  padding: 15px;
-  border-radius: 0 0 20px 20px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
 }
 
 header h1 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 1.7rem;
+  color: var(--bleu);
   margin-bottom: 4px;
 }
 
-#date-info {
-  font-size: 14px;
-  font-weight: 500;
-}
-
 #equipe-info {
-  margin-top: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 10px;
   font-weight: 600;
+  margin-top: 4px;
+  color: var(--bleu);
 }
 
-/* === PAGES === */
+/* =============== SECTIONS =============== */
 .page {
   display: none;
-  animation: fadeIn 0.4s ease-in-out;
 }
-
 .page.active {
   display: block;
+  animation: fadeIn .3s ease;
 }
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 
-/* === FORMULAIRES === */
-input,
-select,
-textarea {
+h2, h3, h4 {
+  color: var(--bleu);
+}
+
+.buttons-lignes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.line-btn {
+  padding: 12px;
+  border: none;
+  border-radius: var(--arrondi);
+  background: var(--bleu);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.line-btn:hover {
+  opacity: 0.9;
+}
+
+/* =============== FORMULAIRES =============== */
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 10px;
+}
+input, select, textarea {
   width: 100%;
   padding: 10px;
-  margin: 8px 0 12px 0;
   border-radius: 10px;
   border: 1px solid #d0d8e0;
-  font-size: 15px;
-  background: #fff;
+  margin-top: 5px;
+  font-size: 1rem;
 }
-
 textarea {
-  height: 100px;
-  resize: none;
+  min-height: 70px;
+  resize: vertical;
 }
 
 button {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 15px;
-  font-size: 15px;
-  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
 }
 
-button:hover {
-  background: #0066d6;
+button.primary {
+  background: var(--bleu);
+  color: #fff;
+  border: none;
 }
 
-/* === TABLEAUX & HISTORIQUES === */
-#historiqueConsignes,
-#historiquePersonnel,
-#liste-arrets {
-  margin-top: 10px;
+.row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .card {
   background: white;
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-radius: var(--arrondi);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  padding: 14px;
+  margin-bottom: 16px;
 }
 
-.card p {
-  margin: 4px 0;
-  font-size: 14px;
+/* =============== TABLE HISTORIQUE =============== */
+.tablewrap {
+  overflow-x: auto;
+}
+table.mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+table.mini th, table.mini td {
+  border-bottom: 1px solid #e7eef9;
+  padding: .35rem .5rem;
+  text-align: center;
+}
+table.mini th {
+  background: var(--bleu-clair);
+  color: var(--bleu);
 }
 
-/* === BOUTONS DES LIGNES === */
-.buttons-lignes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 15px;
+/* =============== CALCULATRICE FLOTTANTE =============== */
+#calculator {
+  position: fixed;
+  right: 16px;
+  bottom: 90px;
+  width: 280px;
+  background: #fff;
+  border-radius: var(--arrondi);
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  padding: 10px;
+  display: none;
+  z-index: 999;
 }
 
-.buttons-lignes button {
-  flex: 1 1 40%;
-  background: #007bff;
-  color: white;
+#calculator input {
+  width: 100%;
+  margin-bottom: 8px;
+  height: 42px;
+  font-size: 18px;
+  text-align: right;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 5px 10px;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.calc-grid button {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 18px;
   border: none;
-  border-radius: 14px;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  transition: 0.2s;
+  background: var(--bleu);
+  color: #fff;
+}
+.calc-grid button.equal {
+  grid-column: span 2;
+  background: #28a745;
 }
 
-.buttons-lignes button:hover {
-  background: #005fcc;
+/* =============== FAB =============== */
+.fab {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bleu);
+  color: #fff;
+  font-size: 24px;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.fab:hover {
+  background: #0062cc;
 }
 
-/* === FOOTER === */
+/* =============== FOOTER =============== */
 footer {
   text-align: center;
-  font-size: 13px;
-  color: #003366;
-  padding: 10px;
-  margin-top: 20px;
-  border-top: 1px solid #ccd9f2;
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 25px;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
+/* =============== RESPONSIVE =============== */
+@media (max-width: 700px) {
   .sidebar {
     width: 70px;
   }
-
   .sidebar button {
-    font-size: 11px;
-    padding: 6px;
+    width: 60px;
+    font-size: 0.65rem;
+    height: 60px;
   }
-
+  .sidebar img {
+    width: 60px;
+  }
   .main-content {
-    padding: 8px;
-  }
-
-  header h1 {
-    font-size: 20px;
+    margin-left: 80px;
+    padding: 10px;
   }
 }
-/* Transition d’apparition des pages */
-.fade-in { animation: fadeIn .25s ease-out; }
-@keyframes fadeIn { from {opacity:.0; transform: translateY(6px);} to {opacity:1; transform:none;} }
-
-/* Historique compact */
-.tablewrap { overflow-x:auto; }
-table.mini { width:100%; border-collapse: collapse; font-size: .9rem; }
-table.mini th, table.mini td { border-bottom: 1px solid #e7eef9; padding:.35rem .5rem; text-align:left; }
-
-/* Boutons lignes */
-.line-btn { width: 100%; padding: .9rem 1rem; border-radius: 14px; }
-
-/* Colonne latérale : éviter le dépassement */
-.sidenav .nav-link .label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 86px;          /* adapte si besoin */
-  display: inline-block;
-}
-
-/* Calculatrice flottante */
-#calculator {
-  position: fixed; right: 16px; bottom: 92px; z-index: 50;
-  width: 280px; background: #fff; border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 10px; display: none;
-}
-#calculator input { width: 100%; margin-bottom: 8px; height: 42px; font-size: 18px; text-align: right; }
-.calc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-.calc-grid button { height: 44px; border-radius: 10px; font-size: 18px; }
-.calc-grid button.equal { grid-column: span 2; }
