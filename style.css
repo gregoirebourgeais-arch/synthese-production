@@ -1,212 +1,233 @@
-/* === GLOBAL === */
+/* === STYLE GLOBAL SYNTHÈSE PRODUCTION === */
+:root {
+  --bleu-lactalis: #007bff;
+  --bleu-clair: #e9f3ff;
+  --gris: #f4f4f4;
+  --text: #003366;
+}
+
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Segoe UI", sans-serif;
+  background-color: var(--bleu-clair);
   margin: 0;
-  background: #f5f8ff;
-  color: #002b6d;
+  padding: 0;
+  color: var(--text);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* === HEADER === */
+/* === EN-TÊTE === */
 header {
-  background: linear-gradient(to right, #007bff, #00a2ff);
+  background: linear-gradient(90deg, #007bff, #3fa9f5);
   color: white;
   text-align: center;
-  padding: 16px;
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  padding: 10px 0;
+  border-bottom: 3px solid #0056b3;
 }
 
-h1 {
+header h1 {
   margin: 0;
   font-size: 1.8em;
-  letter-spacing: 0.5px;
 }
 
-/* === MAIN === */
+header p {
+  margin: 5px 0;
+  font-size: 0.95em;
+}
+
+/* === ZONE PRINCIPALE === */
 main {
   flex: 1;
-  padding: 18px;
-  margin-bottom: 90px;
-  text-align: center;
-  animation: fadeIn 0.4s ease-in-out;
+  overflow-y: auto;
+  padding: 10px;
+  scroll-behavior: smooth;
 }
 
+/* === SECTIONS === */
+.page {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === TITRES === */
 h2 {
-  color: #0044aa;
-  margin-bottom: 14px;
+  text-align: center;
+  color: var(--text);
+  font-size: 1.5em;
+  margin-bottom: 15px;
 }
 
-h3 {
-  color: #003380;
-  margin-top: 12px;
-}
-
-/* === BOUTONS DE LIGNES === */
-.ligne-buttons {
+/* === BOUTONS LIGNES === */
+.boutons-lignes {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
-.ligne-buttons button {
-  background: #007bff;
+.boutons-lignes button {
+  background-color: var(--bleu-lactalis);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-}
-
-.ligne-buttons button:hover {
-  background: #005fc1;
-  transform: translateY(-2px);
-}
-
-/* === FORMULAIRES === */
-form input, form select, form textarea {
-  width: 90%;
-  max-width: 420px;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ccd;
-  font-size: 1em;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-}
-
-form textarea {
-  height: 90px;
-  resize: vertical;
-}
-
-button {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  margin: 8px;
-  font-size: 1em;
+  padding: 10px 15px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
 }
 
-button:hover {
-  background: #005fc1;
+.boutons-lignes button:hover {
+  background-color: #0056b3;
   transform: scale(1.05);
 }
 
-/* === TABLEAUX === */
+/* === FORMULAIRES === */
+.formulaire {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  max-width: 550px;
+  margin: 0 auto 25px auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 10px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* === BOUTONS FORMULAIRES === */
+.boutons-formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.boutons-formulaire button {
+  background-color: var(--bleu-lactalis);
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.boutons-formulaire button:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+/* === TABLEAUX (Arrêts, etc.) === */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   background: white;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-th {
-  background: #007bff;
-  color: white;
-  padding: 10px;
-}
-
-td {
-  border: 1px solid #ddd;
+th, td {
   padding: 8px;
+  border-bottom: 1px solid #ddd;
   text-align: center;
 }
 
-/* === NAVIGATION BAS === */
-nav {
+th {
+  background-color: var(--bleu-lactalis);
+  color: white;
+  font-weight: 600;
+}
+
+/* === HISTORIQUES === */
+#historiqueProduction,
+#listePersonnel,
+#historiqueOrganisation {
+  background: #ffffff;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  font-size: 0.9em;
+}
+
+/* === MENU BAS === */
+footer {
+  background: linear-gradient(90deg, #007bff, #3fa9f5);
   display: flex;
-  overflow-x: auto;
-  background: linear-gradient(to right, #007bff, #00a2ff);
+  justify-content: space-around;
+  align-items: center;
+  padding: 6px 0;
+  border-top: 3px solid #0056b3;
   position: fixed;
   bottom: 0;
-  left: 0;
   width: 100%;
-  padding: 10px 8px;
-  gap: 10px;
-  justify-content: flex-start;
-  align-items: center;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  z-index: 999;
+  z-index: 100;
 }
 
-nav::-webkit-scrollbar {
-  height: 6px;
-}
-
-nav::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.4);
-  border-radius: 3px;
-}
-
-.nav-btn {
-  flex: 0 0 auto;
-  padding: 10px 16px;
+footer button {
+  background: white;
   border: none;
   border-radius: 12px;
-  color: #004a99;
+  color: var(--text);
   font-weight: 600;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9em;
+  transition: 0.2s;
 }
 
-.nav-btn.active {
-  background: #004a99;
+footer button:hover {
+  background: var(--bleu-clair);
+  transform: scale(1.05);
+}
+
+footer button.active {
+  background: var(--bleu-lactalis);
   color: white;
 }
 
-.nav-btn:hover {
-  transform: translateY(-2px);
-}
-
-/* === FOOTER === */
-footer {
-  text-align: center;
-  font-size: 0.85em;
-  color: #333;
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background: #f8faff;
-}
-
-/* === PAGES === */
-.page {
-  display: none;
-}
-
-.page.active {
-  display: block;
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-/* === ANIMATIONS === */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 600px) {
+/* === RESPONSIVE MOBILE === */
+@media (max-width: 768px) {
   h1 { font-size: 1.4em; }
-  button { font-size: 0.9em; padding: 8px 12px; }
-  .ligne-buttons button { font-size: 0.9em; padding: 8px 10px; }
-    }
+  h2 { font-size: 1.2em; }
+  .formulaire { padding: 12px; }
+  footer button { font-size: 0.8em; padding: 6px 8px; }
+  .boutons-lignes button { padding: 8px 10px; font-size: 0.85em; }
+}
