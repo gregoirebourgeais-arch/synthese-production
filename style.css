@@ -7,33 +7,35 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 header {
   background: linear-gradient(to right, #007bff, #0096ff);
   color: white;
   text-align: center;
-  padding: 16px;
+  padding: 14px;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
 }
 
 h1 {
   margin: 0;
-  font-size: 1.8em;
+  font-size: 1.7em;
 }
 
 main {
   flex: 1;
   padding: 20px;
-  margin-bottom: 70px; /* espace pour le menu bas */
+  text-align: center;
+  margin-bottom: 80px;
 }
 
 h2 {
   color: #003a99;
 }
 
-/* === LIGNES === */
+/* === BOUTONS DE LIGNES === */
 .ligne-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -60,7 +62,7 @@ h2 {
 
 /* === FORMULAIRES === */
 form input, form select, form textarea {
-  width: 100%;
+  width: 90%;
   padding: 8px;
   margin: 6px 0;
   border-radius: 6px;
@@ -106,8 +108,8 @@ nav {
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 8px;
-  gap: 12px;
+  padding: 10px 8px;
+  gap: 10px;
   justify-content: flex-start;
   align-items: center;
   scroll-behavior: smooth;
@@ -154,6 +156,7 @@ nav::-webkit-scrollbar-thumb {
   display: block;
 }
 
+/* === FOOTER === */
 footer {
   text-align: center;
   font-size: 0.9em;
