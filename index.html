@@ -1,167 +1,134 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2196F3" />
+  <link rel="manifest" href="manifest.json" />
   <title>Synthèse Production</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="lactalis-logo.png" type="image/png" />
 </head>
 <body>
-  <aside class="sidebar">
-    <img src="logo-lactalis.png" alt="Lactalis" class="logo">
-    <button onclick="openSection('production')">📊 Production</button>
-    <button onclick="openSection('page-arrets')">⏸️ Arrêts</button>
-    <button onclick="openSection('personnel')">👥 Personnel</button>
-    <button onclick="openSection('page-organisation')">🗒️ Organisation</button>
-    <button onclick="openSection('atelier')">📈 Atelier</button>
-  </aside>
 
-  <main class="content">
-    <header class="header">
+  <!-- Menu latéral -->
+  <nav class="sidebar">
+    <img src="lactalis-logo.png" alt="Lactalis" class="logo" />
+    <button class="nav-btn" onclick="showSection('production')">📊 Production</button>
+    <button class="nav-btn" onclick="showSection('arrets')">⏸️ Arrêts</button>
+    <button class="nav-btn" onclick="showSection('personnel')">👥 Personnel</button>
+    <button class="nav-btn" onclick="showSection('organisation')">🗒️ Organisation</button>
+    <button class="nav-btn" onclick="showSection('atelier')">🏭 Atelier</button>
+  </nav>
+
+  <!-- Contenu principal -->
+  <main>
+    <header>
       <h1>Synthèse Production</h1>
-      <div id="date-info"></div>
-      <div id="equipe-info"></div>
+      <p id="dateTime"></p>
+      <p id="equipeDisplay">Équipe : —</p>
     </header>
 
-    <!-- PAGE PRODUCTION -->
+    <!-- SECTION PRODUCTION -->
     <section id="production" class="page active">
       <h2>Production</h2>
-      <div id="buttons-lignes"></div>
-      <div id="ligne-content"></div>
-    </section>
-
-    <!-- PAGE ARRÊTS -->
-    <section id="page-arrets" class="page">
-      <h2>Arrêts</h2>
-      <div class="form">
-        <label>Ligne :</label>
-        <select id="arLigne">
-          <option value="">-- Sélectionner --</option>
-          <option value="Râpé">Râpé</option>
-          <option value="T2">T2</option>
-          <option value="RT">RT</option>
-          <option value="OMORI">OMORI</option>
-          <option value="T1">T1</option>
-          <option value="Sticks">Sticks</option>
-          <option value="Emballage">Emballage</option>
-          <option value="Dés">Dés</option>
-          <option value="Filets">Filets</option>
-          <option value="Prédécoupé">Prédécoupé</option>
-        </select>
-
-        <label>Durée (minutes) :</label>
-        <input id="arDuree" type="number" placeholder="Durée totale">
-
-        <label>Cause :</label>
-        <input id="arCause" type="text" placeholder="Ex : Panne, Nettoyage...">
-
-        <label>Commentaire :</label>
-        <input id="arComment" type="text" placeholder="Détails éventuels">
-
-        <div class="row-actions">
-          <button id="arSaveBtn" class="primary">💾 Ajouter</button>
-          <button id="arExportBtn">📤 Exporter</button>
-        </div>
+      <div id="lignes">
+        <button onclick="openLigne('Râpé')">Râpé</button>
+        <button onclick="openLigne('T2')">T2</button>
+        <button onclick="openLigne('RT')">RT</button>
+        <button onclick="openLigne('OMORI')">OMORI</button>
+        <button onclick="openLigne('T1')">T1</button>
+        <button onclick="openLigne('Sticks')">Sticks</button>
+        <button onclick="openLigne('Emballage')">Emballage</button>
+        <button onclick="openLigne('Dés')">Dés</button>
+        <button onclick="openLigne('Filets')">Filets</button>
+        <button onclick="openLigne('Prédécoupé')">Prédécoupé</button>
       </div>
 
-      <h3>Historique des arrêts</h3>
-      <table id="arTable">
-        <thead>
-          <tr>
-            <th>Date</th><th>Heure</th><th>Ligne</th><th>Durée</th><th>Cause</th><th>Commentaire</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div id="formulaireLigne" class="formulaire hidden">
+        <h3 id="nomLigne"></h3>
+        <label>Heure début :</label>
+        <input type="time" id="heureDebut" />
+
+        <label>Heure fin :</label>
+        <input type="time" id="heureFin" />
+
+        <label>Quantité :</label>
+        <input type="number" id="quantite" placeholder="Colis réalisés" />
+
+        <label>Cadence manuelle (colis/h) :</label>
+        <input type="number" id="cadenceManuelle" placeholder="Optionnel" />
+
+        <label>Cadence calculée :</label>
+        <input type="text" id="cadenceCalculee" readonly />
+
+        <label>Quantité restante :</label>
+        <input type="number" id="quantiteRestante" placeholder="À produire" />
+
+        <label>Estimation de fin :</label>
+        <input type="text" id="estimationFin" readonly />
+
+        <button onclick="enregistrerLigne()">💾 Enregistrer</button>
+        <button onclick="resetLigne()">♻️ Remise à zéro</button>
+      </div>
     </section>
 
-    <!-- PAGE PERSONNEL -->
-    <section id="personnel" class="page">
-      <h2>Personnel</h2>
-      <form id="form-pers" onsubmit="savePersonnel(); return false;">
-        <label>Type :</label>
-        <select id="typePersonnel">
-          <option>Absence</option>
-          <option>Retard</option>
-          <option>Départ</option>
-          <option>Autre</option>
+    <!-- SECTION ARRETS -->
+    <section id="arrets" class="page">
+      <h2>Arrêts</h2>
+      <div class="arrets-form">
+        <label>Ligne :</label>
+        <select id="ligneArret">
+          <option value="">Sélectionner une ligne</option>
+          <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+          <option>T1</option><option>Sticks</option><option>Emballage</option>
+          <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
         </select>
 
+        <label>Durée (min) :</label>
+        <input type="number" id="dureeArret" />
+
+        <label>Cause :</label>
+        <input type="text" id="causeArret" />
+
         <label>Commentaire :</label>
-        <textarea id="commentairePersonnel" placeholder="Détails..."></textarea>
+        <input type="text" id="commentaireArret" />
 
-        <button type="submit" class="primary">💾 Ajouter</button>
-      </form>
+        <button onclick="ajouterArret()">💾 Enregistrer arrêt</button>
+        <div id="historiqueArrets"></div>
+      </div>
+    </section>
 
-      <h3>Historique</h3>
+    <!-- SECTION PERSONNEL -->
+    <section id="personnel" class="page">
+      <h2>Personnel</h2>
+      <label>Type :</label>
+      <select id="typePersonnel">
+        <option>Absence</option>
+        <option>Retard</option>
+        <option>Départ</option>
+        <option>Autre</option>
+      </select>
+      <input type="text" id="commentairePersonnel" placeholder="Commentaire..." />
+      <button onclick="ajouterPersonnel()">💾 Enregistrer</button>
       <div id="historiquePersonnel"></div>
     </section>
 
-    <!-- PAGE ORGANISATION -->
-    <section id="page-organisation" class="page">
+    <!-- SECTION ORGANISATION -->
+    <section id="organisation" class="page">
       <h2>Organisation</h2>
-      <label>Ligne concernée :</label>
-      <select id="orgLigne">
-        <option value="Atelier">Atelier</option>
-        <option value="Râpé">Râpé</option>
-        <option value="T2">T2</option>
-        <option value="RT">RT</option>
-        <option value="OMORI">OMORI</option>
-        <option value="T1">T1</option>
-        <option value="Sticks">Sticks</option>
-        <option value="Emballage">Emballage</option>
-        <option value="Dés">Dés</option>
-        <option value="Filets">Filets</option>
-        <option value="Prédécoupé">Prédécoupé</option>
-      </select>
-
-      <label>Consigne :</label>
-      <textarea id="orgTexte" placeholder="Écrire une consigne..."></textarea>
-
-      <div class="row-actions">
-        <button id="orgSaveBtn" class="primary">💾 Ajouter</button>
-        <button id="orgExportBtn">📤 Exporter</button>
-      </div>
-
-      <h3>Historique des consignes</h3>
-      <table id="orgTable">
-        <thead>
-          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Texte</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <textarea id="consigneTexte" placeholder="Nouvelle consigne..."></textarea>
+      <button onclick="ajouterConsigne()">💾 Ajouter</button>
+      <div id="historiqueConsignes"></div>
     </section>
 
-    <!-- PAGE ATELIER -->
+    <!-- SECTION ATELIER -->
     <section id="atelier" class="page">
-      <h2>Tableau de bord Atelier</h2>
-      <canvas id="atelierChart"></canvas>
-      <div class="row-actions">
-        <button onclick="exportAtelier()" class="primary">📤 Export Atelier</button>
-        <button onclick="resetAll()">🧹 Remise à zéro</button>
-        <button onclick="exportEquipeExcel()" class="primary">📊 Export Excel complet</button>
-      </div>
+      <h2>Atelier</h2>
+      <button onclick="exportGlobal()">📤 Export Excel Global</button>
+      <div id="historiqueAtelier"></div>
     </section>
-
-    <!-- CALCULATRICE FLOTTANTE -->
-    <div id="calculator" class="calculator" style="display:none;">
-      <input type="text" id="calcDisplay" readonly>
-      <div class="calc-grid">
-        <button onclick="calcPress('7')">7</button><button onclick="calcPress('8')">8</button><button onclick="calcPress('9')">9</button><button onclick="calcPress('/')">÷</button>
-        <button onclick="calcPress('4')">4</button><button onclick="calcPress('5')">5</button><button onclick="calcPress('6')">6</button><button onclick="calcPress('*')">×</button>
-        <button onclick="calcPress('1')">1</button><button onclick="calcPress('2')">2</button><button onclick="calcPress('3')">3</button><button onclick="calcPress('-')">−</button>
-        <button onclick="calcPress('0')">0</button><button onclick="calcPress('.')">.</button><button onclick="calcEqual()">=</button><button onclick="calcPress('+')">+</button>
-        <button onclick="calcClear()" class="wide">C</button>
-      </div>
-    </div>
-
-    <button class="calc-float" onclick="toggleCalc()">🧮</button>
-
-    <footer>
-      <p>Lactalis © 2025 — Application interne de suivi de production</p>
-    </footer>
   </main>
 
   <script src="app.js"></script>
