@@ -1,5 +1,6 @@
-const CACHE_NAME = "synthese-production-cache-v1";
-const FILES_TO_CACHE = [
+// === SERVICE WORKER - SYNTHÈSE PRODUCTION ===
+const CACHE_NAME = "synthese-cache-v1";
+const urlsToCache = [
   "./",
   "./index.html",
   "./style.css",
@@ -9,30 +10,36 @@ const FILES_TO_CACHE = [
   "./icons/icon-512.png"
 ];
 
+// Installation du service worker
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
-  self.skipWaiting();
 });
 
+// Activation et nettoyage des anciens caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keyList) =>
+    caches.keys().then((names) =>
       Promise.all(
-        keyList.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+        names.map((n) => {
+          if (n !== CACHE_NAME) return caches.delete(n);
         })
       )
     )
   );
-  self.clients.claim();
 });
 
+// Interception des requêtes
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return (
+        response ||
+        fetch(event.request).catch(() =>
+          caches.match("./index.html")
+        )
+      );
     })
   );
 });
