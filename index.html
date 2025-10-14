@@ -114,6 +114,82 @@
       <h3>Historique des consignes (7 jours)</h3>
       <div id="historiqueConsignes"></div>
     </section>
+    <!-- ================= Organisation ================= -->
+<section id="page-organisation" class="page">
+  <h2>Organisation</h2>
+
+  <div class="card">
+    <h3>Nouvelle consigne</h3>
+    <label>Ligne concernée</label>
+    <select id="orgLigne">
+      <option value="Atelier">Atelier (global)</option>
+      <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+      <option>T1</option><option>Sticks</option><option>Emballage</option>
+      <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
+    </select>
+
+    <label>Consigne</label>
+    <textarea id="orgTexte" placeholder="Saisir une consigne claire..."></textarea>
+
+    <div class="row-actions">
+      <button class="primary" id="orgSaveBtn">💾 Enregistrer</button>
+      <button id="orgExportBtn">🧾 Exporter CSV</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Historique des consignes</h3>
+    <div class="tablewrap">
+      <table class="mini" id="orgTable">
+        <thead>
+          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Message</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Arrêts ================= -->
+<section id="page-arrets" class="page">
+  <h2>Arrêts de ligne</h2>
+
+  <div class="card">
+    <h3>Déclarer un arrêt</h3>
+    <label>Ligne</label>
+    <select id="arLigne">
+      <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+      <option>T1</option><option>Sticks</option><option>Emballage</option>
+      <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
+    </select>
+
+    <label>Durée (min)</label>
+    <input id="arDuree" type="number" min="0" placeholder="ex : 12">
+
+    <label>Cause</label>
+    <input id="arCause" type="text" placeholder="ex : Maintenance, Manque matières...">
+
+    <label>Commentaire</label>
+    <input id="arComment" type="text" placeholder="Optionnel">
+
+    <div class="row-actions">
+      <button class="primary" id="arSaveBtn">💾 Enregistrer</button>
+      <button id="arExportBtn">🧾 Exporter CSV</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Historique des arrêts</h3>
+    <div class="tablewrap">
+      <table class="mini" id="arTable">
+        <thead>
+          <tr><th>Date</th><th>Heure</th><th>Ligne</th><th>Durée (min)</th><th>Cause</th><th>Commentaire</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     <!-- ATELIER -->
     <section id="atelier" class="page">
