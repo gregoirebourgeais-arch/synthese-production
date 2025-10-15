@@ -1,230 +1,244 @@
-/* ===================== */
-/* STYLE GLOBAL - V38 */
-/* ===================== */
+/* === Synthèse Production Lactalis - style.css V38 === */
 
+/* Base */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f4f8fc;
+  font-family: "Segoe UI", Roboto, sans-serif;
   margin: 0;
   padding: 0;
-  color: #002b5c;
+  background: #f6f9fc;
+  color: #0a2240;
+  scroll-behavior: smooth;
 }
 
+/* En-tête */
 header {
-  text-align: center;
-  background-color: #007bff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #007bff, #66b2ff);
   color: white;
-  padding: 1rem;
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
+  padding: 8px 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+header .logo {
+  height: 45px;
+  margin-right: 10px;
+}
+.infos-top {
+  font-size: 0.9em;
+  text-align: right;
+  line-height: 1.4;
 }
 
-header img.logo {
-  height: 40px;
-  display: block;
-  margin: 0 auto 10px auto;
-}
-
-#dateHeure, #equipeActuelle {
-  font-weight: bold;
-}
-
-/* ===================== */
-/* NAVIGATION */
-/* ===================== */
-.navbar {
+/* Menu principal */
+.menu {
   display: flex;
   justify-content: space-around;
-  background-color: #007bff;
-  padding: 0.4rem;
+  background: #e9f1ff;
+  border-bottom: 2px solid #007bff;
+  padding: 8px;
   flex-wrap: wrap;
 }
-
-.navbar button {
-  background-color: #e9f2ff;
+.menu button {
+  background: #007bff;
+  color: white;
   border: none;
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  font-weight: bold;
-  color: #003366;
+  border-radius: 25px;
+  padding: 10px 16px;
+  margin: 4px;
   cursor: pointer;
   transition: 0.2s;
+  font-weight: 600;
+}
+.menu button:hover {
+  background: #0056b3;
+  transform: scale(1.05);
 }
 
-.navbar button:hover {
-  background-color: #d8e8ff;
-}
-
-/* ===================== */
-/* STRUCTURE DES PAGES */
-/* ===================== */
-.page-section {
+/* Sections */
+.section {
+  padding: 15px;
   display: none;
-  padding: 1rem;
 }
-
-.page-section.active {
-  display: block;
-}
-
-h2 {
+.section h2 {
   text-align: center;
   color: #004080;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 0.3rem;
+  border-bottom: 3px solid #007bff;
+  display: inline-block;
+  padding-bottom: 5px;
+  margin: 15px auto;
 }
 
-h3 {
-  text-align: center;
-  color: #003366;
-}
-
-/* ===================== */
-/* FORMULAIRES */
-/* ===================== */
-label {
-  display: block;
-  font-weight: bold;
-  margin-top: 0.6rem;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.2rem;
-  border-radius: 8px;
-  border: 1px solid #a7c1e3;
-  box-sizing: border-box;
-}
-
-textarea {
-  min-height: 80px;
-}
-
-/* ===================== */
-/* BOUTONS */
-/* ===================== */
-button {
-  cursor: pointer;
-}
-
-.boutons {
+/* Boutons des lignes */
+.boutons-lignes {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  margin-top: 1rem;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
 }
-
-.boutons button {
-  flex: 1;
-  margin: 0.3rem;
-  border: none;
-  background-color: #007bff;
+.boutons-lignes button {
+  background: #007bff;
   color: white;
-  padding: 0.6rem;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 0.95em;
+}
+.boutons-lignes button:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Formulaires de lignes */
+.ligne-form {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 12px;
+  margin: 15px auto;
+  max-width: 420px;
+  display: none;
+}
+.ligne-form h3 {
+  background: #007bff;
+  color: white;
+  text-align: center;
+  padding: 6px;
   border-radius: 10px;
-  font-weight: bold;
-  transition: 0.2s;
+  margin-bottom: 12px;
+}
+.ligne-form label {
+  display: inline-block;
+  width: 160px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+.ligne-form input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  width: 120px;
+  margin-bottom: 8px;
+}
+.ligne-form button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.ligne-form button:hover {
+  background: #0056b3;
 }
 
-.boutons button:hover {
-  background-color: #0056b3;
+/* Cartes pour Arrêts, Organisation, Personnel */
+.carte {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 500px;
+}
+.carte label {
+  display: block;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.carte select, .carte input, .carte textarea {
+  width: 95%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+.carte button {
+  margin-top: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.carte button:hover {
+  background: #0056b3;
 }
 
-/* ===================== */
-/* HISTORIQUE */
-/* ===================== */
+/* Historique */
 .historique {
-  margin-top: 1rem;
-  background-color: #f0f6ff;
+  margin-top: 10px;
+  background: white;
+  padding: 10px;
   border-radius: 10px;
-  padding: 0.5rem;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
-  max-height: 260px;
-  overflow-y: auto;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
-.historique div {
-  background-color: #fff;
-  margin: 0.4rem 0;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #cfe0f1;
-  border-radius: 8px;
+.ligneHistorique {
+  padding: 6px 0;
+  border-bottom: 1px solid #e5e5e5;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
-.historique div button {
-  background-color: #dc3545;
+.ligneHistorique:last-child {
+  border-bottom: none;
+}
+button.supprimer {
+  background: transparent;
   border: none;
-  color: white;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Textarea Organisation */
+#consigneTexte {
+  width: 95%;
+  max-width: 600px;
+  height: 80px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-size: 15px;
+}
+
+/* Calculatrice flottante */
+#calc {
+  animation: fadeIn 0.3s ease;
+}
+#calcKeys button {
+  width: 48px;
+  height: 40px;
+  margin: 2px;
+  border: none;
   border-radius: 6px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
+  background: #e9f1ff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#calcKeys button:hover {
+  background: #d0e4ff;
 }
 
-/* ===================== */
-/* CALCULATRICE */
-/* ===================== */
-.calculatrice {
-  position: fixed;
-  bottom: 90px;
-  right: 10px;
-  background-color: #ffffff;
-  border: 2px solid #007bff;
-  border-radius: 10px;
-  display: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  width: 210px;
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(5px);}
+  to {opacity: 1; transform: translateY(0);}
 }
 
-.calculatrice input {
-  width: 100%;
-  text-align: right;
-  padding: 0.6rem;
-  font-size: 1.1rem;
-  border: none;
-  border-bottom: 1px solid #007bff;
-  background-color: #eef6ff;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.calc-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.calc-buttons button {
-  padding: 0.6rem;
-  border: none;
-  background-color: #e0ecff;
-  font-weight: bold;
-}
-
-.calc-buttons button:hover {
-  background-color: #c8ddff;
-}
-
-/* ===================== */
-/* RESPONSIVE */
-/* ===================== */
-@media (max-width: 700px) {
-  header img.logo {
-    height: 30px;
-  }
-
-  h2 {
-    font-size: 1.2rem;
-  }
-
-  .navbar button {
-    flex: 1 1 45%;
-    margin: 0.2rem;
-  }
-
-  .boutons button {
-    font-size: 0.9rem;
-  }
+/* Responsive */
+@media(max-width: 768px) {
+  .ligne-form label { width: 130px; font-size: 0.9em; }
+  .ligne-form input { width: 100px; }
+  header .logo { height: 38px; }
 }
