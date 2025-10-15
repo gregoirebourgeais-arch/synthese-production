@@ -136,3 +136,62 @@ function afficherHistorique(){
 afficherHistorique();
 
 // === ARRÊTS / PERSONNEL / ORGANISATION identiques à la version précédente ===
+/* ==== ANNULER DERNIER ==== */
+function annulerDernier(){
+  if(!ligne) return;
+  const l=data.production[ligne];
+  if(l&&l.list&&l.list.length>0){
+    l.list.pop(); save(); afficherHistorique();
+    alert(`Dernier enregistrement supprimé pour ${ligne}`);
+  }
+}
+
+/* ==== ARRÊTS ==== */
+function ajouterArret(){
+  const l = ligne || prompt("Ligne concernée ?");
+  if(!l) return;
+  const motif = prompt("Motif de l’arrêt ?");
+  const d = parseInt(prompt("Durée de l’arrêt (en minutes) ?")) || 0;
+  if(!motif || d <= 0) return alert("⛔ Motif ou durée invalide.");
+  data.arrets.push({
+    date: new Date().toLocaleDateString("fr-FR"),
+    heure: new Date().toLocaleTimeString("fr-FR",{hour12:false}),
+    ligne: l,
+    duree: d,
+    motif
+  });
+  save();
+  afficherArrets();
+  alert(`✅ Arrêt ajouté pour la ligne ${l}`);
+}
+
+/* ==== AFFICHAGE DES ARRÊTS ==== */
+function afficherArrets(){
+  const tb=document.querySelector("#tableArrets tbody");
+  if(!tb) return;
+  tb.innerHTML=data.arrets.map(a=>
+    `<tr>
+      <td>${a.date}</td>
+      <td>${a.heure}</td>
+      <td>${a.ligne}</td>
+      <td>${a.duree}</td>
+      <td>${a.motif}</td>
+    </tr>`
+  ).join("") || "<tr><td colspan='5'><em>Aucun arrêt enregistré</em></td></tr>";
+}
+afficherArrets();
+
+/* ==== BOUTONS D'EXPORT ==== */
+document.getElementById("exportAllBtn").addEventListener("click",()=>{
+  const all=[].concat(
+    ...Object.values(data.production).map(p=>p.list||[]),
+    data.arrets,data.personnel,data.organisation
+  );
+  exportExcel("SyntheseComplete",all);
+});
+
+/* ==== LANCEMENT ==== */
+afficherHistorique();
+afficherArrets();
+afficherPersonnel();
+afficherOrganisation();
