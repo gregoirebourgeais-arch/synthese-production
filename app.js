@@ -1,9 +1,6 @@
-// === Synthèse Production Lactalis — V37 Finale ===
-// Historique complet + calculatrice + corrections cadence + estimation + export Excel pro
+// === Synthèse Production Lactalis - app.js V38 ===
 
-//////////////////////////////
-// (1) Horloge + équipe
-//////////////////////////////
+// (1) Date, heure et équipe automatique
 function majDateHeureEquipe() {
   const now = new Date();
   const jour = now.toLocaleDateString("fr-FR");
@@ -19,27 +16,21 @@ function majDateHeureEquipe() {
   if (last && last !== equipe) genererExportAutomatique(equipe);
   localStorage.setItem("derniereEquipe", equipe);
 }
-setInterval(majDateHeureEquipe, 10_000);
+setInterval(majDateHeureEquipe, 10000);
 majDateHeureEquipe();
 
-//////////////////////////////
-// (2) Données & persistance
-//////////////////////////////
+// (2) Données et persistance
 let ligneActive = null;
 let historique = JSON.parse(localStorage.getItem("historique")) || {
   production: [], arrets: [], personnel: [], organisation: []
 };
-let formState = JSON.parse(localStorage.getItem("formState")) || {};
 const save = () => localStorage.setItem("historique", JSON.stringify(historique));
-const saveForm = () => localStorage.setItem("formState", JSON.stringify(formState));
 
-//////////////////////////////
-// (3) Navigation & affichage
-//////////////////////////////
+// (3) Navigation
 function afficherSection(section) {
   document.querySelectorAll(".section").forEach(s => s.style.display = "none");
   document.getElementById(section).style.display = "block";
-  if (section === "atelier") window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 afficherSection("atelier");
 
@@ -48,12 +39,10 @@ function choisirLigne(ligne) {
   document.querySelectorAll(".ligne-form").forEach(f => f.style.display = "none");
   const form = document.getElementById(`form-${ligne}`);
   if (form) form.style.display = "block";
-  window.scrollTo({ top: form.offsetTop - 50, behavior: "smooth" });
+  form.scrollIntoView({ behavior: "smooth" });
 }
 
-//////////////////////////////
-// (4) Enregistrement production
-//////////////////////////////
+// (4) Production
 function enregistrerProduction() {
   if (!ligneActive) return alert("Choisis une ligne avant d’enregistrer !");
   const heureDebut = document.getElementById(`debut-${ligneActive}`).value;
@@ -62,23 +51,25 @@ function enregistrerProduction() {
   const qteRestante = parseFloat(document.getElementById(`reste-${ligneActive}`).value || 0);
   const cadenceManuelle = parseFloat(document.getElementById(`cadence-${ligneActive}`).value || 0);
 
-  if (!heureDebut || !heureFin || (!qte && !cadenceManuelle))
-    return alert("Merci de remplir au minimum les heures et la quantité ou cadence.");
+  if (!heureDebut || !heureFin) return alert("Merci de renseigner les heures.");
 
   const [h1, m1] = heureDebut.split(":").map(Number);
   const [h2, m2] = heureFin.split(":").map(Number);
   let diffH = (h2 + m2/60) - (h1 + m1/60);
   if (diffH < 0) diffH += 24;
 
-  const cadence = cadenceManuelle || (qte / diffH);
-  const estimation = qteRestante ? (qteRestante / cadence) : 0;
+  let cadence = cadenceManuelle || (qte > 0 && diffH > 0 ? qte / diffH : 0);
+  const estimation = qteRestante > 0 && cadence > 0 ? qteRestante / cadence : 0;
+
+  const finEstimee = new Date();
+  finEstimee.setMinutes(finEstimee.getMinutes() + estimation * 60);
 
   const enregistrement = {
     ligne: ligneActive,
     heureDebut, heureFin,
     qte, qteRestante,
     cadence: cadence.toFixed(1),
-    estimation: estimation ? estimation.toFixed(2) + " h" : "",
+    estimation: cadence > 0 ? finEstimee.toLocaleTimeString("fr-FR").slice(0,5) : "",
     horodatage: new Date().toLocaleString("fr-FR")
   };
 
@@ -87,15 +78,12 @@ function enregistrerProduction() {
   afficherHistoriqueProduction();
   alert(`✅ Enregistré sur ${ligneActive} (${cadence.toFixed(1)} colis/h)`);
 
-  // reset du formulaire
   document.getElementById(`qte-${ligneActive}`).value = "";
   document.getElementById(`reste-${ligneActive}`).value = "";
   document.getElementById(`cadence-${ligneActive}`).value = "";
 }
 
-//////////////////////////////
-// (5) Historique production
-//////////////////////////////
+// (5) Historique Production
 function afficherHistoriqueProduction() {
   const zone = document.getElementById("historiqueProduction");
   zone.innerHTML = "";
@@ -103,17 +91,16 @@ function afficherHistoriqueProduction() {
     const div = document.createElement("div");
     div.className = "ligneHistorique";
     div.innerHTML = `
-      <b>${r.ligne}</b> — ${r.heureDebut} → ${r.heureFin} :
-      ${r.qte || "-"} colis (${r.cadence} c/h) | Fin estimée : ${r.estimation}
+      <b>${r.ligne}</b> — ${r.heureDebut}→${r.heureFin} :
+      ${r.qte || "-"} colis (${r.cadence} c/h) 
+      | Fin estimée : ${r.estimation}
       <button class="supprimer" onclick="supprimerLigne('production', ${i})">🗑️</button>`;
     zone.appendChild(div);
   });
 }
 afficherHistoriqueProduction();
 
-//////////////////////////////
-// (6) Suppression d’une ligne
-//////////////////////////////
+// (6) Suppression générique
 function supprimerLigne(type, index) {
   if (!confirm("Supprimer cette entrée ?")) return;
   historique[type].splice(index, 1);
@@ -121,42 +108,21 @@ function supprimerLigne(type, index) {
   if (type === "production") afficherHistoriqueProduction();
   if (type === "organisation") afficherHistoriqueOrganisation();
   if (type === "arrets") afficherHistoriqueArrets();
+  if (type === "personnel") afficherHistoriquePersonnel();
 }
 
-//////////////////////////////
-// (7) Organisation + Arrêts
-//////////////////////////////
-function enregistrerConsigne() {
-  const texte = document.getElementById("consigneTexte").value.trim();
-  if (!texte) return alert("Aucune consigne à enregistrer !");
-  historique.organisation.push({
-    texte, horodatage: new Date().toLocaleString("fr-FR")
-  });
-  document.getElementById("consigneTexte").value = "";
-  save(); afficherHistoriqueOrganisation();
-}
-
-function afficherHistoriqueOrganisation() {
-  const zone = document.getElementById("historiqueOrganisation");
-  zone.innerHTML = "";
-  historique.organisation.forEach((c, i) => {
-    const div = document.createElement("div");
-    div.innerHTML = `[${c.horodatage}] ${c.texte}
-    <button class="supprimer" onclick="supprimerLigne('organisation', ${i})">🗑️</button>`;
-    zone.appendChild(div);
-  });
-}
-afficherHistoriqueOrganisation();
-
+// (7) Arrêts
 function enregistrerArret() {
   const ligne = document.getElementById("ligneArret").value;
   const duree = document.getElementById("dureeArret").value;
   const cause = document.getElementById("causeArret").value;
   if (!ligne || !duree) return alert("Merci de renseigner la ligne et la durée !");
-  historique.arrets.push({ ligne, duree, cause, horodatage: new Date().toLocaleString("fr-FR") });
+  historique.arrets.push({
+    ligne, duree, cause,
+    horodatage: new Date().toLocaleString("fr-FR")
+  });
   save(); afficherHistoriqueArrets();
 }
-
 function afficherHistoriqueArrets() {
   const zone = document.getElementById("historiqueArrets");
   zone.innerHTML = "";
@@ -169,15 +135,62 @@ function afficherHistoriqueArrets() {
 }
 afficherHistoriqueArrets();
 
-//////////////////////////////
-// (8) Export Excel Pro
-//////////////////////////////
+// (8) Organisation
+function enregistrerConsigne() {
+  const texte = document.getElementById("consigneTexte").value.trim();
+  if (!texte) return alert("Aucune consigne à enregistrer !");
+  historique.organisation.push({
+    texte, horodatage: new Date().toLocaleString("fr-FR")
+  });
+  document.getElementById("consigneTexte").value = "";
+  save(); afficherHistoriqueOrganisation();
+}
+function afficherHistoriqueOrganisation() {
+  const zone = document.getElementById("historiqueOrganisation");
+  zone.innerHTML = "";
+  historique.organisation.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `[${c.horodatage}] ${c.texte}
+    <button class="supprimer" onclick="supprimerLigne('organisation', ${i})">🗑️</button>`;
+    zone.appendChild(div);
+  });
+}
+afficherHistoriqueOrganisation();
+
+// (9) Personnel
+function enregistrerPersonnel() {
+  const type = document.getElementById("typePersonnel").value;
+  const commentaire = document.getElementById("commentPersonnel").value.trim();
+  if (!type) return alert("Choisis un type d'événement personnel !");
+  historique.personnel.push({
+    type, commentaire,
+    horodatage: new Date().toLocaleString("fr-FR")
+  });
+  document.getElementById("typePersonnel").value = "";
+  document.getElementById("commentPersonnel").value = "";
+  save(); afficherHistoriquePersonnel();
+}
+function afficherHistoriquePersonnel() {
+  const zone = document.getElementById("historiquePersonnel");
+  zone.innerHTML = "";
+  historique.personnel.forEach((p, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `[${p.horodatage}] ${p.type} — ${p.commentaire || ""}
+    <button class="supprimer" onclick="supprimerLigne('personnel', ${i})">🗑️</button>`;
+    zone.appendChild(div);
+  });
+}
+afficherHistoriquePersonnel();
+
+// (10) Export Excel global
 function exportExcelGlobal() {
-  let csv = "Type;Ligne;Heure début;Heure fin;Quantité;Restant;Cadence;Estimation;Horodatage\n";
+  let csv = "Type;Ligne;Heure début;Heure fin;Quantité;Restant;Cadence;Estimation;Texte/Cause;Horodatage\n";
   historique.production.forEach(r =>
-    csv += `Production;${r.ligne};${r.heureDebut};${r.heureFin};${r.qte};${r.qteRestante};${r.cadence};${r.estimation};${r.horodatage}\n`);
+    csv += `Production;${r.ligne};${r.heureDebut};${r.heureFin};${r.qte};${r.qteRestante};${r.cadence};${r.estimation};;${r.horodatage}\n`);
   historique.arrets.forEach(a =>
-    csv += `Arrêt;${a.ligne};;;${a.duree};;;${a.cause};${a.horodatage}\n`);
+    csv += `Arrêt;${a.ligne};;;;; ;${a.duree};${a.cause};${a.horodatage}\n`);
+  historique.personnel.forEach(p =>
+    csv += `Personnel;;;;;;;${p.type} ${p.commentaire};${p.horodatage}\n`);
   historique.organisation.forEach(c =>
     csv += `Organisation;;;;;;;${c.texte};${c.horodatage}\n`);
 
@@ -187,20 +200,17 @@ function exportExcelGlobal() {
   link.download = `Synthese_Equipe_${new Date().toLocaleDateString("fr-FR")}.csv`;
   link.click();
 }
-
 function genererExportAutomatique(equipe) {
   alert(`📦 Rapport exporté automatiquement pour l’équipe ${equipe}`);
   exportExcelGlobal();
 }
 
-//////////////////////////////
-// (9) Calculatrice flottante
-//////////////////////////////
+// (11) Calculatrice flottante
 const calcBtn = document.createElement("button");
 calcBtn.innerText = "🧮";
 calcBtn.id = "calcBtn";
 calcBtn.style = `
-  position: fixed; bottom: 90px; right: 15px; 
+  position: fixed; bottom: 90px; right: 15px;
   background: #007bff; color: white; border-radius: 50%;
   width: 60px; height: 60px; font-size: 24px; border: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 9999;`;
