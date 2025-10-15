@@ -1,12 +1,13 @@
 {
-  "name": "Synthèse Production",
-  "short_name": "Synthèse",
+  "name": "Synthèse Production Lactalis",
+  "short_name": "Synthèse Prod",
+  "description": "Application de suivi de production, arrêts, personnel et consignes - Lactalis",
+  "lang": "fr-FR",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#007bff",
+  "orientation": "portrait",
   "theme_color": "#007bff",
-  "orientation": "portrait-primary",
-  "description": "Application interne de suivi de production Lactalis",
+  "background_color": "#e9f3ff",
   "icons": [
     {
       "src": "icons/icon-192.png",
