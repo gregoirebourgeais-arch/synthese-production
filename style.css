@@ -1,103 +1,87 @@
-/* ==== STYLE GLOBAL ==== */
+/* ===================== */
+/* STYLE GLOBAL - V38 */
+/* ===================== */
+
 body {
-  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #f4f8fc;
   margin: 0;
   padding: 0;
-  background-color: #f4f8fc;
-  color: #002f6c;
+  color: #002b5c;
 }
 
 header {
-  background: linear-gradient(90deg, #007bff, #00aaff);
-  color: white;
   text-align: center;
+  background-color: #007bff;
+  color: white;
   padding: 1rem;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: bold;
-}
-
-header .logo {
-  height: 32px;
-  vertical-align: middle;
-  margin-right: 10px;
+header img.logo {
+  height: 40px;
+  display: block;
+  margin: 0 auto 10px auto;
 }
 
 #dateHeure, #equipeActuelle {
-  font-weight: 500;
-  margin-top: 0.3rem;
+  font-weight: bold;
 }
 
-/* ==== NAVIGATION ==== */
+/* ===================== */
+/* NAVIGATION */
+/* ===================== */
 .navbar {
   display: flex;
   justify-content: space-around;
+  background-color: #007bff;
+  padding: 0.4rem;
   flex-wrap: wrap;
-  background: #007bff;
-  padding: 0.3rem;
-  border-top: 2px solid #0056b3;
-  border-bottom: 2px solid #0056b3;
 }
 
-.nav-btn {
+.navbar button {
   background-color: #e9f2ff;
   border: none;
-  color: #003366;
-  font-weight: bold;
   border-radius: 10px;
-  padding: 0.5rem 0.8rem;
-  margin: 0.2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  padding: 0.6rem 1rem;
+  font-weight: bold;
+  color: #003366;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.nav-btn:hover {
-  background-color: #d6e9ff;
+.navbar button:hover {
+  background-color: #d8e8ff;
 }
 
-.nav-btn.active {
-  background-color: #0056b3;
-  color: white;
-}
-
-/* ==== CONTENU PRINCIPAL ==== */
-main {
-  padding: 1rem;
-}
-
-.section {
+/* ===================== */
+/* STRUCTURE DES PAGES */
+/* ===================== */
+.page-section {
   display: none;
-  background: white;
   padding: 1rem;
-  border-radius: 15px;
-  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-  margin-bottom: 2rem;
 }
 
-.section.active {
+.page-section.active {
   display: block;
 }
 
 h2 {
   text-align: center;
-  color: #003366;
-  border-bottom: 3px solid #007bff;
+  color: #004080;
+  border-bottom: 2px solid #007bff;
   padding-bottom: 0.3rem;
 }
 
 h3 {
   text-align: center;
-  margin-top: 1.2rem;
-  color: #004080;
+  color: #003366;
 }
 
+/* ===================== */
+/* FORMULAIRES */
+/* ===================== */
 label {
   display: block;
   font-weight: bold;
@@ -107,117 +91,102 @@ label {
 input, select, textarea {
   width: 100%;
   padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #b0c4de;
   margin-top: 0.2rem;
-  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #a7c1e3;
   box-sizing: border-box;
 }
 
 textarea {
   min-height: 80px;
-  resize: vertical;
 }
 
+/* ===================== */
+/* BOUTONS */
+/* ===================== */
 button {
   cursor: pointer;
 }
 
-/* ==== TABLEAU DE PRODUCTION ==== */
-.line-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.line-buttons button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 0.6rem;
-  font-weight: bold;
-  transition: transform 0.15s ease-in-out;
-}
-
-.line-buttons button:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
-}
-
-.button-row {
+.boutons {
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
+  justify-content: space-between;
   margin-top: 1rem;
 }
 
-.button-row button {
+.boutons button {
   flex: 1;
   margin: 0.3rem;
   border: none;
   background-color: #007bff;
   color: white;
-  font-weight: 600;
   padding: 0.6rem;
   border-radius: 10px;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+  font-weight: bold;
   transition: 0.2s;
 }
 
-.button-row button:hover {
+.boutons button:hover {
   background-color: #0056b3;
 }
 
-/* ==== HISTORIQUE ==== */
-ul {
-  list-style: none;
-  padding: 0;
+/* ===================== */
+/* HISTORIQUE */
+/* ===================== */
+.historique {
+  margin-top: 1rem;
+  background-color: #f0f6ff;
+  border-radius: 10px;
+  padding: 0.5rem;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+  max-height: 260px;
+  overflow-y: auto;
 }
 
-ul li {
-  background-color: #f0f6ff;
+.historique div {
+  background-color: #fff;
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.6rem;
   border: 1px solid #cfe0f1;
-  border-radius: 10px;
-  padding: 0.6rem;
-  margin-bottom: 0.4rem;
-  font-size: 0.95rem;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-ul li button {
+.historique div button {
   background-color: #dc3545;
-  color: white;
   border: none;
-  border-radius: 8px;
+  color: white;
+  border-radius: 6px;
   padding: 0.3rem 0.6rem;
   font-size: 0.8rem;
-  cursor: pointer;
 }
 
-/* ==== CALCULATRICE ==== */
-.calculator {
+/* ===================== */
+/* CALCULATRICE */
+/* ===================== */
+.calculatrice {
   position: fixed;
-  bottom: 80px;
-  right: 15px;
-  width: 220px;
-  background: white;
+  bottom: 90px;
+  right: 10px;
+  background-color: #ffffff;
   border: 2px solid #007bff;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  border-radius: 10px;
   display: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  width: 210px;
 }
 
-.calculator input {
+.calculatrice input {
   width: 100%;
   text-align: right;
+  padding: 0.6rem;
+  font-size: 1.1rem;
   border: none;
+  border-bottom: 1px solid #007bff;
   background-color: #eef6ff;
-  font-size: 1.2rem;
-  padding: 0.5rem;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
@@ -232,35 +201,30 @@ ul li button {
   border: none;
   background-color: #e0ecff;
   font-weight: bold;
-  font-size: 1rem;
 }
 
 .calc-buttons button:hover {
   background-color: #c8ddff;
 }
 
-.calc-buttons .clear {
-  grid-column: span 4;
-  background-color: #ff4b5c;
-  color: white;
-}
-
-/* ==== RESPONSIVE ==== */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 1.3rem;
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+@media (max-width: 700px) {
+  header img.logo {
+    height: 30px;
   }
 
-  .navbar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
+  h2 {
+    font-size: 1.2rem;
   }
 
-  .line-buttons {
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  .navbar button {
+    flex: 1 1 45%;
+    margin: 0.2rem;
   }
 
-  .button-row button {
+  .boutons button {
     font-size: 0.9rem;
   }
 }
