@@ -1,29 +1,30 @@
-// ===========================
-// VARIABLES & INITIALISATION
-// ===========================
+// ===============================
+// VARIABLES GLOBALES
+// ===============================
 let ligneActuelle = "";
 let historique = JSON.parse(localStorage.getItem("historique")) || {};
 let historiqueArrets = JSON.parse(localStorage.getItem("historiqueArrets")) || [];
 let historiquePersonnel = JSON.parse(localStorage.getItem("historiquePersonnel")) || [];
 let historiqueOrganisation = JSON.parse(localStorage.getItem("historiqueOrganisation")) || [];
-let derniereLigne = null;
 
-function init() {
+// ===============================
+// INITIALISATION
+// ===============================
+window.onload = () => {
   afficherDateHeure();
   determinerEquipe();
+  afficherTousLesHistoriques();
   setInterval(afficherDateHeure, 60000);
-  afficherHistoriqueGlobal();
-}
-window.onload = init;
+};
 
-// ===========================
+// ===============================
 // DATE, HEURE, ÉQUIPE
-// ===========================
+// ===============================
 function afficherDateHeure() {
   const now = new Date();
-  const dateLocale = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-  const heureLocale = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("dateHeure").textContent = `${dateLocale} — ${heureLocale}`;
+  const date = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  const heure = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  document.getElementById("dateHeure").textContent = `${date} — ${heure}`;
 }
 
 function determinerEquipe() {
@@ -34,70 +35,70 @@ function determinerEquipe() {
   document.getElementById("equipeActuelle").textContent = `Équipe : ${equipe}`;
 }
 
-// ===========================
+// ===============================
 // NAVIGATION ENTRE PAGES
-// ===========================
-function showSection(sectionId) {
-  document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
-  document.getElementById(sectionId).classList.add("active");
+// ===============================
+function showSection(id) {
+  document.querySelectorAll(".page").forEach(sec => sec.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-// ===========================
+// ===============================
 // PRODUCTION
-// ===========================
+// ===============================
 function selectLine(nomLigne) {
   ligneActuelle = nomLigne;
   document.getElementById("nomLigne").textContent = `Ligne : ${nomLigne}`;
   document.getElementById("formProduction").scrollIntoView({ behavior: "smooth" });
+  afficherHistoriqueProduction();
 }
 
 function enregistrerProduction() {
-  if (!ligneActuelle) return alert("Sélectionne une ligne avant d’enregistrer.");
-
+  if (!ligneActuelle) return alert("Sélectionnez une ligne avant d’enregistrer.");
   const debut = document.getElementById("heureDebut").value;
   const fin = document.getElementById("heureFin").value;
-  const quantite = parseFloat(document.getElementById("quantiteRealisee").value) || 0;
+  const qte = parseFloat(document.getElementById("quantiteRealisee").value) || 0;
   const restante = parseFloat(document.getElementById("quantiteRestante").value) || 0;
   const cadenceManuelle = parseFloat(document.getElementById("cadenceManuelle").value) || null;
 
-  if (!debut || !fin || quantite <= 0) return alert("Merci de remplir tous les champs essentiels.");
+  if (!debut || !fin || qte <= 0) return alert("Merci de remplir les champs essentiels.");
 
   const duree = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 3600000;
-  const cadence = cadenceManuelle ? cadenceManuelle : (quantite / (duree > 0 ? duree : 1));
+  const cadence = cadenceManuelle || (qte / (duree > 0 ? duree : 1));
   const estimationFin = calculerEstimationAuto(restante, cadence);
 
-  const enregistrement = {
+  const enreg = {
     date: new Date().toLocaleString(),
-    debut, fin, quantite, restante, cadence, estimationFin
+    debut, fin, qte, restante, cadence, estimationFin
   };
 
   if (!historique[ligneActuelle]) historique[ligneActuelle] = [];
-  historique[ligneActuelle].push(enregistrement);
+  historique[ligneActuelle].push(enreg);
 
   localStorage.setItem("historique", JSON.stringify(historique));
-  afficherHistoriqueLigne(ligneActuelle);
+  afficherHistoriqueProduction();
   resetForm();
 }
 
-function afficherHistoriqueLigne(ligne) {
+function afficherHistoriqueProduction() {
   const div = document.getElementById("historiqueProduction");
   div.innerHTML = "";
-  if (!historique[ligne]) return;
+  if (!ligneActuelle || !historique[ligneActuelle]) return;
 
-  historique[ligne].forEach((item, i) => {
-    const li = document.createElement("div");
-    li.innerHTML = `
-      <span>${item.date} — ${item.quantite} colis (${item.cadence.toFixed(1)} c/h)</span>
-      <button onclick="supprimerLigne('${ligne}', ${i})">❌</button>
+  historique[ligneActuelle].forEach((r, i) => {
+    const d = document.createElement("div");
+    d.innerHTML = `
+      <span>${r.date} — ${r.qte} colis (${r.cadence.toFixed(1)} c/h) — Fin estimée : ${r.estimationFin}</span>
+      <button onclick="supprimerLigne('${ligneActuelle}', ${i})">❌</button>
     `;
-    div.appendChild(li);
+    div.appendChild(d);
   });
 }
 
 function supprimerLigne(ligne, index) {
   historique[ligne].splice(index, 1);
   localStorage.setItem("historique", JSON.stringify(historique));
-  afficherHistoriqueLigne(ligne);
+  afficherHistoriqueProduction();
 }
 
 function resetForm() {
@@ -109,14 +110,13 @@ function resetForm() {
   document.getElementById("estimationFin").value = "";
 }
 
-// ===========================
-// CALCUL ESTIMATION AUTOMATIQUE
-// ===========================
+// ===============================
+// CALCUL AUTOMATIQUE ESTIMATION
+// ===============================
 function calculerEstimation() {
   const restante = parseFloat(document.getElementById("quantiteRestante").value);
   const cadence = parseFloat(document.getElementById("cadenceManuelle").value) ||
-                  (ligneActuelle && historique[ligneActuelle]?.slice(-1)[0]?.cadence) || 0;
-
+    (ligneActuelle && historique[ligneActuelle]?.slice(-1)[0]?.cadence) || 0;
   if (restante && cadence > 0) {
     const estimation = calculerEstimationAuto(restante, cadence);
     document.getElementById("estimationFin").value = estimation;
@@ -130,16 +130,15 @@ function calculerEstimationAuto(restante, cadence) {
   return estimation.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ===========================
+// ===============================
 // ARRÊTS
-// ===========================
+// ===============================
 function enregistrerArret() {
   const ligne = document.getElementById("ligneArret").value;
-  const motif = document.getElementById("motifArret").value;
-  if (!ligne || !motif) return alert("Merci de renseigner la ligne et le motif.");
-
-  const data = { date: new Date().toLocaleString(), ligne, motif };
-  historiqueArrets.push(data);
+  const motif = document.getElementById("motifArret").value.trim();
+  if (!ligne || !motif) return alert("Remplir la ligne et le motif.");
+  const a = { date: new Date().toLocaleString(), ligne, motif };
+  historiqueArrets.push(a);
   localStorage.setItem("historiqueArrets", JSON.stringify(historiqueArrets));
   afficherArrets();
 }
@@ -147,23 +146,22 @@ function enregistrerArret() {
 function afficherArrets() {
   const div = document.getElementById("historiqueArrets");
   div.innerHTML = "";
-  historiqueArrets.forEach((a, i) => {
+  historiqueArrets.forEach(a => {
     const d = document.createElement("div");
-    d.innerHTML = `<span>${a.date} — ${a.ligne}: ${a.motif}</span>`;
+    d.textContent = `${a.date} — ${a.ligne} : ${a.motif}`;
     div.appendChild(d);
   });
 }
 
-// ===========================
+// ===============================
 // PERSONNEL
-// ===========================
+// ===============================
 function enregistrerPersonnel() {
-  const nom = document.getElementById("nomEmploye").value;
+  const nom = document.getElementById("nomEmploye").value.trim();
   const statut = document.getElementById("statutEmploye").value;
   if (!nom) return alert("Nom requis.");
-
-  const enreg = { date: new Date().toLocaleString(), nom, statut };
-  historiquePersonnel.push(enreg);
+  const p = { date: new Date().toLocaleString(), nom, statut };
+  historiquePersonnel.push(p);
   localStorage.setItem("historiquePersonnel", JSON.stringify(historiquePersonnel));
   afficherPersonnel();
 }
@@ -173,19 +171,19 @@ function afficherPersonnel() {
   div.innerHTML = "";
   historiquePersonnel.forEach(p => {
     const d = document.createElement("div");
-    d.textContent = `${p.date} — ${p.nom}: ${p.statut}`;
+    d.textContent = `${p.date} — ${p.nom} : ${p.statut}`;
     div.appendChild(d);
   });
 }
 
-// ===========================
+// ===============================
 // ORGANISATION
-// ===========================
+// ===============================
 function enregistrerOrganisation() {
   const texte = document.getElementById("consigneOrganisation").value.trim();
   if (!texte) return;
-  const data = { date: new Date().toLocaleString(), texte };
-  historiqueOrganisation.push(data);
+  const c = { date: new Date().toLocaleString(), texte };
+  historiqueOrganisation.push(c);
   localStorage.setItem("historiqueOrganisation", JSON.stringify(historiqueOrganisation));
   afficherOrganisation();
   document.getElementById("consigneOrganisation").value = "";
@@ -201,61 +199,74 @@ function afficherOrganisation() {
   });
 }
 
-// ===========================
+// ===============================
 // EXPORT GLOBAL EXCEL
-// ===========================
+// ===============================
 function exportGlobal() {
   const wb = XLSX.utils.book_new();
-  const allData = [];
-
-  allData.push(["Section", "Date", "Ligne", "Données"]);
+  const data = [["Section", "Date", "Ligne", "Détails"]];
 
   // Production
-  for (const [ligne, datas] of Object.entries(historique)) {
-    datas.forEach(d =>
-      allData.push(["Production", d.date, ligne,
-        `Début: ${d.debut}, Fin: ${d.fin}, Qté: ${d.quantite}, Cadence: ${d.cadence.toFixed(1)} c/h, Fin estimée: ${d.estimationFin}`])
+  for (const [ligne, enregs] of Object.entries(historique)) {
+    enregs.forEach(e =>
+      data.push([
+        "Production",
+        e.date,
+        ligne,
+        `Début: ${e.debut}, Fin: ${e.fin}, Qté: ${e.qte}, Cadence: ${e.cadence.toFixed(1)} c/h, Fin estimée: ${e.estimationFin}`
+      ])
     );
   }
 
   // Arrêts
-  historiqueArrets.forEach(a => allData.push(["Arrêts", a.date, a.ligne, a.motif]));
+  historiqueArrets.forEach(a => data.push(["Arrêts", a.date, a.ligne, a.motif]));
 
   // Personnel
-  historiquePersonnel.forEach(p => allData.push(["Personnel", p.date, "-", `${p.nom}: ${p.statut}`]));
+  historiquePersonnel.forEach(p => data.push(["Personnel", p.date, "-", `${p.nom}: ${p.statut}`]));
 
   // Organisation
-  historiqueOrganisation.forEach(o => allData.push(["Organisation", o.date, "-", o.texte]));
+  historiqueOrganisation.forEach(o => data.push(["Organisation", o.date, "-", o.texte]));
 
-  const ws = XLSX.utils.aoa_to_sheet(allData);
-  XLSX.utils.book_append_sheet(wb, ws, "Synthèse complète");
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws["!cols"] = [{ wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 80 }];
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
   XLSX.writeFile(wb, `Synthese_Production_${new Date().toLocaleDateString("fr-FR")}.xlsx`);
 }
 
-// ===========================
-// CALCULATRICE FLOTTANTE
-// ===========================
+// ===============================
+// CALCULATRICE
+// ===============================
 function ouvrirCalculatrice() {
-  const calc = document.querySelector(".calculatrice");
+  let calc = document.querySelector(".calculatrice");
   if (!calc) {
-    const div = document.createElement("div");
-    div.className = "calculatrice";
-    div.innerHTML = `
+    calc = document.createElement("div");
+    calc.className = "calculatrice";
+    calc.innerHTML = `
       <input type="text" id="calcDisplay" readonly />
       <div class="calc-buttons">
         ${[7,8,9,"/",4,5,6,"*",1,2,3,"-",0,".","=","+"].map(v => `<button onclick="calcPress('${v}')">${v}</button>`).join("")}
         <button class="clear" onclick="calcClear()">C</button>
       </div>`;
-    document.body.appendChild(div);
+    document.body.appendChild(calc);
   }
-  document.querySelector(".calculatrice").style.display = "block";
+  calc.style.display = "block";
 }
 
 function calcPress(val) {
   const disp = document.getElementById("calcDisplay");
-  if (val === "=") disp.value = eval(disp.value);
+  if (val === "=") disp.value = eval(disp.value || "0");
   else disp.value += val;
 }
+
 function calcClear() {
   document.getElementById("calcDisplay").value = "";
+}
+
+// ===============================
+// AFFICHAGE HISTORIQUES
+// ===============================
+function afficherTousLesHistoriques() {
+  afficherArrets();
+  afficherPersonnel();
+  afficherOrganisation();
 }
