@@ -1,5 +1,7 @@
 // ==================== VARIABLES GLOBALES ====================
 let ligneSelectionnee = null;
+let chartInstance = null;
+
 let data = JSON.parse(localStorage.getItem("syntheseData")) || {
   production: {},
   arrets: [],
@@ -7,27 +9,27 @@ let data = JSON.parse(localStorage.getItem("syntheseData")) || {
   organisation: []
 };
 
-// ==================== AFFICHAGE SECTIONS ====================
+// ==================== AFFICHAGE DES SECTIONS ====================
 function showSection(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "atelier") majGraphique();
 }
 
-// ==================== LIGNE SELECTIONNEE ====================
+// ==================== SELECTION DE LIGNE ====================
 function selectLine(ligne) {
   ligneSelectionnee = ligne;
   document.getElementById("nomLigne").innerText = "Ligne : " + ligne;
   const temp = JSON.parse(localStorage.getItem(`temp_${ligne}`)) || {};
-  document.getElementById("quantiteRealisee").value = temp.quantiteRealisee || "";
-  document.getElementById("quantiteRestante").value = temp.quantiteRestante || "";
-  document.getElementById("cadenceManuelle").value = temp.cadenceManuelle || "";
-  document.getElementById("heureDebut").value = temp.heureDebut || "";
-  document.getElementById("heureFin").value = temp.heureFin || "";
+  ["quantiteRealisee", "quantiteRestante", "cadenceManuelle", "heureDebut", "heureFin"].forEach(id => {
+    document.getElementById(id).value = temp[id] || "";
+  });
   chargerHistoriqueProduction();
+  showSection("production");
 }
 
-// ==================== PERSISTANCE TEMPORAIRE PAR LIGNE ====================
+// ==================== PERSISTANCE TEMPORAIRE ====================
 function sauvegarderTemporaire() {
   if (!ligneSelectionnee) return;
   const temp = {
@@ -46,12 +48,11 @@ function enregistrerProduction() {
   const hD = document.getElementById("heureDebut").value;
   const hF = document.getElementById("heureFin").value;
   const qR = Number(document.getElementById("quantiteRealisee").value);
-  const qRest = Number(document.getElementById("quantiteRestante").value);
   const cadenceM = Number(document.getElementById("cadenceManuelle").value);
+  const estimationFin = document.getElementById("estimationFin").value;
 
   const duree = calculerDuree(hD, hF);
   const cadence = cadenceM || (duree > 0 ? (qR / duree).toFixed(1) : 0);
-  const estimationFin = calculerEstimation();
 
   if (!data.production[ligneSelectionnee]) data.production[ligneSelectionnee] = [];
   data.production[ligneSelectionnee].push({
@@ -65,13 +66,13 @@ function enregistrerProduction() {
 
   localStorage.setItem("syntheseData", JSON.stringify(data));
   localStorage.removeItem(`temp_${ligneSelectionnee}`);
-  chargerHistoriqueProduction();
-
   document.querySelectorAll("#formProduction input").forEach(el => el.value = "");
+  chargerHistoriqueProduction();
+  majGraphique();
   alert("Production enregistrée !");
 }
 
-// ==================== CALCUL DUREE ====================
+// ==================== CALCUL DE DUREE ====================
 function calculerDuree(debut, fin) {
   if (!debut || !fin) return 0;
   const d = new Date(`2024-01-01T${debut}`);
@@ -81,7 +82,7 @@ function calculerDuree(debut, fin) {
   return diff;
 }
 
-// ==================== CALCUL ESTIMATION FIN ====================
+// ==================== ESTIMATION DE FIN ====================
 function calculerEstimation() {
   const qRest = Number(document.getElementById("quantiteRestante").value);
   const cadenceM = Number(document.getElementById("cadenceManuelle").value);
@@ -117,6 +118,7 @@ function supprimerEnregistrement(ligne, index) {
   data.production[ligne].splice(index, 1);
   localStorage.setItem("syntheseData", JSON.stringify(data));
   chargerHistoriqueProduction();
+  majGraphique();
 }
 
 // ==================== ARRETS ====================
@@ -259,6 +261,61 @@ function exportGlobal() {
   XLSX.writeFile(wb, nom);
 }
 
+// ==================== GRAPHIQUE ATELIER ====================
+function majGraphique() {
+  const ctx = document.getElementById("chartProduction");
+  const lignes = Object.keys(data.production);
+  const quantites = lignes.map(l =>
+    data.production[l].reduce((sum, e) => sum + Number(e.quantite || 0), 0)
+  );
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: lignes,
+      datasets: [{
+        label: "Quantité réalisée (colis)",
+        data: quantites,
+        backgroundColor: "#007bff",
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          const index = elements[0].index;
+          const ligne = lignes[index];
+          afficherDetailLigne(ligne);
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 50 } }
+      }
+    }
+  });
+}
+
+function afficherDetailLigne(ligne) {
+  const zone = document.getElementById("detailLigne");
+  zone.innerHTML = `<h3>Détails de la ligne ${ligne}</h3>`;
+  if (!data.production[ligne]) {
+    zone.innerHTML += "<p>Aucun enregistrement.</p>";
+    return;
+  }
+  data.production[ligne].forEach(p => {
+    const div = document.createElement("div");
+    div.textContent = `${p.date} — ${p.quantite} colis — ${p.cadence} colis/h — Fin estimée ${p.estimationFin}`;
+    zone.appendChild(div);
+  });
+}
+
 // ==================== HORLOGE + EQUIPE ====================
 function majHeure() {
   const now = new Date();
@@ -275,4 +332,5 @@ window.onload = () => {
   chargerHistoriqueArrets();
   chargerHistoriquePersonnel();
   chargerHistoriqueOrganisation();
+  majGraphique();
 };
