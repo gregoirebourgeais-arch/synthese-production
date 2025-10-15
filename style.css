@@ -1,198 +1,152 @@
-/* --------------------- */
-/* STYLE GLOBAL LACTALIS */
-/* --------------------- */
-
+/* ===== STYLE GENERAL ===== */
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f5f9ff;
   margin: 0;
-  padding: 0;
-  background-color: #f4f7fc;
-  color: #002b6b;
-  text-align: center;
+  color: #0a2a55;
 }
 
-/* ---------- HEADER ---------- */
-
-.header {
-  background: linear-gradient(135deg, #007bff, #2196f3);
+header {
+  background: linear-gradient(135deg, #007bff, #4facfe);
   color: white;
-  padding: 15px 10px;
+  text-align: center;
+  padding: 15px;
   border-radius: 0 0 20px 20px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.logo {
-  height: 60px;
-  display: block;
-  margin: 0 auto 5px;
+header img {
+  width: 60px;
+  margin-bottom: 5px;
 }
 
 h1 {
   margin: 5px 0;
-  font-size: 1.4em;
-  font-weight: bold;
+  font-size: 1.6em;
 }
 
-/* ---------- NAVIGATION ---------- */
+#dateHeure, #equipeActuelle {
+  font-size: 0.95em;
+  margin: 3px 0;
+}
 
-.main-nav {
+/* ===== NAVBAR ===== */
+nav {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: #e9f1ff;
   padding: 8px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  border-bottom: 2px solid #007bff33;
 }
 
-.main-nav button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  margin: 5px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.main-nav button:hover {
-  background-color: #005fcc;
-}
-
-/* ---------- BANDEAU LIGNES ---------- */
-
-.ligne-container {
-  width: 100%;
-  overflow-x: auto;
-  background: #e9f2ff;
-  border-bottom: 2px solid #007bff;
-  padding: 8px 0;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-}
-
-.ligne-scroll {
-  display: flex;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 5px 15px;
-  overflow-x: auto;
-}
-
-.ligne-scroll button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 14px;
+nav button {
+  background: white;
+  color: #0a2a55;
+  border: 2px solid #007bff33;
   border-radius: 12px;
-  cursor: pointer;
-  flex: 0 0 auto;
-  transition: 0.2s;
+  padding: 8px 14px;
+  margin: 5px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.ligne-scroll button:hover {
-  background-color: #005fcc;
-  transform: scale(1.05);
+nav button:hover, nav button.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
-/* ---------- SECTIONS ---------- */
-
+/* ===== CONTENU PRINCIPAL ===== */
 .page-section {
   display: none;
   padding: 15px;
-  margin: 10px;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .page-section.active {
   display: block;
 }
 
-/* ---------- FORMULAIRES ---------- */
+section h2 {
+  color: #004aad;
+  text-align: center;
+  font-size: 1.4em;
+  margin-bottom: 10px;
+}
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+/* ===== FORMULAIRES ===== */
+.card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin: 10px auto;
+  max-width: 500px;
 }
 
 label {
+  display: block;
+  margin-top: 10px;
   font-weight: 600;
-  color: #002b6b;
+  color: #0a2a55;
 }
 
-input,
-textarea,
-select {
-  border: 1px solid #007bff;
-  border-radius: 8px;
+input, select, textarea {
+  width: 100%;
   padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #c3d4f3;
+  margin-top: 4px;
   font-size: 1em;
+  box-sizing: border-box;
 }
 
-button {
+/* ===== BOUTONS ===== */
+button.action {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 18px;
+  margin: 8px 5px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* ---------- TABLEAUX / LISTES ---------- */
+button.action:hover {
+  background: #005ecb;
+}
 
+/* ===== HISTORIQUES ===== */
 ul {
   list-style-type: none;
   padding: 0;
 }
 
-ul li {
-  background: #f4f9ff;
-  border-left: 5px solid #007bff;
+li {
+  background: #f0f7ff;
   margin: 6px 0;
-  padding: 8px;
+  padding: 6px 10px;
   border-radius: 8px;
-  text-align: left;
+  border-left: 4px solid #007bff66;
+  font-size: 0.95em;
 }
 
-/* ---------- GRAPHIQUE ---------- */
-
-canvas {
-  margin-top: 15px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* ===== GRAPHIQUE ===== */
+#chartQuantites {
+  max-width: 95%;
+  background: white;
+  border-radius: 12px;
+  margin: 20px auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 10px;
 }
 
-/* ---------- FOOTER ---------- */
-
-footer {
-  text-align: center;
-  padding: 15px;
-  margin-top: 20px;
-  background: #007bff;
-  color: white;
-  font-size: 0.9em;
-  border-radius: 20px 20px 0 0;
-}
-
-/* ---------- ANIMATIONS ---------- */
-
-button:active {
-  transform: scale(0.97);
-}
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
-  .main-nav button {
-    font-size: 0.9em;
-    padding: 8px 10px;
-  }
-
-  .ligne-scroll button {
-    font-size: 0.85em;
-    padding: 8px 10px;
+  nav button {
+    flex: 1 1 45%;
   }
 }
