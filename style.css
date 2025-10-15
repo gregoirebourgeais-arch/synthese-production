@@ -1,242 +1,198 @@
-/* ==== STYLE GLOBAL ==== */
+/* --------------------- */
+/* STYLE GLOBAL LACTALIS */
+/* --------------------- */
+
 body {
-  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f8ff;
-  color: #002b5c;
-  overflow-x: hidden;
-}
-
-h1, h2, h3 {
+  background-color: #f4f7fc;
+  color: #002b6b;
   text-align: center;
-  color: #003e91;
 }
 
-header {
-  background: linear-gradient(90deg, #007bff, #00a2ff);
+/* ---------- HEADER ---------- */
+
+.header {
+  background: linear-gradient(135deg, #007bff, #2196f3);
   color: white;
-  text-align: center;
   padding: 15px 10px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
-header .logo {
-  width: 60px;
-  height: auto;
+.logo {
+  height: 60px;
   display: block;
   margin: 0 auto 5px;
 }
 
-#dateHeure {
-  font-size: 0.9em;
-  margin-top: 3px;
-}
-
-#equipeActuelle {
+h1 {
+  margin: 5px 0;
+  font-size: 1.4em;
   font-weight: bold;
-  font-size: 1em;
 }
 
-/* ==== NAVIGATION ==== */
-.navbar {
+/* ---------- NAVIGATION ---------- */
+
+.main-nav {
   display: flex;
-  justify-content: space-around;
-  background-color: #007bff;
+  justify-content: center;
+  flex-wrap: wrap;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 8px;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
 }
 
-.navbar button {
-  background: white;
-  border: none;
-  border-radius: 15px;
-  padding: 8px 12px;
-  font-weight: 600;
-  color: #003e91;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.navbar button:hover {
-  background: #eaf3ff;
-  cursor: pointer;
-}
-
-/* ==== SIDEBAR ==== */
-#sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 220px;
+.main-nav button {
   background-color: #007bff;
   color: white;
-  transform: translateX(-100%);
-  transition: 0.3s ease;
-  z-index: 1000;
-  padding-top: 60px;
-  box-shadow: 3px 0 6px rgba(0,0,0,0.2);
-}
-
-#sidebar.active {
-  transform: translateX(0);
-}
-
-#sidebar .sidebar-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-#sidebar h3 {
-  margin-bottom: 10px;
-  font-size: 1.2em;
-}
-
-#sidebar button {
-  background-color: white;
-  color: #003e91;
   border: none;
-  padding: 8px 14px;
+  padding: 10px 15px;
+  margin: 5px;
   border-radius: 10px;
-  margin: 2px;
-  width: 80%;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.main-nav button:hover {
+  background-color: #005fcc;
+}
+
+/* ---------- BANDEAU LIGNES ---------- */
+
+.ligne-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #e9f2ff;
+  border-bottom: 2px solid #007bff;
+  padding: 8px 0;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ligne-scroll {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 5px 15px;
+  overflow-x: auto;
+}
+
+.ligne-scroll button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: 0.2s;
   font-weight: 600;
 }
 
-.toggle-btn {
-  position: absolute;
-  top: 10px;
-  right: -40px;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  font-size: 22px;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+.ligne-scroll button:hover {
+  background-color: #005fcc;
+  transform: scale(1.05);
 }
 
-/* ==== SECTIONS ==== */
-.page {
+/* ---------- SECTIONS ---------- */
+
+.page-section {
   display: none;
-  padding: 20px;
-  animation: fadeIn 0.4s ease;
+  padding: 15px;
+  margin: 10px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.page.active {
+.page-section.active {
   display: block;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* ---------- FORMULAIRES ---------- */
 
-/* ==== FORMULAIRES ==== */
 form {
-  background-color: white;
-  border-radius: 15px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  max-width: 400px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
+  font-weight: 600;
+  color: #002b6b;
 }
 
-input, select, textarea {
-  width: 100%;
-  padding: 8px;
+input,
+textarea,
+select {
+  border: 1px solid #007bff;
   border-radius: 8px;
-  border: 1px solid #cfd9e7;
-  margin-top: 5px;
-  box-sizing: border-box;
-}
-
-textarea {
-  min-height: 80px;
-  resize: vertical;
+  padding: 8px;
+  font-size: 1em;
 }
 
 button {
-  font-size: 15px;
-}
-
-/* ==== BOUTONS FORM ==== */
-.btns {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-}
-
-.btns button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 10px 0;
-  border-radius: 12px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-}
-
-.btns button:hover {
-  background-color: #0064d1;
   cursor: pointer;
 }
 
-/* ==== HISTORIQUES ==== */
-#historiqueProduction,
-#historiqueArrets,
-#historiquePersonnel,
-#historiqueOrganisation {
-  margin-top: 10px;
-  background-color: white;
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+/* ---------- TABLEAUX / LISTES ---------- */
+
+ul {
+  list-style-type: none;
+  padding: 0;
 }
 
-/* ==== CHART ==== */
-#chartProduction {
-  width: 95%;
-  max-width: 600px;
-  height: 300px;
-  display: block;
-  margin: 10px auto;
-  background: white;
+ul li {
+  background: #f4f9ff;
+  border-left: 5px solid #007bff;
+  margin: 6px 0;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+/* ---------- GRAPHIQUE ---------- */
+
+canvas {
+  margin-top: 15px;
+  background: #ffffff;
   border-radius: 10px;
-  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ==== RESPONSIVE ==== */
+/* ---------- FOOTER ---------- */
+
+footer {
+  text-align: center;
+  padding: 15px;
+  margin-top: 20px;
+  background: #007bff;
+  color: white;
+  font-size: 0.9em;
+  border-radius: 20px 20px 0 0;
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+button:active {
+  transform: scale(0.97);
+}
+
 @media (max-width: 600px) {
-  .navbar button {
+  .main-nav button {
+    font-size: 0.9em;
+    padding: 8px 10px;
+  }
+
+  .ligne-scroll button {
     font-size: 0.85em;
-    padding: 6px 10px;
+    padding: 8px 10px;
   }
-
-  form {
-    padding: 10px;
-  }
-
-  #chartProduction {
-    height: 220px;
-  }
-  }
+}
