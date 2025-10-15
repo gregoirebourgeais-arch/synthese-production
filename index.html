@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 
 <body>
@@ -16,9 +17,11 @@
     </div>
   </header>
 
+  <!-- Menu principal -->
   <nav class="menu">
     <button onclick="afficherSection('atelier')">🏭 Atelier</button>
     <button onclick="afficherSection('arrets')">⏱️ Arrêts</button>
+    <button onclick="afficherSection('personnel')">👥 Personnel</button>
     <button onclick="afficherSection('organisation')">📋 Organisation</button>
     <button onclick="exportExcelGlobal()">📤 Export Excel</button>
   </nav>
@@ -42,6 +45,7 @@
 
     <!-- FORMULAIRES PAR LIGNE -->
     <div id="formulaires">
+      <!-- Exemple pour Râpé -->
       <div id="form-Rape" class="ligne-form">
         <h3>Ligne Râpé</h3>
         <label>Heure début :</label><input type="time" id="debut-Rape" step="60"><br/>
@@ -51,8 +55,9 @@
         <label>Cadence manuelle :</label><input type="number" id="cadence-Rape"><br/>
         <button onclick="enregistrerProduction()">💾 Enregistrer</button>
       </div>
-      <!-- Les autres lignes suivent le même schéma -->
-      <div id="form-T2" class="ligne-form"><h3>Ligne T2</h3>
+      <!-- Copié pour chaque ligne -->
+      <div id="form-T2" class="ligne-form">
+        <h3>Ligne T2</h3>
         <label>Heure début :</label><input type="time" id="debut-T2" step="60"><br/>
         <label>Heure fin :</label><input type="time" id="fin-T2" step="60"><br/>
         <label>Quantité produite :</label><input type="number" id="qte-T2"><br/>
@@ -60,7 +65,7 @@
         <label>Cadence manuelle :</label><input type="number" id="cadence-T2"><br/>
         <button onclick="enregistrerProduction()">💾 Enregistrer</button>
       </div>
-      <!-- ...et ainsi de suite pour RT, Omori, T1, etc. -->
+      <!-- … même structure pour les 8 autres lignes -->
     </div>
 
     <h3>Historique de production</h3>
@@ -70,29 +75,53 @@
   <!-- === PAGE ARRETS === -->
   <section id="arrets" class="section" style="display:none;">
     <h2>Arrêts de ligne</h2>
-    <label>Ligne :</label>
-    <select id="ligneArret">
-      <option value="">Sélectionner</option>
-      <option>Râpé</option><option>T2</option><option>RT</option>
-      <option>Omori</option><option>T1</option><option>Sticks</option>
-      <option>Emballage</option><option>Dés</option><option>Filets</option><option>Prédécoupés</option>
-    </select><br/>
-    <label>Durée (minutes) :</label><input id="dureeArret" type="number"><br/>
-    <label>Cause :</label><input id="causeArret" type="text"><br/>
-    <button onclick="enregistrerArret()">💾 Enregistrer</button>
+    <div class="carte">
+      <label>Ligne :</label>
+      <select id="ligneArret">
+        <option value="">Sélectionner</option>
+        <option>Râpé</option><option>T2</option><option>RT</option>
+        <option>Omori</option><option>T1</option><option>Sticks</option>
+        <option>Emballage</option><option>Dés</option><option>Filets</option><option>Prédécoupés</option>
+      </select><br/>
+      <label>Durée (minutes) :</label><input id="dureeArret" type="number"><br/>
+      <label>Cause :</label><input id="causeArret" type="text"><br/>
+      <button onclick="enregistrerArret()">💾 Enregistrer</button>
+    </div>
     <h3>Historique des arrêts</h3>
     <div id="historiqueArrets" class="historique"></div>
+  </section>
+
+  <!-- === PAGE PERSONNEL === -->
+  <section id="personnel" class="section" style="display:none;">
+    <h2>Personnel</h2>
+    <div class="carte">
+      <label>Type :</label>
+      <select id="typePersonnel">
+        <option value="">Choisir</option>
+        <option>Absence</option>
+        <option>Retard</option>
+        <option>Départ anticipé</option>
+        <option>Autre</option>
+      </select><br/>
+      <label>Nom / commentaire :</label>
+      <input id="commentPersonnel" type="text" placeholder="Nom ou remarque..."><br/>
+      <button onclick="enregistrerPersonnel()">💾 Enregistrer</button>
+    </div>
+    <h3>Historique du personnel</h3>
+    <div id="historiquePersonnel" class="historique"></div>
   </section>
 
   <!-- === PAGE ORGANISATION === -->
   <section id="organisation" class="section" style="display:none;">
     <h2>Organisation & Consignes</h2>
-    <textarea id="consigneTexte" placeholder="Rédiger une consigne..."></textarea><br/>
-    <button onclick="enregistrerConsigne()">💾 Enregistrer</button>
+    <div class="carte">
+      <textarea id="consigneTexte" placeholder="Rédiger une consigne..."></textarea><br/>
+      <button onclick="enregistrerConsigne()">💾 Enregistrer</button>
+    </div>
     <h3>Historique des consignes</h3>
     <div id="historiqueOrganisation" class="historique"></div>
   </section>
 
   <script src="app.js"></script>
 </body>
-  </html>
+                                        </html>
