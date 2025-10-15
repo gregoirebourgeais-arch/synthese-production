@@ -6,138 +6,95 @@
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
-  <header>
+  <header class="header">
     <img src="logo.png" alt="Logo Lactalis" class="logo" />
     <h1>Synthèse Production Lactalis</h1>
     <div id="dateHeure"></div>
     <div id="equipeActuelle"></div>
   </header>
 
-  <!-- Menu latéral -->
-  <aside id="sidebar">
-    <button onclick="toggleSidebar()" class="toggle-btn">☰</button>
-    <div class="sidebar-content">
-      <h3>Lignes</h3>
-      <button onclick="selectLine('Râpé')">Râpé</button>
-      <button onclick="selectLine('T2')">T2</button>
-      <button onclick="selectLine('RT')">RT</button>
-      <button onclick="selectLine('OMORI')">OMORI</button>
-      <button onclick="selectLine('T1')">T1</button>
-      <button onclick="selectLine('Sticks')">Sticks</button>
-      <button onclick="selectLine('Emballage')">Emballage</button>
-      <button onclick="selectLine('Dés')">Dés</button>
-      <button onclick="selectLine('Filets')">Filets</button>
-      <button onclick="selectLine('Prédécoupé')">Prédécoupé</button>
-    </div>
-  </aside>
-
-  <!-- Barre de navigation -->
-  <nav class="navbar">
+  <nav class="main-nav">
     <button onclick="showSection('atelier')">🏭 Atelier</button>
     <button onclick="showSection('arrets')">⏸️ Arrêts</button>
     <button onclick="showSection('personnel')">👥 Personnel</button>
     <button onclick="showSection('organisation')">🗒️ Organisation</button>
-    <button onclick="exportGlobal()">📤 Export</button>
+    <button onclick="exportGlobal()">📊 Export</button>
   </nav>
 
-  <!-- PAGE Atelier -->
-  <section id="atelier" class="page active">
-    <h2>Atelier</h2>
-    <canvas id="chartProduction"></canvas>
-    <div id="detailLigne"></div>
-  </section>
+  <!-- Bandeau horizontal fluide pour les lignes -->
+  <div class="ligne-container">
+    <div class="ligne-scroll">
+      <button onclick="selectLigne('Râpé')">Râpé</button>
+      <button onclick="selectLigne('T2')">T2</button>
+      <button onclick="selectLigne('RT')">RT</button>
+      <button onclick="selectLigne('OMORI')">OMORI</button>
+      <button onclick="selectLigne('T1')">T1</button>
+      <button onclick="selectLigne('Sticks')">Sticks</button>
+      <button onclick="selectLigne('Emballage')">Emballage</button>
+      <button onclick="selectLigne('Dés')">Dés</button>
+      <button onclick="selectLigne('Filets')">Filets</button>
+      <button onclick="selectLigne('Prédécoupé')">Prédécoupé</button>
+    </div>
+  </div>
 
-  <!-- PAGE Production -->
-  <section id="production" class="page">
-    <h2 id="nomLigne">Sélectionnez une ligne</h2>
+  <main>
+    <!-- Section Atelier (page d'accueil avec graphiques) -->
+    <section id="atelier" class="page-section active">
+      <h2>Atelier</h2>
+      <canvas id="chartQuantites" width="400" height="250"></canvas>
+    </section>
 
-    <form id="formProduction">
-      <label>Heure début :</label>
-      <input type="time" id="heureDebut" onchange="sauvegarderTemporaire()" />
+    <!-- Section Arrêts -->
+    <section id="arrets" class="page-section">
+      <h2>Arrêts</h2>
+      <form id="formArret">
+        <label>Durée de l'arrêt (min):</label>
+        <input type="number" id="dureeArret" min="1" />
+        <label>Motif :</label>
+        <input type="text" id="motifArret" />
+        <button type="button" onclick="enregistrerArret()">Enregistrer</button>
+      </form>
+      <h3>Historique des arrêts</h3>
+      <ul id="historiqueArrets"></ul>
+    </section>
 
-      <label>Heure fin :</label>
-      <input type="time" id="heureFin" onchange="sauvegarderTemporaire()" />
+    <!-- Section Personnel -->
+    <section id="personnel" class="page-section">
+      <h2>Personnel</h2>
+      <form id="formPersonnel">
+        <label>Nom :</label>
+        <input type="text" id="nomPersonnel" />
+        <label>Poste :</label>
+        <input type="text" id="postePersonnel" />
+        <button type="button" onclick="enregistrerPersonnel()">Enregistrer</button>
+      </form>
+      <h3>Historique du personnel</h3>
+      <ul id="historiquePersonnel"></ul>
+    </section>
 
-      <label>Quantité réalisée :</label>
-      <input type="number" id="quantiteRealisee" placeholder="colis" oninput="sauvegarderTemporaire()" />
+    <!-- Section Organisation -->
+    <section id="organisation" class="page-section">
+      <h2>Organisation</h2>
+      <textarea id="consigneTexte" placeholder="Écrire une consigne..."></textarea>
+      <button type="button" onclick="enregistrerConsigne()">Enregistrer</button>
+      <h3>Historique des consignes</h3>
+      <ul id="historiqueConsignes"></ul>
+    </section>
+  </main>
 
-      <label>Quantité restante :</label>
-      <input type="number" id="quantiteRestante" placeholder="à produire..." oninput="calculerEstimation();sauvegarderTemporaire()" />
+  <footer>
+    Lactalis © 2025 — Application interne de suivi de production
+  </footer>
 
-      <label>Cadence manuelle (colis/h) :</label>
-      <input type="number" step="0.1" id="cadenceManuelle" placeholder="Optionnel" oninput="calculerEstimation();sauvegarderTemporaire()" />
-
-      <label>Estimation de fin :</label>
-      <input type="text" id="estimationFin" readonly />
-
-      <div class="btns">
-        <button type="button" onclick="enregistrerProduction()">💾 Enregistrer</button>
-        <button type="button" onclick="ouvrirCalculatrice()">🧮 Calculatrice</button>
-      </div>
-    </form>
-
-    <h3>Historique production</h3>
-    <div id="historiqueProduction"></div>
-  </section>
-
-  <!-- PAGE Arrêts -->
-  <section id="arrets" class="page">
-    <h2>Arrêts</h2>
-    <label>Ligne :</label>
-    <select id="ligneArret">
-      <option value="">Sélectionner une ligne</option>
-      <option>Râpé</option><option>T2</option><option>RT</option>
-      <option>OMORI</option><option>T1</option><option>Sticks</option>
-      <option>Emballage</option><option>Dés</option><option>Filets</option><option>Prédécoupé</option>
-    </select>
-
-    <label>Durée (minutes) :</label>
-    <input type="number" id="dureeArret" />
-
-    <label>Motif :</label>
-    <input type="text" id="motifArret" />
-
-    <button onclick="enregistrerArret()">💾 Enregistrer</button>
-    <h3>Historique arrêts</h3>
-    <div id="historiqueArrets"></div>
-  </section>
-
-  <!-- PAGE Personnel -->
-  <section id="personnel" class="page">
-    <h2>Personnel</h2>
-    <input type="text" id="nomEmploye" placeholder="Nom employé" />
-    <select id="statutEmploye">
-      <option>Présent</option>
-      <option>Absent</option>
-      <option>Retard</option>
-    </select>
-    <button onclick="enregistrerPersonnel()">💾 Enregistrer</button>
-    <div id="historiquePersonnel"></div>
-  </section>
-
-  <!-- PAGE Organisation -->
-  <section id="organisation" class="page">
-    <h2>Organisation</h2>
-    <textarea id="consigneOrganisation" placeholder="Écrire une consigne..."></textarea>
-    <button onclick="enregistrerOrganisation()">💾 Enregistrer</button>
-    <h3>Historique</h3>
-    <div id="historiqueOrganisation"></div>
-  </section>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(() => {
-        console.log('Service Worker enregistré ✅');
-      });
-    });
-  }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
   </script>
 </body>
 </html>
