@@ -1,7 +1,7 @@
 {
   "name": "Synthèse Production Lactalis",
   "short_name": "Synthèse",
-  "description": "Application de suivi de production Lactalis (atelier, arrêts, personnel, organisation)",
+  "description": "Application de suivi de production Lactalis (V38.2 complète)",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f8fc",
