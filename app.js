@@ -68,25 +68,95 @@ const dureeHeures = (d, f) => { if (!d || !f) return 0; let t1 = minutesDepuisMi
 const addMinutesToTime = (base, add) => { let t = minutesDepuisMinuit(base) + Math.round(add); t = ((t % 1440) + 1440) % 1440; const h = Math.floor(t / 60), m = t % 60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; };
 
 ///////////////////////////
-// (6) Cadence + estimation
-///////////////////////////
+// --- NORMALISATION & ETAT MANUEL ---
+const norm = (v) => {
+  if (v == null) return "";
+  if (typeof v === "number") return v;
+  return String(v).replace(",", ".").trim();
+};
+
+// Marquer la saisie manuelle de cadence
+const cadInput = document.getElementById("cadenceManuelle");
+if (cadInput) {
+  cadInput.addEventListener("input", () => {
+    cadInput.dataset.manual = cadInput.value.trim() !== "" ? "1" : "";
+  });
+  cadInput.addEventListener("blur", () => {
+    // normaliser à la sortie du champ
+    const n = norm(cadInput.value);
+    cadInput.value = n;
+  });
+}
+
+// --- UTILITAIRES ---
+const minutesDepuisMinuit = (t) => {
+  const [h, m] = (t || "00:00").split(":").map((x) => parseInt(x, 10));
+  return ((h * 60 + m) % 1440 + 1440) % 1440;
+};
+const dureeHeures = (d, f) => {
+  if (!d || !f) return 0;
+  let t1 = minutesDepuisMinuit(d), t2 = minutesDepuisMinuit(f);
+  if (t2 < t1) t2 += 1440; // passage minuit
+  return (t2 - t1) / 60;
+};
+const addMinutesToTime = (base, addMin) => {
+  let t = minutesDepuisMinuit(base) + Math.round(addMin);
+  t = ((t % 1440) + 1440) % 1440;
+  const h = Math.floor(t / 60), m = t % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+};
+
+// --- CALCUL PRINCIPAL ---
 function calculCadenceEtEstimation() {
-  if (!ligneActive) return;
+  if (!window.ligneActive) return;
+
   const d = document.getElementById("heureDebut").value;
   const f = document.getElementById("heureFin").value;
-  const q = +document.getElementById("quantiteRealisee").value || 0;
-  const r = +document.getElementById("quantiteRestante").value || 0;
-  const cm = +document.getElementById("cadenceManuelle").value || 0;
-  let cad = cm > 0 ? cm : (dureeHeures(d, f) ? q / dureeHeures(d, f) : 0);
-  if (cad > 0) document.getElementById("cadenceManuelle").value = cad.toFixed(1);
+  const q = parseFloat(norm(document.getElementById("quantiteRealisee").value)) || 0;
+  const r = parseFloat(norm(document.getElementById("quantiteRestante").value)) || 0;
+
+  // Cadence “manuelle” uniquement si l’utilisateur l’a vraiment saisie
+  const cadField = document.getElementById("cadenceManuelle");
+  let cm = parseFloat(norm(cadField.value));
+  if (isNaN(cm)) cm = 0;
+
+  // Calcul auto
+  const h = dureeHeures(d, f);
+  const cadAuto = h > 0 ? q / h : 0;
+
+  // Choix cadence : manuelle si flag data-manual=1, sinon auto
+  let cadence = (cadField.dataset.manual === "1" && cm > 0) ? cm : cadAuto;
+
+  // Afficher cadence calculée (format point décimal)
+  if (cadField.dataset.manual === "1") {
+    // garder ce qu’a tapé l’utilisateur mais normalisé
+    cadField.value = cm > 0 ? cm.toFixed(1) : "";
+  } else {
+    cadField.value = cadence > 0 ? cadence.toFixed(1) : "";
+  }
+
+  // Estimation de fin
   const base = f || new Date().toTimeString().slice(0,5);
-  const est = (cad > 0 && r > 0) ? addMinutesToTime(base, (r / cad) * 60) : "";
+  const est = (cadence > 0 && r > 0) ? addMinutesToTime(base, (r / cadence) * 60) : "";
   document.getElementById("estimationFin").value = est;
-  formState[ligneActive] = { heureDebut: d, heureFin: f, qte: q, reste: r, cadMan: cm || cad, estim: est };
-  saveForm();
+
+  // Persistance par ligne
+  window.formState = JSON.parse(localStorage.getItem("formState") || "{}");
+  formState[ligneActive] = {
+    heureDebut: d,
+    heureFin: f,
+    qte: q,
+    reste: r,
+    cadMan: (cadField.dataset.manual === "1") ? (cm || 0) : (cadence || 0),
+    estim: est
+  };
+  localStorage.setItem("formState", JSON.stringify(formState));
 }
+
+// Écouteurs
 ["heureDebut","heureFin","quantiteRealisee","quantiteRestante","cadenceManuelle"].forEach(id => {
-  const e = document.getElementById(id); if (e) e.addEventListener("input", calculCadenceEtEstimation);
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("input", calculCadenceEtEstimation);
 });
 
 ///////////////////////////
