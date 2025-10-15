@@ -4,141 +4,139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synthèse Production Lactalis</title>
-  <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
   <header>
-    <h1>Synthèse Production Lactalis</h1>
+    <h1><img src="logo.png" alt="Lactalis" class="logo"> Synthèse Production</h1>
     <div id="dateHeure"></div>
-    <div id="equipe"></div>
+    <div id="equipeActuelle"></div>
   </header>
 
-  <nav>
-    <button onclick="afficherSection('atelier')">🏭 Atelier</button>
-    <button onclick="afficherSection('arrets')">⛔ Arrêts</button>
-    <button onclick="afficherSection('personnel')">👥 Personnel</button>
-    <button onclick="afficherSection('organisation')">📝 Organisation</button>
+  <nav class="navbar">
+    <button onclick="showSection('atelier')" class="nav-btn active">📊 Atelier</button>
+    <button onclick="showSection('arrets')" class="nav-btn">⏸️ Arrêts</button>
+    <button onclick="showSection('personnel')" class="nav-btn">👥 Personnel</button>
+    <button onclick="showSection('organisation')" class="nav-btn">🗒️ Organisation</button>
+    <button onclick="exportGlobal()" class="nav-btn">📤 Export</button>
   </nav>
 
-  <!-- ATELIER -->
-  <section id="atelier" class="section">
-    <h2>Tableau de Production</h2>
-    <div id="lignes">
-      <button onclick="choisirLigne('Rape')">Râpé</button>
-      <button onclick="choisirLigne('T2')">T2</button>
-      <button onclick="choisirLigne('RT')">RT</button>
-      <button onclick="choisirLigne('OMORI')">OMORI</button>
-      <button onclick="choisirLigne('T1')">T1</button>
-      <button onclick="choisirLigne('Sticks')">Sticks</button>
-      <button onclick="choisirLigne('Emballage')">Emballage</button>
-      <button onclick="choisirLigne('Des')">Dés</button>
-      <button onclick="choisirLigne('Filets')">Filets</button>
-      <button onclick="choisirLigne('Predecoupe')">Prédécoupé</button>
-    </div>
-
-    <!-- FORMULAIRES DE LIGNES -->
-    <div id="formulaires">
-      <!-- Exemple pour chaque ligne -->
-      <div id="form-Rape" class="ligne-form">
-        <h3>Ligne Râpé</h3>
-        <label>Heure début : <input type="time" id="debut-Rape" step="60"></label>
-        <label>Heure fin : <input type="time" id="fin-Rape" step="60"></label>
-        <label>Quantité produite : <input type="number" id="qte-Rape"></label>
-        <label>Quantité restante : 
-          <input type="number" id="reste-Rape" oninput="calculerEstimationDirecte('Rape')">
-        </label>
-        <label>Cadence manuelle : <input type="number" id="cadence-Rape" placeholder="colis/h"></label>
-        <div id="finEstimee-Rape" class="finEstimee"></div>
-        <button onclick="enregistrerProduction()">💾 Enregistrer</button>
+  <main>
+    <!-- Atelier -->
+    <section id="atelier" class="section active">
+      <h2>Tableau de Production</h2>
+      <div class="line-buttons">
+        <button onclick="selectLine('Râpé')">Râpé</button>
+        <button onclick="selectLine('T2')">T2</button>
+        <button onclick="selectLine('RT')">RT</button>
+        <button onclick="selectLine('OMORI')">OMORI</button>
+        <button onclick="selectLine('T1')">T1</button>
+        <button onclick="selectLine('Sticks')">Sticks</button>
+        <button onclick="selectLine('Emballage')">Emballage</button>
+        <button onclick="selectLine('Dés')">Dés</button>
+        <button onclick="selectLine('Filets')">Filets</button>
+        <button onclick="selectLine('Prédécoupé')">Prédécoupé</button>
       </div>
 
-      <!-- Copie automatique pour les autres lignes -->
-      <div id="form-T2" class="ligne-form">
-        <h3>Ligne T2</h3>
-        <label>Heure début : <input type="time" id="debut-T2" step="60"></label>
-        <label>Heure fin : <input type="time" id="fin-T2" step="60"></label>
-        <label>Quantité produite : <input type="number" id="qte-T2"></label>
-        <label>Quantité restante : 
-          <input type="number" id="reste-T2" oninput="calculerEstimationDirecte('T2')">
-        </label>
-        <label>Cadence manuelle : <input type="number" id="cadence-T2" placeholder="colis/h"></label>
-        <div id="finEstimee-T2" class="finEstimee"></div>
-        <button onclick="enregistrerProduction()">💾 Enregistrer</button>
+      <div id="productionForm">
+        <h3 id="selectedLine">Ligne : </h3>
+
+        <label>Heure début :</label>
+        <input type="time" id="heureDebut" />
+
+        <label>Heure fin :</label>
+        <input type="time" id="heureFin" />
+
+        <label>Quantité réalisée :</label>
+        <input type="number" id="quantiteProduite" placeholder="colis réalisés" />
+
+        <label>Quantité restante :</label>
+        <input type="number" id="quantiteRestante" placeholder="à produire" oninput="updateEstimation()" />
+
+        <label>Cadence manuelle (colis/h) :</label>
+        <input type="number" id="cadenceManuelle" placeholder="optionnel" step="0.01" />
+
+        <label>Estimation de fin :</label>
+        <input type="text" id="estimationFin" readonly />
+
+        <div class="button-row">
+          <button onclick="enregistrerProduction()">💾 Enregistrer</button>
+          <button onclick="annulerDernier()">❌ Annuler</button>
+          <button onclick="resetForm()">🧹 Remise à zéro</button>
+        </div>
+
+        <h4>Historique Production</h4>
+        <ul id="historiqueProduction"></ul>
       </div>
+    </section>
 
-      <!-- Les autres lignes suivent le même schéma (RT, OMORI, T1, Sticks, Emballage, Dés, Filets, Prédécoupé) -->
-      <!-- Pour gagner du temps, tu peux copier-coller les blocs ci-dessus et remplacer les IDs -->
-    </div>
-
-    <h3>Historique Production</h3>
-    <div id="historiqueProduction" class="historique"></div>
-    <button onclick="exportExcelGlobal()">📤 Export Excel Global</button>
-  </section>
-
-  <!-- ARRÊTS -->
-  <section id="arrets" class="section">
-    <h2>Arrêts de Ligne</h2>
-    <label>Ligne :
+    <!-- Arrêts -->
+    <section id="arrets" class="section">
+      <h2>Suivi des Arrêts</h2>
+      <label>Choisir une ligne :</label>
       <select id="ligneArret">
-        <option value="">-- Choisir une ligne --</option>
-        <option>Râpé</option>
-        <option>T2</option>
-        <option>RT</option>
-        <option>OMORI</option>
-        <option>T1</option>
-        <option>Sticks</option>
-        <option>Emballage</option>
-        <option>Dés</option>
-        <option>Filets</option>
-        <option>Prédécoupé</option>
+        <option value="">-- Sélectionner --</option>
+        <option>Râpé</option><option>T2</option><option>RT</option>
+        <option>OMORI</option><option>T1</option><option>Sticks</option>
+        <option>Emballage</option><option>Dés</option><option>Filets</option><option>Prédécoupé</option>
       </select>
-    </label>
-    <label>Durée (minutes) : <input type="number" id="dureeArret"></label>
-    <label>Cause : <input type="text" id="causeArret"></label>
-    <button onclick="enregistrerArret()">💾 Enregistrer</button>
 
-    <h3>Historique des arrêts</h3>
-    <div id="historiqueArrets" class="historique"></div>
-  </section>
+      <label>Motif d’arrêt :</label>
+      <input type="text" id="motifArret" placeholder="ex: panne, nettoyage, pause..." />
 
-  <!-- PERSONNEL -->
-  <section id="personnel" class="section">
-    <h2>Gestion du personnel</h2>
-    <label>Type :
-      <select id="typePersonnel">
-        <option value="">-- Choisir --</option>
-        <option>Absence</option>
-        <option>Retard</option>
-        <option>Départ</option>
-        <option>Autre</option>
-      </select>
-    </label>
-    <label>Commentaire : <input type="text" id="commentPersonnel"></label>
-    <button onclick="enregistrerPersonnel()">💾 Enregistrer</button>
+      <label>Durée (minutes) :</label>
+      <input type="number" id="dureeArret" />
 
-    <h3>Historique personnel</h3>
-    <div id="historiquePersonnel" class="historique"></div>
-  </section>
+      <div class="button-row">
+        <button onclick="enregistrerArret()">💾 Enregistrer</button>
+        <button onclick="exportGlobal()">📤 Export</button>
+      </div>
 
-  <!-- ORGANISATION -->
-  <section id="organisation" class="section">
-    <h2>Consignes et organisation</h2>
-    <textarea id="consigneTexte" placeholder="Écrire une consigne..."></textarea>
-    <button onclick="enregistrerConsigne()">💾 Enregistrer</button>
-    <h3>Historique des consignes</h3>
-    <div id="historiqueOrganisation" class="historique"></div>
-  </section>
+      <h4>Historique des Arrêts</h4>
+      <ul id="historiqueArrets"></ul>
+    </section>
+
+    <!-- Personnel -->
+    <section id="personnel" class="section">
+      <h2>Gestion du Personnel</h2>
+      <label>Nom :</label>
+      <input type="text" id="nomPersonnel" placeholder="Nom Prénom" />
+
+      <label>Poste :</label>
+      <input type="text" id="postePersonnel" placeholder="ex: conducteur, agent, etc." />
+
+      <div class="button-row">
+        <button onclick="enregistrerPersonnel()">💾 Enregistrer</button>
+      </div>
+
+      <h4>Équipe en poste</h4>
+      <ul id="listePersonnel"></ul>
+    </section>
+
+    <!-- Organisation -->
+    <section id="organisation" class="section">
+      <h2>Organisation / Consignes</h2>
+      <textarea id="consigne" placeholder="Écrire une consigne..."></textarea>
+      <div class="button-row">
+        <button onclick="enregistrerConsigne()">💾 Enregistrer</button>
+      </div>
+      <h4>Historique des Consignes</h4>
+      <ul id="historiqueConsignes"></ul>
+    </section>
+  </main>
+
+  <div id="calculator" class="calculator">
+    <input type="text" id="calc-display" readonly>
+    <div class="calc-buttons">
+      <button onclick="press('7')">7</button><button onclick="press('8')">8</button><button onclick="press('9')">9</button><button onclick="press('/')">÷</button>
+      <button onclick="press('4')">4</button><button onclick="press('5')">5</button><button onclick="press('6')">6</button><button onclick="press('*')">×</button>
+      <button onclick="press('1')">1</button><button onclick="press('2')">2</button><button onclick="press('3')">3</button><button onclick="press('-')">−</button>
+      <button onclick="press('0')">0</button><button onclick="press('.')">.</button><button onclick="calculate()">=</button><button onclick="press('+')">+</button>
+      <button class="clear" onclick="clearCalc()">C</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("✅ Service Worker enregistré"))
-        .catch(err => console.log("Erreur Service Worker :", err));
-    }
-  </script>
 </body>
 </html>
