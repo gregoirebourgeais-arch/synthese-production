@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synthèse Production</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synthèse Production - Lactalis</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
   <header>
-    <h1>Synthèse Production Lactalis</h1>
-    <p id="dateHeure"></p>
-    <p id="equipe"></p>
+    <img src="Lactalis2023Logo.svg" alt="Lactalis" class="logo" />
+    <h1>Synthèse Production</h1>
+    <div id="dateHeure"></div>
+    <div id="equipe"></div>
   </header>
 
   <main>
-    <!-- ===== PAGE PRODUCTION ===== -->
-    <section id="pageProduction" class="page active">
-      <h2>Production</h2>
-
-      <div class="boutons-lignes">
+    <!-- Page Atelier -->
+    <section id="pageAtelier" class="page active">
+      <h2>Atelier</h2>
+      <div id="atelierBtns" class="atelier-btns">
         <button onclick="selectLine('Râpé')">Râpé</button>
         <button onclick="selectLine('T2')">T2</button>
         <button onclick="selectLine('RT')">RT</button>
@@ -35,53 +36,56 @@
       </div>
 
       <div id="formulaireProduction" class="formulaire">
-        <h3 id="titreLigne">Sélectionnez une ligne</h3>
+        <h3 id="titreLigne">Ligne : —</h3>
 
-        <label for="heureDebut">Heure de début :</label>
-        <input id="heureDebut" type="time" step="60">
+        <label>Heure début :</label>
+        <input id="heureDebut" type="time" step="60" />
 
-        <label for="heureFin">Heure de fin :</label>
-        <input id="heureFin" type="time" step="60">
+        <label>Heure fin :</label>
+        <input id="heureFin" type="time" step="60" />
 
-        <label for="quantiteRealisee">Quantité réalisée (colis) :</label>
-        <input id="quantiteRealisee" type="number" placeholder="Ex : 1200">
+        <label>Quantité réalisée :</label>
+        <input id="quantiteRealisee" type="number" />
 
-        <label for="quantiteRestante">Quantité restante (colis) :</label>
-        <input id="quantiteRestante" type="number" placeholder="Ex : 400">
+        <label>Quantité restante :</label>
+        <input id="quantiteRestante" type="number" />
 
-        <label for="cadenceManuelle">Cadence manuelle (colis/heure) :</label>
-        <input id="cadenceManuelle" type="number" placeholder="Ex : 1800">
+        <label>Cadence manuelle :</label>
+        <input id="cadenceManuelle" type="number" placeholder="Saisir cadence manuelle..." />
 
-        <label for="estimationFin">Heure de fin estimée :</label>
-        <input id="estimationFin" type="text" readonly>
+        <label>Estimation de fin :</label>
+        <input id="estimationFin" type="text" readonly />
 
-        <div class="boutons-formulaire">
+        <div class="actions">
           <button onclick="enregistrerProduction()">💾 Enregistrer</button>
-          <button onclick="annulerDernier()">↩️ Annuler dernier</button>
-          <button onclick="remiseZero()">🗑️ Remise à zéro</button>
+          <button onclick="annulerDernier()">↩️ Annuler</button>
+          <button onclick="remiseZero()">🧹 Remise à zéro</button>
         </div>
-      </div>
 
-      <div id="historiqueProduction"></div>
+        <h3>Historique production</h3>
+        <div id="historiqueProduction" class="historique"></div>
+      </div>
     </section>
 
-    <!-- ===== PAGE ARRETS ===== -->
+    <!-- Page Arrêts -->
     <section id="pageArrets" class="page">
       <h2>Arrêts de ligne</h2>
+
       <label for="selectLigneArret">Ligne :</label>
-<select id="selectLigneArret">
-  <option value="">Sélectionner une ligne</option>
-  <option value="Râpé">Râpé</option>
-  <option value="T2">T2</option>
-  <option value="RT">RT</option>
-  <option value="OMORI">OMORI</option>
-  <option value="T1">T1</option>
-  <option value="Sticks">Sticks</option>
-  <option value="Emballage">Emballage</option>
-  <option value="Dés">Dés</option>
-  <option value="Filets">Filets</option>
-  <option value="Prédécoupés">Prédécoupés</option>
-</select>
+      <select id="selectLigneArret">
+        <option value="">Sélectionner une ligne</option>
+        <option value="Râpé">Râpé</option>
+        <option value="T2">T2</option>
+        <option value="RT">RT</option>
+        <option value="OMORI">OMORI</option>
+        <option value="T1">T1</option>
+        <option value="Sticks">Sticks</option>
+        <option value="Emballage">Emballage</option>
+        <option value="Dés">Dés</option>
+        <option value="Filets">Filets</option>
+        <option value="Prédécoupés">Prédécoupés</option>
+      </select>
+
       <button onclick="ajouterArret()">➕ Ajouter un arrêt</button>
       <table id="tableArrets">
         <thead>
@@ -89,57 +93,42 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div class="boutons-formulaire">
-        <button onclick="exporterArrets()">📤 Exporter Arrêts</button>
-      </div>
     </section>
 
-    <!-- ===== PAGE PERSONNEL ===== -->
+    <!-- Page Personnel -->
     <section id="pagePersonnel" class="page">
       <h2>Personnel</h2>
-      <label for="typePersonnel">Type :</label>
+      <label>Type :</label>
       <select id="typePersonnel">
         <option value="Absence">Absence</option>
         <option value="Retard">Retard</option>
-        <option value="Départ anticipé">Départ anticipé</option>
+        <option value="Départ">Départ</option>
         <option value="Autre">Autre</option>
       </select>
 
-      <label for="commentairePersonnel">Commentaire :</label>
-      <textarea id="commentairePersonnel" placeholder="Détails..."></textarea>
+      <label>Commentaire :</label>
+      <textarea id="commentairePersonnel"></textarea>
 
-      <div class="boutons-formulaire">
-        <button onclick="ajouterPersonnel()">💾 Enregistrer</button>
-        <button onclick="exporterPersonnel()">📤 Exporter</button>
-      </div>
-
-      <div id="listePersonnel"></div>
+      <button onclick="ajouterPersonnel()">💾 Ajouter</button>
+      <div id="listePersonnel" class="historique"></div>
     </section>
 
-    <!-- ===== PAGE ORGANISATION ===== -->
+    <!-- Page Organisation -->
     <section id="pageOrganisation" class="page">
-      <h2>Organisation / Consignes</h2>
-
-      <label for="noteOrganisation">Nouvelle consigne :</label>
-      <textarea id="noteOrganisation" placeholder="Message, consigne ou remarque..."></textarea>
-
-      <div class="boutons-formulaire">
-        <button onclick="ajouterOrganisation()">💾 Ajouter</button>
-        <button onclick="exporterOrganisation()">📤 Exporter</button>
-      </div>
-
-      <h3>Historique des consignes</h3>
-      <div id="historiqueOrganisation"></div>
+      <h2>Organisation</h2>
+      <label>Nouvelle consigne :</label>
+      <textarea id="noteOrganisation"></textarea>
+      <button onclick="ajouterOrganisation()">💾 Ajouter</button>
+      <div id="historiqueOrganisation" class="historique"></div>
     </section>
   </main>
 
-  <!-- ===== MENU BAS ===== -->
   <footer>
-    <button class="active" onclick="changerPage('Production')">🏭 Production</button>
+    <button class="active" onclick="changerPage('Atelier')">🏭 Atelier</button>
     <button onclick="changerPage('Arrets')">⏱️ Arrêts</button>
     <button onclick="changerPage('Personnel')">👥 Personnel</button>
     <button onclick="changerPage('Organisation')">🗒️ Organisation</button>
-    <button id="exportAllBtn">📊 Export global</button>
+    <button id="exportAllBtn">📤 Export</button>
   </footer>
 
   <script src="app.js"></script>
