@@ -1,244 +1,245 @@
-/* === Synthèse Production Lactalis - style.css V38 === */
+/* === Synthèse Production Lactalis - style.css V39 === */
 
-/* Base */
+/* ----- GLOBAL ----- */
 body {
-  font-family: "Segoe UI", Roboto, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #f6f9fc;
   margin: 0;
   padding: 0;
-  background: #f6f9fc;
-  color: #0a2240;
-  scroll-behavior: smooth;
+  color: #002b5c;
 }
 
-/* En-tête */
 header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(90deg, #007bff, #66b2ff);
+  background: linear-gradient(90deg, #007bff, #4da3ff);
   color: white;
-  padding: 8px 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-header .logo {
-  height: 45px;
-  margin-right: 10px;
-}
-.infos-top {
-  font-size: 0.9em;
-  text-align: right;
-  line-height: 1.4;
+  text-align: center;
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Menu principal */
-.menu {
+header h1 {
+  margin: 5px 0;
+  font-size: 1.6em;
+}
+
+#dateHeure, #equipe {
+  font-size: 0.9em;
+  opacity: 0.95;
+}
+
+/* ----- NAVIGATION ----- */
+nav {
   display: flex;
   justify-content: space-around;
-  background: #e9f1ff;
-  border-bottom: 2px solid #007bff;
-  padding: 8px;
-  flex-wrap: wrap;
+  background-color: #e3f0ff;
+  border-bottom: 2px solid #cce0ff;
+  position: sticky;
+  top: 60px;
+  z-index: 999;
 }
-.menu button {
+
+nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #004080;
+  font-weight: bold;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background 0.2s, color 0.2s;
+}
+
+nav button:hover {
   background: #007bff;
   color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 10px 16px;
-  margin: 4px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-weight: 600;
-}
-.menu button:hover {
-  background: #0056b3;
-  transform: scale(1.05);
 }
 
-/* Sections */
+/* ----- SECTIONS ----- */
 .section {
-  padding: 15px;
   display: none;
+  padding: 15px;
 }
-.section h2 {
+
+h2 {
   text-align: center;
   color: #004080;
-  border-bottom: 3px solid #007bff;
-  display: inline-block;
+  border-bottom: 2px solid #007bff;
   padding-bottom: 5px;
-  margin: 15px auto;
 }
 
-/* Boutons des lignes */
-.boutons-lignes {
+/* ----- LIGNES ----- */
+#lignes {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
-.boutons-lignes button {
+
+#lignes button {
   background: #007bff;
   color: white;
   border: none;
-  padding: 10px 14px;
-  border-radius: 18px;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 1em;
   cursor: pointer;
-  transition: 0.3s;
-  font-size: 0.95em;
+  transition: transform 0.15s;
 }
-.boutons-lignes button:hover {
-  background: #0056b3;
+
+#lignes button:hover {
   transform: scale(1.05);
+  background: #005fcc;
 }
 
-/* Formulaires de lignes */
+/* ----- FORMULAIRES ----- */
 .ligne-form {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 12px;
-  margin: 15px auto;
-  max-width: 420px;
   display: none;
-}
-.ligne-form h3 {
-  background: #007bff;
-  color: white;
-  text-align: center;
-  padding: 6px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
-.ligne-form label {
-  display: inline-block;
-  width: 160px;
-  font-weight: 600;
-  margin: 4px 0;
-}
-.ligne-form input {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 6px;
-  width: 120px;
-  margin-bottom: 8px;
-}
-.ligne-form button {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 14px;
-  margin-top: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.ligne-form button:hover {
-  background: #0056b3;
-}
-
-/* Cartes pour Arrêts, Organisation, Personnel */
-.carte {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   padding: 15px;
-  margin: 15px auto;
-  max-width: 500px;
+  margin-bottom: 20px;
 }
-.carte label {
+
+.ligne-form label {
   display: block;
-  font-weight: 600;
-  margin-top: 8px;
+  margin: 8px 0;
+  font-weight: 500;
 }
-.carte select, .carte input, .carte textarea {
-  width: 95%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+
+.ligne-form input, select, textarea {
+  width: 100%;
+  padding: 6px;
   margin-top: 4px;
+  border-radius: 5px;
+  border: 1px solid #ccd;
+  font-size: 1em;
+  box-sizing: border-box;
 }
-.carte button {
-  margin-top: 10px;
+
+.ligne-form button {
+  display: block;
+  width: 100%;
   background: #007bff;
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1.1em;
+  margin-top: 8px;
   cursor: pointer;
-  transition: 0.3s;
-}
-.carte button:hover {
-  background: #0056b3;
 }
 
-/* Historique */
-.historique {
-  margin-top: 10px;
-  background: white;
-  padding: 10px;
-  border-radius: 10px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.ligne-form button:hover {
+  background: #005fcc;
 }
+
+.finEstimee {
+  margin-top: 5px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* ----- HISTORIQUES ----- */
+.historique {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  max-height: 250px;
+  overflow-y: auto;
+}
+
 .ligneHistorique {
-  padding: 6px 0;
-  border-bottom: 1px solid #e5e5e5;
+  background: #f0f7ff;
+  margin: 4px 0;
+  padding: 6px;
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.ligneHistorique:last-child {
-  border-bottom: none;
+
+.ligneHistorique b {
+  color: #004080;
 }
+
 button.supprimer {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-/* Textarea Organisation */
-#consigneTexte {
-  width: 95%;
-  max-width: 600px;
-  height: 80px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 8px;
-  font-size: 15px;
-}
-
-/* Calculatrice flottante */
-#calc {
-  animation: fadeIn 0.3s ease;
-}
-#calcKeys button {
-  width: 48px;
-  height: 40px;
-  margin: 2px;
+  background: #ff4d4d;
+  color: white;
   border: none;
   border-radius: 6px;
-  background: #e9f1ff;
-  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+button.supprimer:hover {
+  background: #e60000;
+}
+
+/* ----- ORGANISATION / PERSONNEL / ARRÊTS ----- */
+textarea {
+  width: 100%;
+  height: 80px;
+  border: 1px solid #ccd;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* ----- CALCULATRICE ----- */
+#calcBtn {
+  transition: transform 0.2s;
+}
+#calcBtn:hover {
+  transform: scale(1.1);
+}
+
+#calc button {
+  width: 48px;
+  height: 48px;
+  margin: 2px;
+  font-size: 16px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
-#calcKeys button:hover {
-  background: #d0e4ff;
+#calc button:hover {
+  background: #005fcc;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(5px);}
-  to {opacity: 1; transform: translateY(0);}
+/* ----- EXPORT ----- */
+button[onclick*="exportExcelGlobal"] {
+  background: #00b050;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* Responsive */
-@media(max-width: 768px) {
-  .ligne-form label { width: 130px; font-size: 0.9em; }
-  .ligne-form input { width: 100px; }
-  header .logo { height: 38px; }
+button[onclick*="exportExcelGlobal"]:hover {
+  background: #009140;
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 700px) {
+  nav {
+    flex-direction: column;
+  }
+  #lignes {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
