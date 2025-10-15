@@ -1,245 +1,266 @@
-/* === Synthèse Production Lactalis - style.css V39 === */
-
-/* ----- GLOBAL ----- */
+/* ==== STYLE GLOBAL ==== */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f6f9fc;
+  font-family: 'Segoe UI', Roboto, sans-serif;
   margin: 0;
   padding: 0;
-  color: #002b5c;
+  background-color: #f4f8fc;
+  color: #002f6c;
 }
 
 header {
-  background: linear-gradient(90deg, #007bff, #4da3ff);
+  background: linear-gradient(90deg, #007bff, #00aaff);
   color: white;
   text-align: center;
-  padding: 10px 0;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
 header h1 {
-  margin: 5px 0;
-  font-size: 1.6em;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: bold;
 }
 
-#dateHeure, #equipe {
-  font-size: 0.9em;
-  opacity: 0.95;
+header .logo {
+  height: 32px;
+  vertical-align: middle;
+  margin-right: 10px;
 }
 
-/* ----- NAVIGATION ----- */
-nav {
+#dateHeure, #equipeActuelle {
+  font-weight: 500;
+  margin-top: 0.3rem;
+}
+
+/* ==== NAVIGATION ==== */
+.navbar {
   display: flex;
   justify-content: space-around;
-  background-color: #e3f0ff;
-  border-bottom: 2px solid #cce0ff;
-  position: sticky;
-  top: 60px;
-  z-index: 999;
-}
-
-nav button {
-  flex: 1;
-  background: none;
-  border: none;
-  color: #004080;
-  font-weight: bold;
-  padding: 12px;
-  cursor: pointer;
-  font-size: 1em;
-  transition: background 0.2s, color 0.2s;
-}
-
-nav button:hover {
+  flex-wrap: wrap;
   background: #007bff;
+  padding: 0.3rem;
+  border-top: 2px solid #0056b3;
+  border-bottom: 2px solid #0056b3;
+}
+
+.nav-btn {
+  background-color: #e9f2ff;
+  border: none;
+  color: #003366;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  margin: 0.2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-btn:hover {
+  background-color: #d6e9ff;
+}
+
+.nav-btn.active {
+  background-color: #0056b3;
   color: white;
 }
 
-/* ----- SECTIONS ----- */
+/* ==== CONTENU PRINCIPAL ==== */
+main {
+  padding: 1rem;
+}
+
 .section {
   display: none;
-  padding: 15px;
+  background: white;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.section.active {
+  display: block;
 }
 
 h2 {
   text-align: center;
+  color: #003366;
+  border-bottom: 3px solid #007bff;
+  padding-bottom: 0.3rem;
+}
+
+h3 {
+  text-align: center;
+  margin-top: 1.2rem;
   color: #004080;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 5px;
 }
 
-/* ----- LIGNES ----- */
-#lignes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-#lignes button {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 15px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: transform 0.15s;
-}
-
-#lignes button:hover {
-  transform: scale(1.05);
-  background: #005fcc;
-}
-
-/* ----- FORMULAIRES ----- */
-.ligne-form {
-  display: none;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  margin-bottom: 20px;
-}
-
-.ligne-form label {
+label {
   display: block;
-  margin: 8px 0;
-  font-weight: 500;
+  font-weight: bold;
+  margin-top: 0.6rem;
 }
 
-.ligne-form input, select, textarea {
+input, select, textarea {
   width: 100%;
-  padding: 6px;
-  margin-top: 4px;
-  border-radius: 5px;
-  border: 1px solid #ccd;
-  font-size: 1em;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #b0c4de;
+  margin-top: 0.2rem;
+  font-size: 1rem;
   box-sizing: border-box;
 }
 
-.ligne-form button {
-  display: block;
-  width: 100%;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 1.1em;
-  margin-top: 8px;
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+button {
   cursor: pointer;
 }
 
-.ligne-form button:hover {
-  background: #005fcc;
+/* ==== TABLEAU DE PRODUCTION ==== */
+.line-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.finEstimee {
-  margin-top: 5px;
+.line-buttons button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem;
   font-weight: bold;
-  color: #007bff;
+  transition: transform 0.15s ease-in-out;
 }
 
-/* ----- HISTORIQUES ----- */
-.historique {
-  background: white;
+.line-buttons button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.button-row button {
+  flex: 1;
+  margin: 0.3rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem;
   border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  max-height: 250px;
-  overflow-y: auto;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+  transition: 0.2s;
 }
 
-.ligneHistorique {
-  background: #f0f7ff;
-  margin: 4px 0;
-  padding: 6px;
-  border-radius: 6px;
+.button-row button:hover {
+  background-color: #0056b3;
+}
+
+/* ==== HISTORIQUE ==== */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  background-color: #f0f6ff;
+  border: 1px solid #cfe0f1;
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.ligneHistorique b {
-  color: #004080;
-}
-
-button.supprimer {
-  background: #ff4d4d;
+ul li button {
+  background-color: #dc3545;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
   cursor: pointer;
 }
 
-button.supprimer:hover {
-  background: #e60000;
+/* ==== CALCULATRICE ==== */
+.calculator {
+  position: fixed;
+  bottom: 80px;
+  right: 15px;
+  width: 220px;
+  background: white;
+  border: 2px solid #007bff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  display: none;
 }
 
-/* ----- ORGANISATION / PERSONNEL / ARRÊTS ----- */
-textarea {
+.calculator input {
   width: 100%;
-  height: 80px;
-  border: 1px solid #ccd;
-  border-radius: 6px;
-  padding: 8px;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-/* ----- CALCULATRICE ----- */
-#calcBtn {
-  transition: transform 0.2s;
-}
-#calcBtn:hover {
-  transform: scale(1.1);
-}
-
-#calc button {
-  width: 48px;
-  height: 48px;
-  margin: 2px;
-  font-size: 16px;
+  text-align: right;
   border: none;
-  background: #007bff;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-#calc button:hover {
-  background: #005fcc;
+  background-color: #eef6ff;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
-/* ----- EXPORT ----- */
-button[onclick*="exportExcelGlobal"] {
-  background: #00b050;
+.calc-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.calc-buttons button {
+  padding: 0.6rem;
   border: none;
-  color: white;
-  border-radius: 8px;
-  padding: 10px 12px;
+  background-color: #e0ecff;
   font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
+  font-size: 1rem;
 }
 
-button[onclick*="exportExcelGlobal"]:hover {
-  background: #009140;
+.calc-buttons button:hover {
+  background-color: #c8ddff;
 }
 
-/* ----- RESPONSIVE ----- */
-@media (max-width: 700px) {
-  nav {
-    flex-direction: column;
+.calc-buttons .clear {
+  grid-column: span 4;
+  background-color: #ff4b5c;
+  color: white;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.3rem;
   }
-  #lignes {
-    flex-direction: column;
-    align-items: stretch;
+
+  .navbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .line-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  }
+
+  .button-row button {
+    font-size: 0.9rem;
   }
 }
