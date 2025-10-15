@@ -74,6 +74,42 @@ function calculEstimation() {
 document.getElementById("quantiteRestante").addEventListener("input", calculEstimation);
 document.getElementById("cadenceManuelle").addEventListener("input", calculEstimation);
 
+// === Calcul automatique de cadence et estimation de fin ===
+function calculCadenceEtEstimation() {
+  const debut = document.getElementById("heureDebut").value;
+  const fin = document.getElementById("heureFin").value;
+  const qte = parseFloat(document.getElementById("quantiteRealisee").value) || 0;
+  const restante = parseFloat(document.getElementById("quantiteRestante").value) || 0;
+
+  if (!debut || !fin) return;
+
+  const [h1, m1] = debut.split(":").map(Number);
+  const [h2, m2] = fin.split(":").map(Number);
+  let t1 = h1 * 60 + m1;
+  let t2 = h2 * 60 + m2;
+  if (t2 < t1) t2 += 24 * 60; // traverse minuit
+
+  const dureeHeures = (t2 - t1) / 60;
+  const cadence = dureeHeures > 0 ? qte / dureeHeures : 0;
+
+  document.getElementById("cadenceManuelle").value = cadence.toFixed(1);
+
+  // Estimation heure de fin en fonction de la cadence
+  if (cadence > 0 && restante > 0) {
+    const heuresRestantes = restante / cadence;
+    const estimation = new Date();
+    estimation.setHours(h2, m2);
+    estimation.setTime(estimation.getTime() + heuresRestantes * 3600000);
+    const heureEstimee = estimation.toTimeString().slice(0, 5);
+    document.getElementById("estimationFin").value = heureEstimee;
+  }
+}
+
+// === Écouteurs automatiques ===
+["heureDebut", "heureFin", "quantiteRealisee", "quantiteRestante"].forEach(id => {
+  document.getElementById(id).addEventListener("input", calculCadenceEtEstimation);
+});
+
 // === Enregistrer production ===
 function enregistrerProduction() {
   if (!ligneActive) return alert("Veuillez sélectionner une ligne");
