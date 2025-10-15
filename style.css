@@ -1,254 +1,171 @@
-/* === STYLE GLOBAL SYNTHÈSE PRODUCTION V32 === */
 :root {
-  --bleu-lactalis: #007bff;
-  --bleu-clair: #e9f3ff;
-  --gris: #f4f4f4;
-  --texte: #003366;
-  --fond-blanc: #ffffff;
+  --bleu-lactalis: #009fe3;
+  --bleu-clair: #e6f3fb;
+  --gris: #f8f8f8;
+  --ombre: rgba(0, 0, 0, 0.1);
 }
 
-/* === CORPS === */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: var(--bleu-clair);
-  color: var(--texte);
+  font-family: "Segoe UI", sans-serif;
   margin: 0;
-  padding: 0;
+  background: var(--gris);
+  color: #222;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
-/* === EN-TÊTE === */
 header {
-  background: linear-gradient(90deg, #007bff, #4db7ff);
-  color: white;
+  background: var(--bleu-lactalis);
+  color: #fff;
   text-align: center;
   padding: 10px;
-  border-bottom: 3px solid #0056b3;
+  box-shadow: 0 2px 5px var(--ombre);
 }
-header h1 {
+.logo {
+  width: 100px;
+  margin-bottom: 5px;
+}
+h1 {
   margin: 0;
-  font-size: 1.7em;
-}
-header p {
-  margin: 4px 0;
-  font-size: 0.95em;
+  font-size: 1.5em;
 }
 
-/* === CONTENU PRINCIPAL === */
 main {
   flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  scroll-behavior: smooth;
-  margin-bottom: 60px; /* pour ne pas cacher par le footer */
+  padding: 10px;
 }
 
-/* === TRANSITION PAGES === */
 .page {
   display: none;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fondu 0.3s ease;
 }
 .page.active {
   display: block;
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fondu {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* === TITRES === */
-h2 {
-  text-align: center;
-  font-size: 1.5em;
-  color: var(--texte);
-  margin-bottom: 10px;
-}
-
-/* === BOUTONS DE LIGNES === */
-.boutons-lignes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+.atelier-btns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 8px;
-  margin-bottom: 15px;
 }
-.boutons-lignes button {
+.atelier-btns button {
   background: var(--bleu-lactalis);
-  color: white;
+  color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 5px var(--ombre);
+  transition: transform 0.1s;
 }
-.boutons-lignes button:hover {
-  background: #0056b3;
+.atelier-btns button:hover {
   transform: scale(1.05);
 }
 
-/* === FORMULAIRE === */
 .formulaire {
-  background: var(--fond-blanc);
-  border-radius: 15px;
-  padding: 20px;
-  margin: 0 auto;
-  max-width: 550px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  display: flex;
-  flex-direction: column;
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px var(--ombre);
 }
-.formulaire h3 {
-  text-align: center;
-  color: var(--bleu-lactalis);
-  margin-top: 0;
-}
-
-/* === LABELS / INPUTS === */
 label {
-  font-weight: 600;
   display: block;
-  margin-top: 8px;
+  margin-top: 10px;
+  font-weight: 600;
 }
 input, select, textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  font-size: 1em;
-  margin-top: 4px;
   box-sizing: border-box;
 }
-textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--bleu-lactalis);
-  box-shadow: 0 0 4px #007bff55;
-}
 
-/* === BOUTONS FORMULAIRES === */
-.boutons-formulaire {
+.actions {
+  margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
-  margin-top: 15px;
 }
-.boutons-formulaire button {
+.actions button {
+  flex: 1;
   background: var(--bleu-lactalis);
-  color: white;
+  color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.boutons-formulaire button:hover {
-  background: #0056b3;
-  transform: scale(1.05);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px var(--ombre);
 }
 
-/* === TABLEAUX === */
+.historique {
+  background: var(--bleu-clair);
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.bloc-histo {
+  background: #fff;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  box-shadow: 0 1px 3px var(--ombre);
+  font-size: 0.9em;
+}
+
+footer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--bleu-lactalis);
+  padding: 8px;
+  box-shadow: 0 -2px 6px var(--ombre);
+}
+footer button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.9em;
+}
+footer button.active {
+  border-bottom: 2px solid #fff;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  font-size: 0.9em;
+  margin-top: 10px;
 }
 th, td {
-  padding: 8px;
+  border: 1px solid #ddd;
+  padding: 6px;
   text-align: center;
-  border-bottom: 1px solid #ddd;
 }
 th {
   background: var(--bleu-lactalis);
-  color: white;
-  font-weight: 600;
+  color: #fff;
 }
 
-/* === BLOCS HISTORIQUES === */
-#historiqueProduction, #listePersonnel, #historiqueOrganisation {
-  background: var(--fond-blanc);
-  border-radius: 12px;
-  margin-top: 15px;
-  padding: 12px;
-  font-size: 0.9em;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.bloc-histo {
-  border-bottom: 1px dashed #ccc;
-  padding: 5px 0;
-}
-.bloc-histo:last-child { border-bottom: none; }
-
-/* === MENU BAS === */
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: linear-gradient(90deg, #007bff, #3fa9f5);
-  border-top: 3px solid #0056b3;
-  display: flex;
-  justify-content: space-around;
-  padding: 6px 0;
-  z-index: 100;
-}
-footer button {
-  background: white;
-  border: none;
-  border-radius: 10px;
-  color: var(--texte);
-  font-weight: 600;
-  padding: 8px 10px;
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: 0.2s;
-}
-footer button:hover {
-  background: var(--bleu-clair);
-  transform: scale(1.05);
-}
-footer button.active {
-  background: var(--bleu-lactalis);
-  color: white;
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  header h1 { font-size: 1.4em; }
-  .formulaire { width: 95%; padding: 15px; }
-  input, select, textarea { font-size: 1em; }
-  .boutons-lignes button { padding: 9px 11px; font-size: 0.85em; }
-  footer button { font-size: 0.8em; padding: 7px 8px; }
-}
-/* === Notification export automatique === */
 .notification-export {
   position: fixed;
-  bottom: 80px;
+  bottom: 20px;
   left: 50%;
-  transform: translateX(-50%) translateY(100%);
-  background: #28a745;
-  color: white;
-  font-weight: 600;
-  padding: 10px 20px;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: #fff;
+  padding: 12px 20px;
   border-radius: 8px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
   opacity: 0;
-  transition: all 0.4s ease;
-  z-index: 2000;
+  transition: opacity 0.4s;
+  z-index: 9999;
 }
 .notification-export.visible {
-  transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
