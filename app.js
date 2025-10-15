@@ -1,304 +1,278 @@
-// ===============================
-// VARIABLES GLOBALES
-// ===============================
-let ligneActuelle = "";
-let donneesTemp = JSON.parse(localStorage.getItem("donneesTemp")) || {};
-let historique = JSON.parse(localStorage.getItem("historique")) || {};
-let historiqueArrets = JSON.parse(localStorage.getItem("historiqueArrets")) || [];
-let historiquePersonnel = JSON.parse(localStorage.getItem("historiquePersonnel")) || [];
-let historiqueOrganisation = JSON.parse(localStorage.getItem("historiqueOrganisation")) || [];
-
-// ===============================
-// INITIALISATION
-// ===============================
-window.onload = () => {
-  afficherDateHeure();
-  determinerEquipe();
-  afficherTousLesHistoriques();
-  setInterval(afficherDateHeure, 60000);
+// ==================== VARIABLES GLOBALES ====================
+let ligneSelectionnee = null;
+let data = JSON.parse(localStorage.getItem("syntheseData")) || {
+  production: {},
+  arrets: [],
+  personnel: [],
+  organisation: []
 };
 
-// ===============================
-// DATE, HEURE, ÉQUIPE
-// ===============================
-function afficherDateHeure() {
-  const now = new Date();
-  const date = now.toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-  const heure = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("dateHeure").textContent = `${date} — ${heure}`;
-}
-
-function determinerEquipe() {
-  const h = new Date().getHours();
-  let equipe = "Nuit";
-  if (h >= 5 && h < 13) equipe = "Matin";
-  else if (h >= 13 && h < 21) equipe = "Après-midi";
-  document.getElementById("equipeActuelle").textContent = `Équipe : ${equipe}`;
-}
-
-// ===============================
-// NAVIGATION ENTRE PAGES
-// ===============================
+// ==================== AFFICHAGE SECTIONS ====================
 function showSection(id) {
-  document.querySelectorAll(".page").forEach(sec => sec.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// ===============================
-// PRODUCTION
-// ===============================
-function selectLine(nomLigne) {
-  ligneActuelle = nomLigne;
-  document.getElementById("nomLigne").textContent = `Ligne : ${nomLigne}`;
-  document.getElementById("formProduction").scrollIntoView({ behavior: "smooth" });
-
-  // restaurer les données persistantes
-  const data = donneesTemp[nomLigne] || {};
-  document.getElementById("heureDebut").value = data.heureDebut || "";
-  document.getElementById("heureFin").value = data.heureFin || "";
-  document.getElementById("quantiteRealisee").value = data.quantiteRealisee || "";
-  document.getElementById("quantiteRestante").value = data.quantiteRestante || "";
-  document.getElementById("cadenceManuelle").value = data.cadenceManuelle || "";
-  document.getElementById("estimationFin").value = data.estimationFin || "";
-
-  afficherHistoriqueProduction();
+// ==================== LIGNE SELECTIONNEE ====================
+function selectLine(ligne) {
+  ligneSelectionnee = ligne;
+  document.getElementById("nomLigne").innerText = "Ligne : " + ligne;
+  const temp = JSON.parse(localStorage.getItem(`temp_${ligne}`)) || {};
+  document.getElementById("quantiteRealisee").value = temp.quantiteRealisee || "";
+  document.getElementById("quantiteRestante").value = temp.quantiteRestante || "";
+  document.getElementById("cadenceManuelle").value = temp.cadenceManuelle || "";
+  document.getElementById("heureDebut").value = temp.heureDebut || "";
+  document.getElementById("heureFin").value = temp.heureFin || "";
+  chargerHistoriqueProduction();
 }
 
-function enregistrerProduction() {
-  if (!ligneActuelle) return alert("Sélectionnez une ligne avant d’enregistrer.");
-  const debut = document.getElementById("heureDebut").value;
-  const fin = document.getElementById("heureFin").value;
-  const qte = parseFloat(document.getElementById("quantiteRealisee").value) || 0;
-  const restante = parseFloat(document.getElementById("quantiteRestante").value) || 0;
-  const cadenceManuelle = parseFloat(document.getElementById("cadenceManuelle").value) || null;
-
-  if (!debut || !fin || qte <= 0) return alert("Merci de remplir les champs essentiels.");
-
-  const duree = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 3600000;
-  const cadence = cadenceManuelle || (qte / (duree > 0 ? duree : 1));
-  const estimationFin = calculerEstimationAuto(restante, cadence);
-
-  const enreg = {
-    date: new Date().toLocaleString(),
-    debut, fin, qte, restante, cadence, estimationFin
-  };
-
-  if (!historique[ligneActuelle]) historique[ligneActuelle] = [];
-  historique[ligneActuelle].push(enreg);
-  localStorage.setItem("historique", JSON.stringify(historique));
-
-  // reset données temporaires
-  donneesTemp[ligneActuelle] = {};
-  localStorage.setItem("donneesTemp", JSON.stringify(donneesTemp));
-
-  afficherHistoriqueProduction();
-  resetForm();
-}
-
-function afficherHistoriqueProduction() {
-  const div = document.getElementById("historiqueProduction");
-  div.innerHTML = "";
-  if (!ligneActuelle || !historique[ligneActuelle]) return;
-
-  historique[ligneActuelle].forEach((r, i) => {
-    const d = document.createElement("div");
-    d.innerHTML = `
-      <span>${r.date} — ${r.qte} colis (${r.cadence.toFixed(1)} c/h) — Fin estimée : ${r.estimationFin}</span>
-      <button onclick="supprimerLigne('${ligneActuelle}', ${i})">❌</button>
-    `;
-    div.appendChild(d);
-  });
-}
-
-function supprimerLigne(ligne, index) {
-  historique[ligne].splice(index, 1);
-  localStorage.setItem("historique", JSON.stringify(historique));
-  afficherHistoriqueProduction();
-}
-
-function resetForm() {
-  ["heureDebut", "heureFin", "quantiteRealisee", "quantiteRestante", "cadenceManuelle", "estimationFin"].forEach(id => {
-    document.getElementById(id).value = "";
-  });
-}
-
-function calculerEstimation() {
-  const restante = parseFloat(document.getElementById("quantiteRestante").value);
-  const cadence = parseFloat(document.getElementById("cadenceManuelle").value) ||
-    (ligneActuelle && historique[ligneActuelle]?.slice(-1)[0]?.cadence) || 0;
-  if (restante && cadence > 0) {
-    const estimation = calculerEstimationAuto(restante, cadence);
-    document.getElementById("estimationFin").value = estimation;
-    sauvegarderTemporaire();
-  }
-}
-
-function calculerEstimationAuto(restante, cadence) {
-  const heures = restante / cadence;
-  const maintenant = new Date();
-  const estimation = new Date(maintenant.getTime() + heures * 3600000);
-  return estimation.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-}
-
+// ==================== PERSISTANCE TEMPORAIRE PAR LIGNE ====================
 function sauvegarderTemporaire() {
-  if (!ligneActuelle) return;
-  donneesTemp[ligneActuelle] = {
-    heureDebut: document.getElementById("heureDebut").value,
-    heureFin: document.getElementById("heureFin").value,
+  if (!ligneSelectionnee) return;
+  const temp = {
     quantiteRealisee: document.getElementById("quantiteRealisee").value,
     quantiteRestante: document.getElementById("quantiteRestante").value,
     cadenceManuelle: document.getElementById("cadenceManuelle").value,
-    estimationFin: document.getElementById("estimationFin").value
+    heureDebut: document.getElementById("heureDebut").value,
+    heureFin: document.getElementById("heureFin").value
   };
-  localStorage.setItem("donneesTemp", JSON.stringify(donneesTemp));
+  localStorage.setItem(`temp_${ligneSelectionnee}`, JSON.stringify(temp));
 }
 
-// ===============================
-// ARRÊTS
-// ===============================
+// ==================== ENREGISTREMENT PRODUCTION ====================
+function enregistrerProduction() {
+  if (!ligneSelectionnee) return alert("Sélectionnez une ligne !");
+  const hD = document.getElementById("heureDebut").value;
+  const hF = document.getElementById("heureFin").value;
+  const qR = Number(document.getElementById("quantiteRealisee").value);
+  const qRest = Number(document.getElementById("quantiteRestante").value);
+  const cadenceM = Number(document.getElementById("cadenceManuelle").value);
+
+  const duree = calculerDuree(hD, hF);
+  const cadence = cadenceM || (duree > 0 ? (qR / duree).toFixed(1) : 0);
+  const estimationFin = calculerEstimation();
+
+  if (!data.production[ligneSelectionnee]) data.production[ligneSelectionnee] = [];
+  data.production[ligneSelectionnee].push({
+    date: new Date().toLocaleString(),
+    heureDebut: hD,
+    heureFin: hF,
+    quantite: qR,
+    cadence: cadence,
+    estimationFin: estimationFin
+  });
+
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  localStorage.removeItem(`temp_${ligneSelectionnee}`);
+  chargerHistoriqueProduction();
+
+  document.querySelectorAll("#formProduction input").forEach(el => el.value = "");
+  alert("Production enregistrée !");
+}
+
+// ==================== CALCUL DUREE ====================
+function calculerDuree(debut, fin) {
+  if (!debut || !fin) return 0;
+  const d = new Date(`2024-01-01T${debut}`);
+  const f = new Date(`2024-01-01T${fin}`);
+  let diff = (f - d) / 3600000;
+  if (diff < 0) diff += 24;
+  return diff;
+}
+
+// ==================== CALCUL ESTIMATION FIN ====================
+function calculerEstimation() {
+  const qRest = Number(document.getElementById("quantiteRestante").value);
+  const cadenceM = Number(document.getElementById("cadenceManuelle").value);
+  if (!qRest || !cadenceM) {
+    document.getElementById("estimationFin").value = "";
+    return "";
+  }
+  const heuresRestantes = qRest / cadenceM;
+  const finEstimee = new Date(Date.now() + heuresRestantes * 3600000);
+  const heureStr = finEstimee.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  document.getElementById("estimationFin").value = heureStr;
+  return heureStr;
+}
+
+// ==================== HISTORIQUE PRODUCTION ====================
+function chargerHistoriqueProduction() {
+  const zone = document.getElementById("historiqueProduction");
+  zone.innerHTML = "";
+  if (!ligneSelectionnee || !data.production[ligneSelectionnee]) return;
+  data.production[ligneSelectionnee].forEach((p, i) => {
+    const div = document.createElement("div");
+    div.textContent = `${p.date} — ${p.quantite} colis — ${p.cadence} colis/h — Fin estimée ${p.estimationFin}`;
+    const btn = document.createElement("button");
+    btn.textContent = "🗑️";
+    btn.onclick = () => supprimerEnregistrement(ligneSelectionnee, i);
+    div.appendChild(btn);
+    zone.appendChild(div);
+  });
+}
+
+function supprimerEnregistrement(ligne, index) {
+  if (!confirm("Supprimer cet enregistrement ?")) return;
+  data.production[ligne].splice(index, 1);
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  chargerHistoriqueProduction();
+}
+
+// ==================== ARRETS ====================
 function enregistrerArret() {
   const ligne = document.getElementById("ligneArret").value;
-  const debut = document.getElementById("debutArret").value;
-  const fin = document.getElementById("finArret").value;
-  const motif = document.getElementById("motifArret").value.trim();
-  if (!ligne || !debut || !fin || !motif) return alert("Tous les champs sont requis.");
-
-  const duree = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 60000;
-  const a = {
+  const duree = Number(document.getElementById("dureeArret").value);
+  const motif = document.getElementById("motifArret").value;
+  if (!ligne || !duree || !motif) return alert("Complétez tous les champs !");
+  data.arrets.push({
     date: new Date().toLocaleString(),
     ligne,
-    debut,
-    fin,
-    duree: duree > 0 ? duree : 0,
+    duree,
     motif
-  };
-  historiqueArrets.push(a);
-  localStorage.setItem("historiqueArrets", JSON.stringify(historiqueArrets));
-  afficherArrets();
+  });
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  document.getElementById("dureeArret").value = "";
+  document.getElementById("motifArret").value = "";
+  chargerHistoriqueArrets();
 }
 
-function afficherArrets() {
-  const div = document.getElementById("historiqueArrets");
-  div.innerHTML = "";
-  historiqueArrets.forEach(a => {
-    const d = document.createElement("div");
-    d.textContent = `${a.date} — ${a.ligne} : ${a.motif} (${a.debut} → ${a.fin}, ${a.duree} min)`;
-    div.appendChild(d);
+function chargerHistoriqueArrets() {
+  const zone = document.getElementById("historiqueArrets");
+  zone.innerHTML = "";
+  data.arrets.forEach(a => {
+    const div = document.createElement("div");
+    div.textContent = `${a.date} — ${a.ligne} : ${a.duree} min (${a.motif})`;
+    zone.appendChild(div);
   });
 }
 
-// ===============================
-// PERSONNEL
-// ===============================
+// ==================== PERSONNEL ====================
 function enregistrerPersonnel() {
-  const nom = document.getElementById("nomEmploye").value.trim();
+  const nom = document.getElementById("nomEmploye").value;
   const statut = document.getElementById("statutEmploye").value;
-  if (!nom) return alert("Nom requis.");
-  const p = { date: new Date().toLocaleString(), nom, statut };
-  historiquePersonnel.push(p);
-  localStorage.setItem("historiquePersonnel", JSON.stringify(historiquePersonnel));
-  afficherPersonnel();
+  if (!nom) return alert("Entrez un nom !");
+  data.personnel.push({
+    date: new Date().toLocaleString(),
+    nom,
+    statut
+  });
+  localStorage.setItem("syntheseData", JSON.stringify(data));
+  document.getElementById("nomEmploye").value = "";
+  chargerHistoriquePersonnel();
 }
 
-function afficherPersonnel() {
-  const div = document.getElementById("historiquePersonnel");
-  div.innerHTML = "";
-  historiquePersonnel.forEach(p => {
-    const d = document.createElement("div");
-    d.textContent = `${p.date} — ${p.nom} : ${p.statut}`;
-    div.appendChild(d);
+function chargerHistoriquePersonnel() {
+  const zone = document.getElementById("historiquePersonnel");
+  zone.innerHTML = "";
+  data.personnel.forEach(p => {
+    const div = document.createElement("div");
+    div.textContent = `${p.date} — ${p.nom} : ${p.statut}`;
+    zone.appendChild(div);
   });
 }
 
-// ===============================
-// ORGANISATION
-// ===============================
+// ==================== ORGANISATION ====================
 function enregistrerOrganisation() {
-  const texte = document.getElementById("consigneOrganisation").value.trim();
+  const texte = document.getElementById("consigneOrganisation").value;
   if (!texte) return;
-  const c = { date: new Date().toLocaleString(), texte };
-  historiqueOrganisation.push(c);
-  localStorage.setItem("historiqueOrganisation", JSON.stringify(historiqueOrganisation));
-  afficherOrganisation();
+  data.organisation.push({
+    date: new Date().toLocaleString(),
+    texte
+  });
+  localStorage.setItem("syntheseData", JSON.stringify(data));
   document.getElementById("consigneOrganisation").value = "";
+  chargerHistoriqueOrganisation();
 }
 
-function afficherOrganisation() {
-  const div = document.getElementById("historiqueOrganisation");
-  div.innerHTML = "";
-  historiqueOrganisation.forEach(c => {
-    const d = document.createElement("div");
-    d.textContent = `${c.date} — ${c.texte}`;
-    div.appendChild(d);
+function chargerHistoriqueOrganisation() {
+  const zone = document.getElementById("historiqueOrganisation");
+  zone.innerHTML = "";
+  data.organisation.forEach(c => {
+    const div = document.createElement("div");
+    div.textContent = `${c.date} — ${c.texte}`;
+    zone.appendChild(div);
   });
 }
 
-// ===============================
-// EXPORT EXCEL FORMATÉ
-// ===============================
-function exportGlobal() {
-  const wb = XLSX.utils.book_new();
-  const data = [["Section", "Date", "Ligne", "Détails"]];
-
-  for (const [ligne, enregs] of Object.entries(historique)) {
-    enregs.forEach(e => data.push(["Production", e.date, ligne, `Début ${e.debut} - Fin ${e.fin} | Qté ${e.qte} | Cadence ${e.cadence.toFixed(1)} c/h | Fin estimée ${e.estimationFin}`]));
-  }
-  historiqueArrets.forEach(a => data.push(["Arrêts", a.date, a.ligne, `${a.motif} (${a.debut} → ${a.fin}, ${a.duree} min)`]));
-  historiquePersonnel.forEach(p => data.push(["Personnel", p.date, "-", `${p.nom} : ${p.statut}`]));
-  historiqueOrganisation.forEach(o => data.push(["Organisation", o.date, "-", o.texte]));
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws["!cols"] = [{ wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 90 }];
-  XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
-
-  // Style basique des titres (formaté)
-  const header = ["A1", "B1", "C1", "D1"];
-  header.forEach(cell => {
-    if (!ws[cell]) return;
-    ws[cell].s = {
-      font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { fgColor: { rgb: "007BFF" } },
-      alignment: { horizontal: "center" }
-    };
-  });
-
-  XLSX.writeFile(wb, `Synthese_Lactalis_${new Date().toLocaleDateString("fr-FR")}.xlsx`);
-}
-
-// ===============================
-// CALCULATRICE
-// ===============================
+// ==================== CALCULATRICE ====================
 function ouvrirCalculatrice() {
-  let calc = document.querySelector(".calculatrice");
+  let calc = document.getElementById("calculatrice");
   if (!calc) {
     calc = document.createElement("div");
+    calc.id = "calculatrice";
     calc.className = "calculatrice";
     calc.innerHTML = `
-      <input type="text" id="calcDisplay" readonly />
-      <div class="calc-buttons">
-        ${[7,8,9,"/",4,5,6,"*",1,2,3,"-",0,".","=","+"].map(v => `<button onclick="calcPress('${v}')">${v}</button>`).join("")}
-        <button class="clear" onclick="calcClear()">C</button>
-      </div>`;
+      <div class="close-btn" onclick="fermerCalculatrice()">❌</div>
+      <input id="calcDisplay" readonly style="width:100%;margin-bottom:5px;" />
+      <div id="calcButtons"></div>`;
     document.body.appendChild(calc);
+    const keys = ["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"];
+    keys.forEach(k => {
+      const b = document.createElement("button");
+      b.textContent = k;
+      b.onclick = () => appuyerTouche(k);
+      document.getElementById("calcButtons").appendChild(b);
+    });
   }
   calc.style.display = "block";
 }
 
-function calcPress(val) {
+function fermerCalculatrice() {
+  document.getElementById("calculatrice").style.display = "none";
+}
+
+function appuyerTouche(k) {
   const disp = document.getElementById("calcDisplay");
-  if (val === "=") disp.value = eval(disp.value || "0");
-  else disp.value += val;
+  if (k === "=") {
+    try { disp.value = eval(disp.value); } catch { disp.value = "Err"; }
+  } else disp.value += k;
 }
 
-function calcClear() {
-  document.getElementById("calcDisplay").value = "";
+// ==================== EXPORT EXCEL ====================
+function exportGlobal() {
+  const wsData = [["Date", "Ligne", "Quantité", "Cadence", "Fin estimée"]];
+  Object.keys(data.production).forEach(ligne => {
+    data.production[ligne].forEach(p => {
+      wsData.push([p.date, ligne, p.quantite, p.cadence, p.estimationFin]);
+    });
+  });
+  wsData.push([""]);
+  wsData.push(["=== ARRÊTS ==="]);
+  wsData.push(["Date", "Ligne", "Durée (min)", "Motif"]);
+  data.arrets.forEach(a => wsData.push([a.date, a.ligne, a.duree, a.motif]));
+
+  wsData.push([""]);
+  wsData.push(["=== PERSONNEL ==="]);
+  wsData.push(["Date", "Nom", "Statut"]);
+  data.personnel.forEach(p => wsData.push([p.date, p.nom, p.statut]));
+
+  wsData.push([""]);
+  wsData.push(["=== ORGANISATION ==="]);
+  wsData.push(["Date", "Consigne"]);
+  data.organisation.forEach(c => wsData.push([c.date, c.texte]));
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse");
+  const nom = `Synthese_Lactalis_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, nom);
 }
 
-// ===============================
-// AFFICHAGE HISTORIQUES
-// ===============================
-function afficherTousLesHistoriques() {
-  afficherArrets();
-  afficherPersonnel();
-  afficherOrganisation();
-             }
+// ==================== HORLOGE + EQUIPE ====================
+function majHeure() {
+  const now = new Date();
+  document.getElementById("dateHeure").textContent = now.toLocaleString();
+  const h = now.getHours();
+  const equipe = h >= 5 && h < 13 ? "M" : h >= 13 && h < 21 ? "AM" : "N";
+  document.getElementById("equipeActuelle").textContent = "Équipe actuelle : " + equipe;
+}
+setInterval(majHeure, 1000);
+
+// ==================== INITIALISATION ====================
+window.onload = () => {
+  majHeure();
+  chargerHistoriqueArrets();
+  chargerHistoriquePersonnel();
+  chargerHistoriqueOrganisation();
+};
