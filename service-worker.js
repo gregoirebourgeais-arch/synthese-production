@@ -1,4 +1,4 @@
-const CACHE_NAME = "synthese-production-v38";
+const CACHE_NAME = "synthese-production-v38.2";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -9,11 +9,11 @@ const FILES_TO_CACHE = [
   "./icon-512.png"
 ];
 
-// INSTALLATION
+// INSTALLATION DU SERVICE WORKER
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log("Mise en cache initiale réussie");
+      console.log("Mise en cache initiale réussie.");
       return cache.addAll(FILES_TO_CACHE);
     })
   );
@@ -30,7 +30,7 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// FETCH — mode hors ligne
+// MODE HORS LIGNE
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
