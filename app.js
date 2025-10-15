@@ -1,4 +1,4 @@
-// === Synthèse Production Lactalis - app.js V38 ===
+// === Synthèse Production Lactalis - app.js V39 ===
 
 // (1) Date, heure et équipe automatique
 function majDateHeureEquipe() {
@@ -38,11 +38,30 @@ function choisirLigne(ligne) {
   ligneActive = ligne;
   document.querySelectorAll(".ligne-form").forEach(f => f.style.display = "none");
   const form = document.getElementById(`form-${ligne}`);
-  if (form) form.style.display = "block";
-  form.scrollIntoView({ behavior: "smooth" });
+  if (form) {
+    form.style.display = "block";
+    form.scrollIntoView({ behavior: "smooth" });
+  }
 }
 
-// (4) Production
+// (4) Production + estimation en direct
+function calculerEstimationDirecte(ligne) {
+  const qte = parseFloat(document.getElementById(`qte-${ligne}`).value || 0);
+  const qteRestante = parseFloat(document.getElementById(`reste-${ligne}`).value || 0);
+  const cadenceManuelle = parseFloat(document.getElementById(`cadence-${ligne}`).value || 0);
+
+  let cadence = cadenceManuelle || (qte > 0 ? qte / 1 : 0);
+  const estimationHeures = qteRestante > 0 && cadence > 0 ? qteRestante / cadence : 0;
+
+  if (estimationHeures > 0) {
+    const finEstimee = new Date();
+    finEstimee.setMinutes(finEstimee.getMinutes() + estimationHeures * 60);
+    document.getElementById(`finEstimee-${ligne}`).innerText = "Fin estimée : " + finEstimee.toLocaleTimeString("fr-FR").slice(0,5);
+  } else {
+    document.getElementById(`finEstimee-${ligne}`).innerText = "";
+  }
+}
+
 function enregistrerProduction() {
   if (!ligneActive) return alert("Choisis une ligne avant d’enregistrer !");
   const heureDebut = document.getElementById(`debut-${ligneActive}`).value;
@@ -81,6 +100,7 @@ function enregistrerProduction() {
   document.getElementById(`qte-${ligneActive}`).value = "";
   document.getElementById(`reste-${ligneActive}`).value = "";
   document.getElementById(`cadence-${ligneActive}`).value = "";
+  document.getElementById(`finEstimee-${ligneActive}`).innerText = "";
 }
 
 // (5) Historique Production
@@ -100,7 +120,7 @@ function afficherHistoriqueProduction() {
 }
 afficherHistoriqueProduction();
 
-// (6) Suppression générique
+// (6) Suppression
 function supprimerLigne(type, index) {
   if (!confirm("Supprimer cette entrée ?")) return;
   historique[type].splice(index, 1);
@@ -182,23 +202,23 @@ function afficherHistoriquePersonnel() {
 }
 afficherHistoriquePersonnel();
 
-// (10) Export Excel global
+// (10) Export Excel pro (XLSX)
 function exportExcelGlobal() {
-  let csv = "Type;Ligne;Heure début;Heure fin;Quantité;Restant;Cadence;Estimation;Texte/Cause;Horodatage\n";
-  historique.production.forEach(r =>
-    csv += `Production;${r.ligne};${r.heureDebut};${r.heureFin};${r.qte};${r.qteRestante};${r.cadence};${r.estimation};;${r.horodatage}\n`);
-  historique.arrets.forEach(a =>
-    csv += `Arrêt;${a.ligne};;;;; ;${a.duree};${a.cause};${a.horodatage}\n`);
-  historique.personnel.forEach(p =>
-    csv += `Personnel;;;;;;;${p.type} ${p.commentaire};${p.horodatage}\n`);
-  historique.organisation.forEach(c =>
-    csv += `Organisation;;;;;;;${c.texte};${c.horodatage}\n`);
+  const wb = XLSX.utils.book_new();
+  const data = [
+    ["Type", "Ligne", "Début", "Fin", "Quantité", "Restant", "Cadence", "Estimation", "Commentaire/Cause", "Horodatage"]
+  ];
 
-  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `Synthese_Equipe_${new Date().toLocaleDateString("fr-FR")}.csv`;
-  link.click();
+  historique.production.forEach(r => data.push(["Production", r.ligne, r.heureDebut, r.heureFin, r.qte, r.qteRestante, r.cadence, r.estimation, "", r.horodatage]));
+  historique.arrets.forEach(a => data.push(["Arrêt", a.ligne, "", "", "", "", "", "", `${a.cause} (${a.duree} min)`, a.horodatage]));
+  historique.personnel.forEach(p => data.push(["Personnel", "", "", "", "", "", "", "", `${p.type} ${p.commentaire}`, p.horodatage]));
+  historique.organisation.forEach(c => data.push(["Organisation", "", "", "", "", "", "", "", c.texte, c.horodatage]));
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse");
+
+  const date = new Date().toLocaleDateString("fr-FR").replace(/\//g, "-");
+  XLSX.writeFile(wb, `Synthese_Equipe_${date}.xlsx`);
 }
 function genererExportAutomatique(equipe) {
   alert(`📦 Rapport exporté automatiquement pour l’équipe ${equipe}`);
