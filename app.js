@@ -2,6 +2,7 @@
 // VARIABLES GLOBALES
 // ===============================
 let ligneActuelle = "";
+let donneesTemp = JSON.parse(localStorage.getItem("donneesTemp")) || {};
 let historique = JSON.parse(localStorage.getItem("historique")) || {};
 let historiqueArrets = JSON.parse(localStorage.getItem("historiqueArrets")) || [];
 let historiquePersonnel = JSON.parse(localStorage.getItem("historiquePersonnel")) || [];
@@ -50,6 +51,16 @@ function selectLine(nomLigne) {
   ligneActuelle = nomLigne;
   document.getElementById("nomLigne").textContent = `Ligne : ${nomLigne}`;
   document.getElementById("formProduction").scrollIntoView({ behavior: "smooth" });
+
+  // restaurer les données persistantes
+  const data = donneesTemp[nomLigne] || {};
+  document.getElementById("heureDebut").value = data.heureDebut || "";
+  document.getElementById("heureFin").value = data.heureFin || "";
+  document.getElementById("quantiteRealisee").value = data.quantiteRealisee || "";
+  document.getElementById("quantiteRestante").value = data.quantiteRestante || "";
+  document.getElementById("cadenceManuelle").value = data.cadenceManuelle || "";
+  document.getElementById("estimationFin").value = data.estimationFin || "";
+
   afficherHistoriqueProduction();
 }
 
@@ -74,8 +85,12 @@ function enregistrerProduction() {
 
   if (!historique[ligneActuelle]) historique[ligneActuelle] = [];
   historique[ligneActuelle].push(enreg);
-
   localStorage.setItem("historique", JSON.stringify(historique));
+
+  // reset données temporaires
+  donneesTemp[ligneActuelle] = {};
+  localStorage.setItem("donneesTemp", JSON.stringify(donneesTemp));
+
   afficherHistoriqueProduction();
   resetForm();
 }
@@ -102,17 +117,11 @@ function supprimerLigne(ligne, index) {
 }
 
 function resetForm() {
-  document.getElementById("heureDebut").value = "";
-  document.getElementById("heureFin").value = "";
-  document.getElementById("quantiteRealisee").value = "";
-  document.getElementById("quantiteRestante").value = "";
-  document.getElementById("cadenceManuelle").value = "";
-  document.getElementById("estimationFin").value = "";
+  ["heureDebut", "heureFin", "quantiteRealisee", "quantiteRestante", "cadenceManuelle", "estimationFin"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
 }
 
-// ===============================
-// CALCUL AUTOMATIQUE ESTIMATION
-// ===============================
 function calculerEstimation() {
   const restante = parseFloat(document.getElementById("quantiteRestante").value);
   const cadence = parseFloat(document.getElementById("cadenceManuelle").value) ||
@@ -120,6 +129,7 @@ function calculerEstimation() {
   if (restante && cadence > 0) {
     const estimation = calculerEstimationAuto(restante, cadence);
     document.getElementById("estimationFin").value = estimation;
+    sauvegarderTemporaire();
   }
 }
 
@@ -130,14 +140,38 @@ function calculerEstimationAuto(restante, cadence) {
   return estimation.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function sauvegarderTemporaire() {
+  if (!ligneActuelle) return;
+  donneesTemp[ligneActuelle] = {
+    heureDebut: document.getElementById("heureDebut").value,
+    heureFin: document.getElementById("heureFin").value,
+    quantiteRealisee: document.getElementById("quantiteRealisee").value,
+    quantiteRestante: document.getElementById("quantiteRestante").value,
+    cadenceManuelle: document.getElementById("cadenceManuelle").value,
+    estimationFin: document.getElementById("estimationFin").value
+  };
+  localStorage.setItem("donneesTemp", JSON.stringify(donneesTemp));
+}
+
 // ===============================
 // ARRÊTS
 // ===============================
 function enregistrerArret() {
   const ligne = document.getElementById("ligneArret").value;
+  const debut = document.getElementById("debutArret").value;
+  const fin = document.getElementById("finArret").value;
   const motif = document.getElementById("motifArret").value.trim();
-  if (!ligne || !motif) return alert("Remplir la ligne et le motif.");
-  const a = { date: new Date().toLocaleString(), ligne, motif };
+  if (!ligne || !debut || !fin || !motif) return alert("Tous les champs sont requis.");
+
+  const duree = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 60000;
+  const a = {
+    date: new Date().toLocaleString(),
+    ligne,
+    debut,
+    fin,
+    duree: duree > 0 ? duree : 0,
+    motif
+  };
   historiqueArrets.push(a);
   localStorage.setItem("historiqueArrets", JSON.stringify(historiqueArrets));
   afficherArrets();
@@ -148,7 +182,7 @@ function afficherArrets() {
   div.innerHTML = "";
   historiqueArrets.forEach(a => {
     const d = document.createElement("div");
-    d.textContent = `${a.date} — ${a.ligne} : ${a.motif}`;
+    d.textContent = `${a.date} — ${a.ligne} : ${a.motif} (${a.debut} → ${a.fin}, ${a.duree} min)`;
     div.appendChild(d);
   });
 }
@@ -200,37 +234,35 @@ function afficherOrganisation() {
 }
 
 // ===============================
-// EXPORT GLOBAL EXCEL
+// EXPORT EXCEL FORMATÉ
 // ===============================
 function exportGlobal() {
   const wb = XLSX.utils.book_new();
   const data = [["Section", "Date", "Ligne", "Détails"]];
 
-  // Production
   for (const [ligne, enregs] of Object.entries(historique)) {
-    enregs.forEach(e =>
-      data.push([
-        "Production",
-        e.date,
-        ligne,
-        `Début: ${e.debut}, Fin: ${e.fin}, Qté: ${e.qte}, Cadence: ${e.cadence.toFixed(1)} c/h, Fin estimée: ${e.estimationFin}`
-      ])
-    );
+    enregs.forEach(e => data.push(["Production", e.date, ligne, `Début ${e.debut} - Fin ${e.fin} | Qté ${e.qte} | Cadence ${e.cadence.toFixed(1)} c/h | Fin estimée ${e.estimationFin}`]));
   }
-
-  // Arrêts
-  historiqueArrets.forEach(a => data.push(["Arrêts", a.date, a.ligne, a.motif]));
-
-  // Personnel
-  historiquePersonnel.forEach(p => data.push(["Personnel", p.date, "-", `${p.nom}: ${p.statut}`]));
-
-  // Organisation
+  historiqueArrets.forEach(a => data.push(["Arrêts", a.date, a.ligne, `${a.motif} (${a.debut} → ${a.fin}, ${a.duree} min)`]));
+  historiquePersonnel.forEach(p => data.push(["Personnel", p.date, "-", `${p.nom} : ${p.statut}`]));
   historiqueOrganisation.forEach(o => data.push(["Organisation", o.date, "-", o.texte]));
 
   const ws = XLSX.utils.aoa_to_sheet(data);
-  ws["!cols"] = [{ wch: 14 }, { wch: 20 }, { wch: 18 }, { wch: 80 }];
+  ws["!cols"] = [{ wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 90 }];
   XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
-  XLSX.writeFile(wb, `Synthese_Production_${new Date().toLocaleDateString("fr-FR")}.xlsx`);
+
+  // Style basique des titres (formaté)
+  const header = ["A1", "B1", "C1", "D1"];
+  header.forEach(cell => {
+    if (!ws[cell]) return;
+    ws[cell].s = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "007BFF" } },
+      alignment: { horizontal: "center" }
+    };
+  });
+
+  XLSX.writeFile(wb, `Synthese_Lactalis_${new Date().toLocaleDateString("fr-FR")}.xlsx`);
 }
 
 // ===============================
@@ -269,4 +301,4 @@ function afficherTousLesHistoriques() {
   afficherArrets();
   afficherPersonnel();
   afficherOrganisation();
-}
+             }
