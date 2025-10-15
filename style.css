@@ -1,95 +1,112 @@
-/* =============================== */
-/* STYLE GLOBAL — VERSION V38 */
-/* =============================== */
-
+/* ===== STYLE GLOBAL ===== */
 body {
   font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f8fc;
+  color: #222;
   margin: 0;
   padding: 0;
-  background-color: #f4f8fc;
-  color: #002b5c;
+  text-align: center;
 }
 
-/* ======= EN-TÊTE ======= */
 header {
-  text-align: center;
-  background-color: #007bff;
+  background: #007bff;
   color: white;
-  padding: 1rem;
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
+  padding: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 header .logo {
-  height: 40px;
-  display: block;
-  margin: 0 auto 10px auto;
+  width: 60px;
+  vertical-align: middle;
+  margin-right: 10px;
 }
 
 header h1 {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 1.4em;
   margin: 0;
-  font-size: 1.5rem;
 }
 
-/* ======= NAVIGATION ======= */
-.navbar {
+#dateHeure, #equipeActuelle {
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+/* ===== NAVIGATION ===== */
+.menu {
+  background: #e7f0fb;
+  padding: 10px;
   display: flex;
-  justify-content: space-around;
-  background-color: #007bff;
-  padding: 0.4rem;
+  justify-content: center;
   flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 2px solid #007bff;
 }
 
-.navbar button {
-  background-color: #e9f2ff;
+.menu button {
+  background: #007bff;
+  color: white;
   border: none;
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  font-weight: bold;
-  color: #003366;
+  padding: 10px 16px;
+  border-radius: 12px;
   cursor: pointer;
   transition: 0.2s;
+  font-weight: 600;
 }
 
-.navbar button:hover {
-  background-color: #d8e8ff;
+.menu button:hover {
+  background: #0056c7;
 }
 
-/* ======= STRUCTURE DES PAGES ======= */
+/* ===== PAGES ===== */
 .page {
   display: none;
-  padding: 1rem;
+  padding: 15px;
+  animation: fadeIn 0.4s ease-in;
 }
 
 .page.active {
   display: block;
 }
 
-h2 {
-  text-align: center;
-  color: #004080;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 0.3rem;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-h3 {
-  text-align: center;
-  color: #003366;
+/* ===== BLOCS ===== */
+.bloc {
+  background: white;
+  max-width: 600px;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
 }
 
-/* ======= FORMULAIRES ======= */
+.bloc h3 {
+  text-align: center;
+  color: #007bff;
+}
+
 label {
   display: block;
-  font-weight: bold;
-  margin-top: 0.6rem;
+  font-weight: 600;
+  margin-top: 8px;
 }
 
 input, select, textarea {
   width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.2rem;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccd;
   border-radius: 8px;
-  border: 1px solid #a7c1e3;
+  font-size: 1em;
   box-sizing: border-box;
 }
 
@@ -98,50 +115,41 @@ textarea {
   resize: vertical;
 }
 
-/* ======= BOUTONS ======= */
-button {
-  cursor: pointer;
+.actions {
+  text-align: center;
+  margin-top: 10px;
 }
 
-.boutons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.boutons button {
-  flex: 1;
-  margin: 0.3rem;
-  border: none;
-  background-color: #007bff;
+.actions button {
+  margin: 5px;
+  background: #007bff;
   color: white;
-  padding: 0.6rem;
+  border: none;
+  padding: 8px 12px;
   border-radius: 10px;
-  font-weight: bold;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.boutons button:hover {
-  background-color: #0056b3;
+.actions button:hover {
+  background: #0056c7;
 }
 
-/* ======= HISTORIQUE ======= */
+/* ===== HISTORIQUES ===== */
 .historique {
-  margin-top: 1rem;
-  background-color: #f0f6ff;
+  background: #f9fbff;
   border-radius: 10px;
-  padding: 0.5rem;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
-  max-height: 260px;
+  padding: 10px;
+  margin-top: 10px;
+  max-height: 300px;
   overflow-y: auto;
+  font-size: 0.9em;
 }
 
 .historique div {
-  background-color: #fff;
-  margin: 0.4rem 0;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #cfe0f1;
+  background: #eef4ff;
+  margin: 6px 0;
+  padding: 8px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -149,111 +157,77 @@ button {
 }
 
 .historique div button {
-  background-color: #dc3545;
+  background: transparent;
   border: none;
+  color: red;
+  font-size: 1.1em;
+  cursor: pointer;
+}
+
+/* ===== LIGNES ===== */
+.lignes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.lignes button {
+  background: #e7f0fb;
+  color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.lignes button:hover {
+  background: #007bff;
   color: white;
-  border-radius: 6px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
 }
 
-/* ======= BOUTONS DES LIGNES ======= */
-.ligne-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.ligne-buttons button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 0.6rem;
-  font-weight: bold;
-  transition: transform 0.15s ease-in-out;
-}
-
-.ligne-buttons button:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
-}
-
-/* ======= CALCULATRICE ======= */
+/* ===== CALCULATRICE ===== */
 .calculatrice {
   position: fixed;
-  bottom: 90px;
-  right: 15px;
-  width: 220px;
-  background-color: white;
-  border: 2px solid #007bff;
-  border-radius: 12px;
-  display: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  width: 240px;
+  z-index: 99;
 }
 
-.calculatrice input {
+#calcDisplay {
   width: 100%;
+  font-size: 1.2em;
   text-align: right;
+  padding: 5px;
   border: none;
-  background-color: #eef6ff;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  background: #eef4ff;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .calc-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
 }
 
 .calc-buttons button {
-  padding: 0.6rem;
+  padding: 8px;
   border: none;
-  background-color: #e0ecff;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.calc-buttons button:hover {
-  background-color: #c8ddff;
-}
-
-.calc-buttons .clear {
-  grid-column: span 4;
-  background-color: #ff4b5c;
+  background: #007bff;
   color: white;
+  border-radius: 8px;
+  font-size: 1em;
 }
 
-/* ======= PIED DE PAGE ======= */
-footer {
-  text-align: center;
-  background-color: #007bff;
-  color: white;
-  padding: 0.5rem;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  margin-top: 1rem;
+.calc-buttons button.clear {
+  background: red;
 }
-
-/* ======= RESPONSIVE ======= */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 1.2rem;
-  }
-
-  .navbar button {
-    flex: 1 1 45%;
-    margin: 0.2rem;
-  }
-
-  .boutons button {
-    font-size: 0.9rem;
-  }
-
-  .ligne-buttons {
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  }
-  }
