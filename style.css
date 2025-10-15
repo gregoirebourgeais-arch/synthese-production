@@ -1,4 +1,4 @@
-/* --- Style global --- */
+/* ========== STYLE GLOBAL LACTALIS ========== */
 * {
   box-sizing: border-box;
   font-family: 'Segoe UI', Roboto, Arial, sans-serif;
@@ -10,38 +10,44 @@ body {
   color: #1a1a1a;
 }
 
+/* ===== HEADER ===== */
 header {
   background: #007bff;
   color: white;
   text-align: center;
-  padding: 10px;
+  padding: 12px;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 header .logo {
   height: 45px;
   vertical-align: middle;
+  margin-right: 8px;
 }
 
 header h1 {
-  margin: 5px 0;
-  font-size: 20px;
+  display: inline-block;
+  font-size: 22px;
+  margin: 0;
+  font-weight: 700;
 }
 
 #dateHeure,
 #equipeActuelle {
   font-size: 14px;
   opacity: 0.9;
+  margin-top: 4px;
 }
 
-/* --- Navigation --- */
+/* ===== NAVIGATION ===== */
 nav.menu {
   display: flex;
   justify-content: space-around;
   background: #005fc8;
-  padding: 6px;
+  padding: 8px 0;
   position: sticky;
   top: 70px;
   z-index: 5;
@@ -52,53 +58,56 @@ nav.menu button {
   color: #005fc8;
   border: none;
   padding: 8px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
 }
 
 nav.menu button:hover {
-  background: #e9f1ff;
+  background: #e8f0ff;
+  transform: scale(1.05);
 }
 
-/* --- Sections --- */
+/* ===== PAGES ===== */
 .page {
   display: none;
   padding: 15px;
+  animation: fadeIn 0.3s ease;
 }
 
 .page.active {
   display: block;
-  animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Blocs --- */
+/* ===== BLOCS ===== */
 .bloc {
   background: white;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 15px;
-  margin-top: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+/* ===== TITRES ===== */
 h2 {
   color: #005fc8;
   text-align: center;
+  margin-bottom: 10px;
+  font-size: 22px;
 }
-
 h3 {
-  margin-top: 20px;
   color: #007bff;
+  margin-top: 20px;
 }
 
-/* --- Inputs et labels --- */
+/* ===== INPUTS / LABELS ===== */
 label {
   display: block;
   margin-top: 8px;
@@ -118,23 +127,32 @@ textarea {
   resize: vertical;
 }
 
-/* --- Boutons généraux --- */
+/* ===== BUTTONS ===== */
 button {
   background: #007bff;
   color: white;
   border: none;
-  padding: 8px 14px;
-  margin-top: 10px;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 8px;
   font-weight: 600;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 button:hover {
   background: #005fc8;
 }
 
-/* --- Lignes de production --- */
+button.export {
+  background: #28a745;
+}
+
+button.export:hover {
+  background: #1e8f3e;
+}
+
+/* ===== LIGNES ===== */
 .lignes {
   display: flex;
   flex-wrap: wrap;
@@ -148,16 +166,18 @@ button:hover {
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .lignes button:hover {
   background: #005fc8;
+  transform: scale(1.05);
 }
 
-/* --- Historique --- */
+/* ===== HISTORIQUE ===== */
 .historique {
   margin-top: 10px;
   max-height: 250px;
@@ -173,19 +193,18 @@ button:hover {
   padding: 6px;
   border-bottom: 1px solid #e5e5e5;
 }
-
 .historique div:last-child {
   border-bottom: none;
 }
 
-/* --- Calculatrice flottante --- */
+/* ===== CALCULATRICE ===== */
 .calculatrice {
   position: fixed;
-  bottom: 80px;
+  bottom: 90px;
   right: 20px;
-  background: #ffffff;
+  background: #fff;
   border: 2px solid #007bff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   width: 240px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -198,6 +217,7 @@ button:hover {
   height: 50px;
   margin: 3px;
   font-size: 18px;
+  border-radius: 8px;
 }
 
 .calculatrice .close-btn {
@@ -210,16 +230,22 @@ button:hover {
   cursor: pointer;
 }
 
-/* --- Export Excel --- */
-button.export {
-  background: #28a745;
+/* ===== GRAPHES ===== */
+canvas {
+  width: 100% !important;
+  max-width: 800px;
+  margin: 0 auto;
+  display: block;
 }
 
-button.export:hover {
-  background: #1e8f3e;
+.hint {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-top: 8px;
 }
 
-/* --- Responsive --- */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .lignes {
     flex-direction: column;
@@ -227,7 +253,14 @@ button.export:hover {
   }
   .calculatrice {
     right: 10px;
-    bottom: 90px;
+    bottom: 100px;
     width: 200px;
+  }
+  nav.menu {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  nav.menu button {
+    flex: 1 1 45%;
   }
 }
