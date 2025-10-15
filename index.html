@@ -6,6 +6,7 @@
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
@@ -18,7 +19,7 @@
 
 <body>
   <header>
-    <img src="icon-192.png" alt="Logo Lactalis" class="logo" />
+    <img src="icons/icon-512.png" alt="Logo Lactalis" class="logo" />
     <h1>Synthèse Production Lactalis</h1>
     <div id="dateHeure"></div>
     <div id="equipeActuelle"></div>
@@ -26,14 +27,25 @@
 
   <nav class="menu">
     <button onclick="showSection('atelier')">🏭 Atelier</button>
+    <button onclick="showSection('production')">📦 Production</button>
     <button onclick="showSection('arrets')">⏸️ Arrêts</button>
     <button onclick="showSection('personnel')">👥 Personnel</button>
     <button onclick="showSection('organisation')">🗒️ Organisation</button>
   </nav>
 
-  <!-- ATELIER -->
+  <!-- ATELIER / DASHBOARD -->
   <section id="atelier" class="page active">
-    <h2>Suivi Production</h2>
+    <h2>Atelier - Vue d’ensemble</h2>
+    <div class="bloc">
+      <canvas id="chartProduction" height="120"></canvas>
+      <p class="hint">Cliquez sur une barre pour voir le détail de la ligne</p>
+    </div>
+    <div id="detailLigne" class="bloc"></div>
+  </section>
+
+  <!-- PRODUCTION PAR LIGNE -->
+  <section id="production" class="page">
+    <h2>Production</h2>
     <div class="lignes">
       <button onclick="selectLine('Râpé')">Râpé</button>
       <button onclick="selectLine('T2')">T2</button>
