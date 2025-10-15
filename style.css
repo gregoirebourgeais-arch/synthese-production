@@ -232,3 +232,23 @@ footer button.active {
   .boutons-lignes button { padding: 9px 11px; font-size: 0.85em; }
   footer button { font-size: 0.8em; padding: 7px 8px; }
 }
+/* === Notification export automatique === */
+.notification-export {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  background: #28a745;
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: all 0.4s ease;
+  z-index: 2000;
+}
+.notification-export.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
