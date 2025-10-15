@@ -1,15 +1,16 @@
-/* ===================== */
-/* STYLE GLOBAL - V38 */
-/* ===================== */
+/* =============================== */
+/* STYLE GLOBAL — VERSION V38 */
+/* =============================== */
 
 body {
   font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f4f8fc;
   margin: 0;
   padding: 0;
+  background-color: #f4f8fc;
   color: #002b5c;
 }
 
+/* ======= EN-TÊTE ======= */
 header {
   text-align: center;
   background-color: #007bff;
@@ -19,19 +20,18 @@ header {
   border-bottom-right-radius: 25px;
 }
 
-header img.logo {
+header .logo {
   height: 40px;
   display: block;
   margin: 0 auto 10px auto;
 }
 
-#dateHeure, #equipeActuelle {
-  font-weight: bold;
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
 }
 
-/* ===================== */
-/* NAVIGATION */
-/* ===================== */
+/* ======= NAVIGATION ======= */
 .navbar {
   display: flex;
   justify-content: space-around;
@@ -55,15 +55,13 @@ header img.logo {
   background-color: #d8e8ff;
 }
 
-/* ===================== */
-/* STRUCTURE DES PAGES */
-/* ===================== */
-.page-section {
+/* ======= STRUCTURE DES PAGES ======= */
+.page {
   display: none;
   padding: 1rem;
 }
 
-.page-section.active {
+.page.active {
   display: block;
 }
 
@@ -79,9 +77,7 @@ h3 {
   color: #003366;
 }
 
-/* ===================== */
-/* FORMULAIRES */
-/* ===================== */
+/* ======= FORMULAIRES ======= */
 label {
   display: block;
   font-weight: bold;
@@ -99,11 +95,10 @@ input, select, textarea {
 
 textarea {
   min-height: 80px;
+  resize: vertical;
 }
 
-/* ===================== */
-/* BOUTONS */
-/* ===================== */
+/* ======= BOUTONS ======= */
 button {
   cursor: pointer;
 }
@@ -131,9 +126,7 @@ button {
   background-color: #0056b3;
 }
 
-/* ===================== */
-/* HISTORIQUE */
-/* ===================== */
+/* ======= HISTORIQUE ======= */
 .historique {
   margin-top: 1rem;
   background-color: #f0f6ff;
@@ -164,29 +157,49 @@ button {
   font-size: 0.8rem;
 }
 
-/* ===================== */
-/* CALCULATRICE */
-/* ===================== */
+/* ======= BOUTONS DES LIGNES ======= */
+.ligne-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ligne-buttons button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem;
+  font-weight: bold;
+  transition: transform 0.15s ease-in-out;
+}
+
+.ligne-buttons button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* ======= CALCULATRICE ======= */
 .calculatrice {
   position: fixed;
   bottom: 90px;
-  right: 10px;
-  background-color: #ffffff;
+  right: 15px;
+  width: 220px;
+  background-color: white;
   border: 2px solid #007bff;
-  border-radius: 10px;
+  border-radius: 12px;
   display: none;
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  width: 210px;
 }
 
 .calculatrice input {
   width: 100%;
   text-align: right;
-  padding: 0.6rem;
-  font-size: 1.1rem;
   border: none;
-  border-bottom: 1px solid #007bff;
   background-color: #eef6ff;
+  font-size: 1.2rem;
+  padding: 0.5rem;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
@@ -201,21 +214,33 @@ button {
   border: none;
   background-color: #e0ecff;
   font-weight: bold;
+  font-size: 1rem;
 }
 
 .calc-buttons button:hover {
   background-color: #c8ddff;
 }
 
-/* ===================== */
-/* RESPONSIVE */
-/* ===================== */
-@media (max-width: 700px) {
-  header img.logo {
-    height: 30px;
-  }
+.calc-buttons .clear {
+  grid-column: span 4;
+  background-color: #ff4b5c;
+  color: white;
+}
 
-  h2 {
+/* ======= PIED DE PAGE ======= */
+footer {
+  text-align: center;
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  margin-top: 1rem;
+}
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 600px) {
+  header h1 {
     font-size: 1.2rem;
   }
 
@@ -227,4 +252,8 @@ button {
   .boutons button {
     font-size: 0.9rem;
   }
-}
+
+  .ligne-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  }
+  }
