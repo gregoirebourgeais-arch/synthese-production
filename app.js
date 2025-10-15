@@ -161,23 +161,69 @@ function afficherHistoriqueConsignes() {
   });
 }
 
-// --- Export Excel basique (présentable) ---
+// --- Export Excel coloré Lactalis ---
 function exportGlobal() {
-  let contenu = "Synthèse Production Lactalis\n\n";
-  contenu += "=== PRODUCTION ===\n";
-  for (const [ligne, data] of Object.entries(donneesProduction))
-    contenu += `${ligne}: ${data.quantiteRealisee || 0} (reste ${data.quantiteRestante || 0}) fin prévue ${data.estimationFin || ""}\n`;
-  contenu += "\n=== ARRÊTS ===\n";
-  donneesArrets.forEach(a => contenu += `[${a.date}] ${a.duree}min — ${a.motif}\n`);
-  contenu += "\n=== PERSONNEL ===\n";
-  donneesPersonnel.forEach(p => contenu += `[${p.date}] ${p.nom} — ${p.motif} — ${p.commentaire}\n`);
-  contenu += "\n=== CONSIGNES ===\n";
-  donneesConsignes.forEach(c => contenu += `[${c.date}] ${c.texte}\n`);
+  const wb = XLSX.utils.book_new();
+  const ws_data = [];
 
-  const blob = new Blob([contenu], { type: "text/plain;charset=utf-8" });
+  ws_data.push(["Synthèse Production Lactalis"]);
+  ws_data.push(["Date :", new Date().toLocaleString("fr-FR")]);
+  ws_data.push([]);
+
+  // --- PRODUCTION ---
+  ws_data.push(["=== PRODUCTION ==="]);
+  ws_data.push(["Ligne", "Début", "Fin", "Réalisée", "Restante", "Cadence", "Estimation fin"]);
+  for (const [ligne, d] of Object.entries(donneesProduction)) {
+    ws_data.push([
+      ligne, d.heureDebut || "", d.heureFin || "", d.quantiteRealisee || "",
+      d.quantiteRestante || "", d.cadenceManuelle || "", d.estimationFin || ""
+    ]);
+  }
+  ws_data.push([]);
+
+  // --- ARRÊTS ---
+  ws_data.push(["=== ARRÊTS ==="]);
+  ws_data.push(["Date", "Durée (min)", "Motif"]);
+  donneesArrets.forEach(a => ws_data.push([a.date, a.duree, a.motif]));
+  ws_data.push([]);
+
+  // --- PERSONNEL ---
+  ws_data.push(["=== PERSONNEL ==="]);
+  ws_data.push(["Date", "Nom", "Motif", "Commentaire"]);
+  donneesPersonnel.forEach(p => ws_data.push([p.date, p.nom, p.motif, p.commentaire]));
+  ws_data.push([]);
+
+  // --- CONSIGNES ---
+  ws_data.push(["=== CONSIGNES ==="]);
+  ws_data.push(["Date", "Texte"]);
+  donneesConsignes.forEach(c => ws_data.push([c.date, c.texte]));
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+  // Largeur colonnes + couleur en-têtes
+  ws['!cols'] = Array(7).fill({ wch: 22 });
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = 0; R <= range.e.r; R++) {
+    const row = ws_data[R];
+    if (!row) continue;
+    for (let C = 0; C < row.length; C++) {
+      const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[cellRef];
+      if (!cell) continue;
+      cell.s = {
+        font: { name: "Segoe UI", sz: 11, bold: row[0]?.includes("===") },
+        fill: R === 5 ? { fgColor: { rgb: "DCE6F1" } } : undefined,
+        alignment: { vertical: "center", horizontal: "center" }
+      };
+    }
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse");
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([wbout], { type: "application/octet-stream" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "Synthese_Production_Lactalis.txt";
+  a.download = `Synthese_Production_${new Date().toISOString().slice(0,10)}.xlsx`;
   a.click();
 }
 
