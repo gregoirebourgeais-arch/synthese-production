@@ -236,6 +236,47 @@ document.getElementById("exportAllBtn").addEventListener("click", () => {
   genererExportAutomatique(equipe);
 });
 
+// === Notification visuelle de confirmation export automatique ===
+function afficherNotification(message) {
+  let notif = document.createElement("div");
+  notif.className = "notification-export";
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.classList.add("visible"), 100); // apparition fluide
+  setTimeout(() => {
+    notif.classList.remove("visible");
+    setTimeout(() => notif.remove(), 500);
+  }, 5000);
+}
+
+// Modification de la fonction genererExportAutomatique :
+function genererExportAutomatique(equipe) {
+  const wb = XLSX.utils.book_new();
+  const toutesDonnees = [
+    ["Type", "Date", "Heure", "Ligne", "Durée", "Quantité", "Cadence", "Commentaire / Motif / Note"]
+  ];
+
+  historique.production.forEach(p => {
+    toutesDonnees.push(["Production", p.date, `${p.heureDebut}-${p.heureFin}`, p.ligne, "", p.quantiteRealisee, p.cadence, ""]);
+  });
+  historique.arrets.forEach(a => {
+    toutesDonnees.push(["Arrêt", a.date, a.heure, a.ligne, a.duree, "", "", a.motif]);
+  });
+  historique.personnel.forEach(p => {
+    toutesDonnees.push(["Personnel", p.date, "", "", "", "", "", `${p.type}: ${p.commentaire}`]);
+  });
+  historique.organisation.forEach(o => {
+    toutesDonnees.push(["Organisation", o.date, "", "", "", "", "", o.note]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(toutesDonnees);
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse");
+  const nomFichier = `Synthese_${new Date().toLocaleDateString()}_${equipe}.xlsx`;
+  XLSX.writeFile(wb, nomFichier);
+
+  afficherNotification(`✅ Rapport automatique exporté (Équipe ${equipe})`);
+}
+
 // === Service Worker ===
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
