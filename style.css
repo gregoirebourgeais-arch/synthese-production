@@ -1,49 +1,57 @@
-/* ---------- STYLE GÉNÉRAL ---------- */
+/* =====================================================
+   STYLE GLOBAL - LACTALIS APP vFinal
+   ===================================================== */
+:root {
+  --bleu-lactalis: #007bff;
+  --bleu-clair: #3fa9ff;
+  --bleu-fond: #f5f8ff;
+  --bleu-texte: #002b6d;
+  --blanc: #ffffff;
+}
+
+/* ----------- BASE ----------- */
 body {
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  background: #f5f8ff;
-  color: #002b6d;
+  background: var(--bleu-fond);
+  color: var(--bleu-texte);
   text-align: center;
 }
 
 header {
-  background: linear-gradient(90deg, #007bff, #00a2ff);
+  background: linear-gradient(90deg, var(--bleu-lactalis), var(--bleu-clair));
   color: white;
-  padding: 15px 10px;
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  padding: 12px 10px 18px;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
   width: 70px;
-  margin-bottom: 8px;
+  display: block;
+  margin: 0 auto 6px auto;
 }
 
 h1 {
   margin: 5px 0;
   font-size: 1.6em;
+  font-weight: 700;
 }
 
-p {
-  margin: 2px 0;
-}
-
-/* ---------- NAVIGATION ---------- */
+/* ----------- NAVBAR ----------- */
 .navbar {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin: 10px;
+  gap: 6px;
+  margin: 12px 8px;
 }
 
 .navbar button {
   background: white;
-  border: 2px solid #007bff;
-  color: #007bff;
+  border: 2px solid var(--bleu-lactalis);
+  color: var(--bleu-lactalis);
   font-weight: 600;
   border-radius: 10px;
   padding: 8px 12px;
@@ -51,21 +59,23 @@ p {
   transition: 0.2s;
 }
 
-.navbar button:hover {
-  background: #007bff;
+.navbar button:hover,
+.navbar button.active {
+  background: var(--bleu-lactalis);
   color: white;
 }
 
+/* ----------- SECTIONS ----------- */
 .section {
   display: none;
-  padding: 10px;
+  padding: 12px;
 }
 
 .section.active {
   display: block;
 }
 
-/* ---------- LIGNES ---------- */
+/* ----------- BOUTONS LIGNES ----------- */
 .ligne-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -74,8 +84,8 @@ p {
   margin: 10px 0 20px 0;
 }
 
-.ligne-buttons button {
-  background: linear-gradient(135deg, #007bff, #3fa9ff);
+.btn-ligne {
+  background: linear-gradient(135deg, var(--bleu-lactalis), var(--bleu-clair));
   color: #fff;
   font-weight: 600;
   border: none;
@@ -87,25 +97,25 @@ p {
   transition: all 0.2s ease-in-out;
 }
 
-.ligne-buttons button:hover {
+.btn-ligne:hover {
   background: linear-gradient(135deg, #005ecb, #1e90ff);
   transform: translateY(-2px);
 }
 
-.ligne-buttons button.active {
+.btn-ligne.active {
   background: linear-gradient(135deg, #004aad, #007bff);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* ---------- FORMULAIRES ---------- */
+/* ----------- FORMULAIRES ----------- */
 .card {
-  background: white;
+  background: var(--blanc);
   border-radius: 16px;
   padding: 15px;
   width: 90%;
   max-width: 420px;
   margin: 0 auto 20px auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   text-align: left;
 }
 
@@ -113,16 +123,19 @@ p {
   display: block;
   margin-top: 8px;
   font-weight: 600;
-  color: #004aad;
+  color: var(--bleu-texte);
 }
 
-.card input, .card select {
+.card input,
+.card select,
+.card textarea {
   width: 100%;
   padding: 6px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1em;
-  margin-top: 2px;
+  margin-top: 3px;
+  box-sizing: border-box;
 }
 
 .btns {
@@ -139,7 +152,7 @@ p {
   border: none;
   border-radius: 10px;
   color: white;
-  background: linear-gradient(90deg, #007bff, #00a2ff);
+  background: linear-gradient(90deg, var(--bleu-lactalis), var(--bleu-clair));
   cursor: pointer;
   transition: 0.2s;
 }
@@ -148,8 +161,11 @@ p {
   transform: scale(1.03);
 }
 
-/* ---------- HISTORIQUE ---------- */
-#historiqueProduction {
+/* ----------- HISTORIQUE ----------- */
+#historiqueProduction,
+#listeArrets,
+#listePersonnel,
+#listeOrganisation {
   background: #fff;
   width: 90%;
   max-width: 420px;
@@ -157,7 +173,7 @@ p {
   border-radius: 12px;
   padding: 10px;
   text-align: left;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .hrow {
@@ -168,10 +184,38 @@ p {
   align-items: center;
 }
 
+.hrow:last-child {
+  border: none;
+}
+
 .hrow button {
   background: none;
   border: none;
   cursor: pointer;
   color: red;
   font-size: 1.2em;
+}
+
+.empty {
+  color: #777;
+  font-style: italic;
+}
+
+/* ----------- GRAPHIQUE ----------- */
+canvas {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  width: 90%;
+  max-width: 450px;
+  margin: 15px auto;
+  padding: 5px;
+}
+
+/* ----------- RESPONSIVE ----------- */
+@media (max-width: 600px) {
+  h1 { font-size: 1.3em; }
+  .card { padding: 12px; }
+  .btns button { font-size: 0.9em; }
+  .navbar button { font-size: 0.85em; }
 }
