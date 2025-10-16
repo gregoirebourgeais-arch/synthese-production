@@ -301,3 +301,87 @@ document.getElementById("calcEqual").addEventListener("click", () => {
     display.value = "Erreur";
   }
 });
+
+// === PAGE ATELIER ===
+
+// 🔹 Initialisation des graphiques Chart.js
+let chartQuantites, chartCadences;
+
+// Fonction pour mettre à jour les graphiques
+function majGraphiques() {
+  const lignes = Object.keys(historique);
+  if (!lignes.length) return;
+
+  // --- Quantités totales par ligne ---
+  const quantites = lignes.map(l =>
+    historique[l].reduce((acc, x) => acc + Number(x.qR || 0), 0)
+  );
+
+  const ctx1 = document.getElementById("chartQuantites").getContext("2d");
+  if (chartQuantites) chartQuantites.destroy();
+  chartQuantites = new Chart(ctx1, {
+    type: "bar",
+    data: {
+      labels: lignes,
+      datasets: [{
+        label: "Quantité totale (colis)",
+        data: quantites,
+        backgroundColor: "#007bff"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // --- Évolution de la cadence ---
+  const ctx2 = document.getElementById("chartCadences").getContext("2d");
+  if (chartCadences) chartCadences.destroy();
+
+  const datasets = lignes.map(ligne => ({
+    label: ligne,
+    data: historique[ligne].map(x => Number(x.cad || 0)),
+    fill: false,
+    borderColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+    tension: 0.2
+  }));
+
+  chartCadences = new Chart(ctx2, {
+    type: "line",
+    data: { labels: lignes.map(l => l), datasets },
+    options: { responsive: true }
+  });
+}
+
+// === Liste des arrêts ===
+function majListeArrets() {
+  const liste = document.getElementById("listeArrets");
+  if (!liste) return;
+
+  liste.innerHTML = "";
+
+  if (!Object.keys(arrets || {}).length) {
+    liste.innerHTML = "<p>Aucun arrêt enregistré.</p>";
+    return;
+  }
+
+  Object.entries(arrets).forEach(([ligne, data]) => {
+    const bloc = document.createElement("div");
+    bloc.classList.add("arret-item");
+    bloc.innerHTML = `<b>${ligne}</b> — ${data.map(a => `${a.motif} (${a.duree} min)`).join(", ")}`;
+    liste.appendChild(bloc);
+  });
+}
+
+// === Rafraîchissement automatique ===
+setInterval(() => {
+  majGraphiques();
+  majListeArrets();
+}, 10000);
