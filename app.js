@@ -273,18 +273,31 @@ function enregistrerOrganisation() {
   document.getElementById("noteOrganisation").value = "";
 }
 
-// === CALCULATRICE ===
-function toggleCalc() {
-  document.querySelector(".calc-content").classList.toggle("active");
-}
-function calcAdd(val) {
-  document.getElementById("calcScreen").value += val;
-}
-function calcCompute() {
-  const input = document.getElementById("calcScreen");
-  try { input.value = eval(input.value); }
-  catch { input.value = "Erreur"; }
-}
-function calcClear() {
-  document.getElementById("calcScreen").value = "";
-}
+// === CALCULATRICE FLOTTANTE ===
+const calc = document.getElementById("calculator");
+const openCalc = document.getElementById("openCalc");
+const closeCalc = document.getElementById("closeCalc");
+const display = document.getElementById("calcDisplay");
+let calcExpression = "";
+
+openCalc.addEventListener("click", () => {
+  calc.classList.toggle("hidden");
+});
+
+closeCalc.addEventListener("click", () => {
+  calc.classList.add("hidden");
+});
+
+document.querySelectorAll(".calc-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    display.value += btn.textContent;
+  });
+});
+
+document.getElementById("calcEqual").addEventListener("click", () => {
+  try {
+    display.value = eval(display.value);
+  } catch {
+    display.value = "Erreur";
+  }
+});
