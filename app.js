@@ -1,245 +1,259 @@
-/* === HORLOGE === */
-function updateHorloge() {
-  const now = new Date();
-  const options = { weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
-  document.getElementById('horloge').innerText = now.toLocaleString('fr-FR', options);
+/********* Horloge *********/
+function tick(){
+  const n=new Date();
+  document.getElementById('horloge').textContent =
+    n.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'2-digit'})+' '+
+    n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 }
-setInterval(updateHorloge, 1000);
-updateHorloge();
+tick(); setInterval(tick,1000);
 
-/* === NAVIGATION === */
-function showPage(pageId) {
-  document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  if (pageId === "atelier") majGraphAtelier();
+/********* Navigation pages *********/
+function showPage(id){
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='atelier'){renderAtelier();}
 }
+window.showPage=showPage;
 
-/* === DONNÉES LOCALES === */
-let productionData = JSON.parse(localStorage.getItem("productionData")) || {};
-let arretsData = JSON.parse(localStorage.getItem("arretsData")) || [];
-let organisationData = JSON.parse(localStorage.getItem("organisationData")) || [];
-let personnelData = JSON.parse(localStorage.getItem("personnelData")) || [];
+/********* Données *********/
+const LIGNES=["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
+let prod=JSON.parse(localStorage.getItem('prod'))||{};   // {ligne:[{date,debut,fin,qte,reste,cadence}]}
+let arrets=JSON.parse(localStorage.getItem('arrets'))||[]; // [{date,heure,ligne,duree,cause}]
+let org=JSON.parse(localStorage.getItem('org'))||[];       // [{date,ligne,texte}]
+let pers=JSON.parse(localStorage.getItem('pers'))||[];     // [{date,nom,motif,com}]
 
-/* === LIGNES === */
-const lignes = ["Râpé","T2","RT","T1","OMORI","Sticks","Emballage","Dés","Filets","Prédécoupés"];
-const container = document.getElementById("ligneContainer");
+/********* Utilitaires *********/
+const nowStr=()=>new Date().toLocaleString('fr-FR');
+const timeDiffH=(d,f)=> {
+  const a=new Date(`1970-01-01T${d}:00`), b=new Date(`1970-01-01T${f}:00`);
+  let diff=(b-a)/3600000; if(diff<=0) diff+=24; return diff;
+};
+function calcCadence(ligne){
+  const d=document.getElementById(`debut-${ligne}`).value;
+  const f=document.getElementById(`fin-${ligne}`).value;
+  const q=+document.getElementById(`qte-${ligne}`).value||0;
+  if(!d||!f||!q) return 0;
+  const h=timeDiffH(d,f);
+  return h>0? Math.round(q/h) : 0;
+}
+function estimateFinish(ligne){
+  const rest=+document.getElementById(`reste-${ligne}`).value||0;
+  const cadEl=document.getElementById(`cad-${ligne}`);
+  const cad=+cadEl.textContent||0;
+  const out=document.getElementById(`finEst-${ligne}`);
+  if(rest>0 && cad>0){
+    const min=Math.round((rest/cad)*60);
+    const dt=new Date(Date.now()+min*60000);
+    out.textContent=dt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  } else out.textContent='—';
+}
+window.liveEstimate=estimateFinish;
 
-lignes.forEach(ligne => {
-  const card = document.createElement("div");
-  card.className = "card hidden";
-  card.id = `ligne-${ligne}`;
-  card.innerHTML = `
-    <h3>${ligne}</h3>
-    <label>Heure début :</label><input type="time" id="debut-${ligne}">
-    <label>Heure fin :</label><input type="time" id="fin-${ligne}">
-    <label>Quantité produite :</label><input type="number" id="qte-${ligne}" placeholder="colis">
-    <label>Quantité restante :</label><input type="number" id="reste-${ligne}" placeholder="colis">
-    <label>Arrêts (min):</label><input type="number" id="arret-${ligne}" placeholder="minutes">
-    <label>Commentaire :</label><textarea id="comment-${ligne}"></textarea>
-    <div id="resultats-${ligne}">
-      <p><strong>Cadence :</strong> <span id="cad-${ligne}">0</span> colis/h</p>
-      <p><strong>Fin estimée :</strong> <span id="finEst-${ligne}">--:--</span></p>
-    </div>
-    <button onclick="enregistrerLigne('${ligne}')">💾 Enregistrer</button>
-    <button onclick="resetLigne('${ligne}')">🔄 Remise à zéro</button>
-    <button onclick="afficherHistorique('${ligne}')">📜 Historique</button>
-    <canvas id="graph-${ligne}" height="100"></canvas>
-  `;
-  container.appendChild(card);
+/********* Affichage d'une ligne *********/
+function showLine(nom){
+  document.querySelectorAll('.line-card').forEach(c=>c.classList.add('hidden'));
+  const sec=document.getElementById(`line-${nom}`);
+  if(sec){sec.classList.remove('hidden'); sec.scrollIntoView({behavior:'smooth'});}
+}
+window.showLine=showLine;
+
+/********* Enregistrer production *********/
+function saveProd(e,ligne){
+  e.preventDefault();
+  const d=document.getElementById(`debut-${ligne}`).value;
+  const f=document.getElementById(`fin-${ligne}`).value;
+  const q=+document.getElementById(`qte-${ligne}`).value||0;
+  const r=+document.getElementById(`reste-${ligne}`).value||0;
+  const cadMan=+document.getElementById(`cadenceManuelle-${ligne}`).value||null;
+  const cadAuto=calcCadence(ligne);
+  const cad=cadMan || cadAuto;
+
+  if(!prod[ligne]) prod[ligne]=[];
+  prod[ligne].push({
+    date: nowStr(),
+    debut:d, fin:f, qte:q, reste:r, cadence: cad
+  });
+  localStorage.setItem('prod',JSON.stringify(prod));
+
+  // maj affichage
+  document.getElementById(`cad-${ligne}`).textContent=cad||0;
+  estimateFinish(ligne);
+  renderHist(ligne);
+  renderLineChart(ligne);
+  // vider champs quantité/reste/manuelle après enregistrement (persistance tant que non validé)
+  ['qte','reste','cadenceManuelle'].forEach(k=>document.getElementById(`${k}-${ligne}`).value='');
+}
+window.saveProd=saveProd;
+
+/********* Reset visuel d'une ligne *********/
+function resetLine(ligne){
+  ['qte','reste','cadenceManuelle'].forEach(k=>document.getElementById(`${k}-${ligne}`).value='');
+  document.getElementById(`cad-${ligne}`).textContent='0';
+  document.getElementById(`finEst-${ligne}`).textContent='—';
+}
+window.resetLine=resetLine;
+
+/********* Historique par ligne *********/
+function renderHist(ligne){
+  const wrap=document.getElementById(`hist-${ligne}`);
+  const list=prod[ligne]||[];
+  if(!list.length){wrap.innerHTML='<p>Aucun enregistrement</p>'; return;}
+  wrap.innerHTML=list.map((r,i)=>
+    `<div class="hist-row">
+      <span>${r.date} — ${r.debut}-${r.fin} • ${r.qte} colis • ${r.cadence} c/h</span>
+      <button onclick="delHist('${ligne}',${i})">🗑</button>
+    </div>`
+  ).join('');
+}
+function delHist(ligne,i){
+  prod[ligne].splice(i,1);
+  localStorage.setItem('prod',JSON.stringify(prod));
+  renderHist(ligne); renderAtelier(); renderLineChart(ligne);
+}
+window.delHist=delHist;
+
+// initialiser les historiques + listeners estimation
+LIGNES.forEach(l=>{
+  renderHist(l);
+  const reste=document.getElementById(`reste-${l}`);
+  if(reste) reste.addEventListener('input',()=>estimateFinish(l));
 });
 
-/* === AFFICHAGE LIGNE === */
-function showLigne(nom) {
-  document.querySelectorAll("#ligneContainer .card").forEach(c => c.classList.add("hidden"));
-  document.getElementById(`ligne-${nom}`).classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-/* === CALCUL CADENCE + ESTIMATION === */
-function calculerCadence(nom) {
-  const debut = document.getElementById(`debut-${nom}`).value;
-  const fin = document.getElementById(`fin-${nom}`).value;
-  const qte = parseFloat(document.getElementById(`qte-${nom}`).value) || 0;
-  if (!debut || !fin) return 0;
-  const diff = (new Date(`1970-01-01T${fin}:00`) - new Date(`1970-01-01T${debut}:00`)) / 3600000;
-  return diff > 0 ? Math.round(qte / diff) : 0;
-}
-
-function estimerFin(nom) {
-  const reste = parseFloat(document.getElementById(`reste-${nom}`).value) || 0;
-  const cad = parseFloat(document.getElementById(`cad-${nom}`).textContent) || 0;
-  const now = new Date();
-  if (cad > 0 && reste > 0) {
-    const heures = reste / cad;
-    now.setHours(now.getHours() + heures);
-    document.getElementById(`finEst-${nom}`).textContent = now.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"});
-  }
-}
-
-lignes.forEach(ligne => {
-  document.getElementById(`reste-${ligne}`).addEventListener("input", () => estimerFin(ligne));
-});
-
-/* === ENREGISTREMENT === */
-function enregistrerLigne(nom) {
-  const obj = {
-    date: new Date().toLocaleString("fr-FR"),
-    debut: document.getElementById(`debut-${nom}`).value,
-    fin: document.getElementById(`fin-${nom}`).value,
-    qte: parseFloat(document.getElementById(`qte-${nom}`).value) || 0,
-    reste: parseFloat(document.getElementById(`reste-${nom}`).value) || 0,
-    arret: parseFloat(document.getElementById(`arret-${nom}`).value) || 0,
-    comment: document.getElementById(`comment-${nom}`).value,
-    cadence: calculerCadence(nom)
-  };
-  if (!productionData[nom]) productionData[nom] = [];
-  productionData[nom].push(obj);
-  localStorage.setItem("productionData", JSON.stringify(productionData));
-  document.getElementById(`cad-${nom}`).textContent = obj.cadence;
-  estimerFin(nom);
-  majGraphique(nom);
-  resetInputs(nom);
-}
-
-function resetInputs(nom) {
-  ["qte","reste","arret","comment"].forEach(id => document.getElementById(`${id}-${nom}`).value = "");
-}
-
-/* === HISTORIQUE === */
-function afficherHistorique(nom) {
-  const data = productionData[nom] || [];
-  let html = `<h4>Historique ${nom}</h4><table><tr><th>Date</th><th>Début</th><th>Fin</th><th>Qte</th><th>Cadence</th></tr>`;
-  data.forEach(d => html += `<tr><td>${d.date}</td><td>${d.debut}</td><td>${d.fin}</td><td>${d.qte}</td><td>${d.cadence}</td></tr>`);
-  html += "</table>";
-  document.getElementById(`ligne-${nom}`).insertAdjacentHTML("beforeend", html);
-}
-
-/* === GRAPHIQUES === */
-function majGraphique(nom) {
-  const ctx = document.getElementById(`graph-${nom}`).getContext("2d");
-  const data = productionData[nom] || [];
-  const labels = data.map(d => d.date.split(" ")[1]);
-  const valeurs = data.map(d => d.cadence);
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Cadence (colis/h)",
-        data: valeurs,
-        borderColor: "#007ac3",
-        fill: false
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
+/********* Graphiques *********/
+let chartsLine={};
+function renderLineChart(ligne){
+  const ctx=document.getElementById(`graph-${ligne}`);
+  if(!ctx) return;
+  if(chartsLine[ligne]) chartsLine[ligne].destroy();
+  const data=prod[ligne]||[];
+  const labels=data.map(d=>d.date.split(' ')[1]||d.date);
+  const vals=data.map(d=>d.cadence||0);
+  chartsLine[ligne]=new Chart(ctx,{type:'line',data:{
+    labels, datasets:[{label:'Cadence (colis/h)', data:vals, borderColor:'#007ac3', tension:.25}]},
+    options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
   });
 }
+let chartAtelier=null;
+function renderAtelier(){
+  // quantités totales par ligne
+  const labels=[...LIGNES];
+  const data=labels.map(l=> (prod[l]||[]).reduce((a,x)=>a+(+x.qte||0),0) );
+  // graphique
+  const c=document.getElementById('chartQuantites');
+  if(!c) return;
+  if(chartAtelier) chartAtelier.destroy();
+  chartAtelier=new Chart(c,{type:'bar',data:{labels,datasets:[{label:'Quantités (colis)',data,backgroundColor:'#007ac3'}]},
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}});
+  // classement arrêts
+  const byLigne={};
+  arrets.forEach(a=>{byLigne[a.ligne]=(byLigne[a.ligne]||0)+(+a.duree||0)});
+  const list=Object.entries(byLigne).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('atelierArrets').innerHTML =
+    list.length? list.map(([l,t])=>`<div class="hist-row"><span>${l}</span><b>${t} min</b></div>`).join('') : '<p>Aucun arrêt</p>';
+}
+renderAtelier();
 
-function majGraphAtelier() {
-  const ctx = document.getElementById("graphAtelier").getContext("2d");
-  const labels = lignes;
-  const valeurs = lignes.map(l => {
-    const arr = productionData[l] || [];
-    return arr.length ? arr[arr.length-1].qte : 0;
+/********* Arrêts *********/
+function saveArret(e){
+  e.preventDefault();
+  const ligne=document.getElementById('arretLigne').value;
+  const duree=+document.getElementById('arretDuree').value||0;
+  const cause=document.getElementById('arretCause').value.trim();
+  arrets.push({date: new Date().toLocaleDateString('fr-FR'),
+               heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+               ligne,duree,cause});
+  localStorage.setItem('arrets',JSON.stringify(arrets));
+  e.target.reset();
+  renderArrets(); renderAtelier();
+}
+window.saveArret=saveArret;
+
+function renderArrets(){
+  const wrap=document.getElementById('histArrets');
+  if(!arrets.length){wrap.innerHTML='<p>Aucun arrêt</p>'; return;}
+  wrap.innerHTML=arrets.map(a=>
+    `<div class="hist-row"><span>${a.date} ${a.heure} — ${a.ligne}</span><span>${a.duree} min • ${a.cause}</span></div>`
+  ).join('');
+}
+renderArrets();
+
+/********* Organisation *********/
+function saveOrg(e){
+  e.preventDefault();
+  const ligne=document.getElementById('orgLigne').value;
+  const texte=document.getElementById('orgTexte').value.trim();
+  org.push({date: nowStr(), ligne, texte});
+  localStorage.setItem('org',JSON.stringify(org));
+  e.target.reset(); renderOrg();
+}
+window.saveOrg=saveOrg;
+
+function renderOrg(){
+  const wrap=document.getElementById('histOrg');
+  if(!org.length){wrap.innerHTML='<p>Aucune consigne</p>'; return;}
+  wrap.innerHTML=org.map(o=>`<div class="hist-row"><span>${o.date} — ${o.ligne}</span><span>${o.texte}</span></div>`).join('');
+}
+renderOrg();
+
+/********* Personnel *********/
+function savePers(e){
+  e.preventDefault();
+  const nom=document.getElementById('persNom').value.trim();
+  const motif=document.getElementById('persMotif').value;
+  const com=document.getElementById('persCom').value.trim();
+  pers.push({date: nowStr(), nom, motif, com});
+  localStorage.setItem('pers',JSON.stringify(pers));
+  e.target.reset(); renderPers();
+}
+window.savePers=savePers;
+
+function renderPers(){
+  const wrap=document.getElementById('histPers');
+  if(!pers.length){wrap.innerHTML='<p>Aucun enregistrement</p>'; return;}
+  wrap.innerHTML=pers.map(p=>`<div class="hist-row"><span>${p.date} — ${p.nom} (${p.motif})</span><span>${p.com||''}</span></div>`).join('');
+}
+renderPers();
+
+/********* Export Excel (tout-en-un) *********/
+function exportAll(){
+  const wb=XLSX.utils.book_new();
+  const rows=[];
+  // production
+  LIGNES.forEach(l=>{
+    (prod[l]||[]).forEach(r=>rows.push({Type:'Production',Ligne:l,Date:r.date,Debut:r.debut,Fin:r.fin,Quantite:r.qte,Restant:r.reste,Cadence:r.cadence}));
   });
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Quantité par ligne",
-        data: valeurs,
-        backgroundColor: "#007ac3"
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
+  // arrêts
+  arrets.forEach(a=>rows.push({Type:'Arrêt',Ligne:a.ligne,Date:a.date,Heure:a.heure,Durée_min:a.duree,Cause:a.cause}));
+  // org
+  org.forEach(o=>rows.push({Type:'Organisation',Date:o.date,Ligne:o.ligne,Consigne:o.texte}));
+  // personnel
+  pers.forEach(p=>rows.push({Type:'Personnel',Date:p.date,Nom:p.nom,Motif:p.motif,Commentaire:p.com}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  // largeur colonnes
+  ws['!cols']=[{wch:12},{wch:12},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,ws,'Synthèse Atelier');
+  const d=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`Synthese_Atelier_${d}.xlsx`);
+}
+window.exportAll=exportAll;
+
+/********* Calculatrice *********/
+(function initCalc(){
+  const keys=["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+","C"];
+  const zone=document.getElementById('calcKeys');
+  zone.innerHTML=keys.map(k=>`<button type="button">${k}</button>`).join('');
+  zone.addEventListener('click',e=>{
+    if(e.target.tagName!=='BUTTON')return;
+    const v=e.target.textContent;
+    const screen=document.getElementById('calcScreen');
+    if(v==='C'){screen.value=''; buf=''; return;}
+    if(v==='='){ try{ screen.value=eval(buf||'0') }catch{ screen.value='Err' } buf=screen.value; return; }
+    buf+=v; screen.value=buf;
   });
-}
+})();
+let buf='';
+function toggleCalc(){ document.getElementById('calculator').classList.toggle('hidden'); }
+window.toggleCalc=toggleCalc;
 
-/* === ARRÊTS === */
-function ajouterArret(e) {
-  e.preventDefault();
-  const ligne = document.getElementById("ligneArret").value;
-  const duree = parseFloat(document.getElementById("dureeArret").value);
-  const comment = document.getElementById("commentArret").value;
-  arretsData.push({ date: new Date().toLocaleString("fr-FR"), ligne, duree, comment });
-  localStorage.setItem("arretsData", JSON.stringify(arretsData));
-  afficherArrets();
-  e.target.reset();
-}
-function afficherArrets() {
-  const div = document.getElementById("tableArrets");
-  let html = "<table><tr><th>Date</th><th>Ligne</th><th>Durée (min)</th><th>Commentaire</th></tr>";
-  arretsData.forEach(a => html += `<tr><td>${a.date}</td><td>${a.ligne}</td><td>${a.duree}</td><td>${a.comment}</td></tr>`);
-  html += "</table>";
-  div.innerHTML = html;
-}
-afficherArrets();
-
-/* === ORGANISATION === */
-function ajouterOrganisation(e) {
-  e.preventDefault();
-  const note = document.getElementById("noteOrganisation").value;
-  organisationData.push({ date: new Date().toLocaleString("fr-FR"), note });
-  localStorage.setItem("organisationData", JSON.stringify(organisationData));
-  afficherOrganisation();
-  e.target.reset();
-}
-function afficherOrganisation() {
-  const div = document.getElementById("historiqueOrganisation");
-  div.innerHTML = organisationData.map(o => `<p><strong>${o.date}</strong> — ${o.note}</p>`).join("");
-}
-afficherOrganisation();
-
-/* === PERSONNEL === */
-function ajouterPersonnel(e) {
-  e.preventDefault();
-  const nom = document.getElementById("nomPersonnel").value;
-  const motif = document.getElementById("motifPersonnel").value;
-  const com = document.getElementById("commentPersonnel").value;
-  personnelData.push({ date: new Date().toLocaleString("fr-FR"), nom, motif, com });
-  localStorage.setItem("personnelData", JSON.stringify(personnelData));
-  afficherPersonnel();
-  e.target.reset();
-}
-function afficherPersonnel() {
-  const div = document.getElementById("historiquePersonnel");
-  div.innerHTML = personnelData.map(p => `<p><strong>${p.date}</strong> — ${p.nom} (${p.motif}) : ${p.com}</p>`).join("");
-}
-afficherPersonnel();
-
-/* === EXPORT EXCEL GLOBAL === */
-function exportAllData() {
-  const wb = XLSX.utils.book_new();
-  const rows = [];
-  lignes.forEach(l => (productionData[l] || []).forEach(d => rows.push({ Type:"Production", Ligne:l, ...d })));
-  arretsData.forEach(a => rows.push({ Type:"Arrêt", Ligne:a.ligne, Date:a.date, Duree:a.duree, Commentaire:a.comment }));
-  organisationData.forEach(o => rows.push({ Type:"Organisation", Date:o.date, Note:o.note }));
-  personnelData.forEach(p => rows.push({ Type:"Personnel", Date:p.date, Nom:p.nom, Motif:p.motif, Commentaire:p.com }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
-  XLSX.writeFile(wb, `Synthese_Lactalis_${new Date().toLocaleDateString("fr-FR")}.xlsx`);
-}
-
-/* === CALCULATRICE === */
-const calcBtns = ["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"];
-const calcContainer = document.querySelector(".calc-btns");
-calcBtns.forEach(b => {
-  const btn = document.createElement("button");
-  btn.textContent = b;
-  btn.onclick = () => handleCalc(b);
-  calcContainer.appendChild(btn);
-});
-let calcBuffer = "";
-function handleCalc(val) {
-  const display = document.getElementById("calcDisplay");
-  if (val === "=") {
-    try { calcBuffer = eval(calcBuffer).toString(); } catch { calcBuffer = "Erreur"; }
-  } else calcBuffer += val;
-  display.value = calcBuffer;
-}
-function toggleCalc() {
-  document.getElementById("calcPanel").classList.toggle("hidden");
-}
-
-/* === FIN === */
+/********* Init graphiques par ligne (si données) *********/
+LIGNES.forEach(l=>renderLineChart(l));
