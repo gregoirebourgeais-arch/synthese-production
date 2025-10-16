@@ -386,6 +386,24 @@ setInterval(() => {
   majListeArrets();
 }, 10000);
 
+// === GESTION DE LA NAVIGATION ===
+function showSection(sectionId) {
+  // Masquer toutes les sections
+  document.querySelectorAll(".page-section").forEach(sec => sec.classList.add("hidden"));
+
+  // Afficher uniquement celle demandée
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove("hidden");
+    target.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Fermer les menus latéraux si ouverts (mobile friendly)
+  const sideMenu = document.querySelector(".side-menu");
+  if (sideMenu) sideMenu.classList.remove("open");
+}
+
 // === EXPORT GLOBAL EXCEL (TOUT EN UN ONGLET) ===
 document.getElementById("exportExcelGlobal").addEventListener("click", exportGlobalExcel);
 
