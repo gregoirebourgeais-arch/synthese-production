@@ -1,221 +1,151 @@
-/* =====================================================
-   STYLE GLOBAL - LACTALIS APP vFinal
-   ===================================================== */
-:root {
-  --bleu-lactalis: #007bff;
-  --bleu-clair: #3fa9ff;
-  --bleu-fond: #f5f8ff;
-  --bleu-texte: #002b6d;
-  --blanc: #ffffff;
-}
-
-/* ----------- BASE ----------- */
 body {
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  margin: 0;
-  background: var(--bleu-fond);
-  color: var(--bleu-texte);
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f8ff;
+  margin: 0; padding: 0;
+  color: #0a3478;
   text-align: center;
 }
 
 header {
-  background: linear-gradient(90deg, var(--bleu-lactalis), var(--bleu-clair));
+  background: linear-gradient(135deg, #007bff, #3aa0ff);
   color: white;
-  padding: 12px 10px 18px;
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px 0 20px 0;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.logo {
-  width: 70px;
-  display: block;
-  margin: 0 auto 6px auto;
-}
+.logo { width: 70px; }
 
-h1 {
-  margin: 5px 0;
-  font-size: 1.6em;
-  font-weight: 700;
-}
-
-/* ----------- NAVBAR ----------- */
 .navbar {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;
-  margin: 12px 8px;
+  gap: 8px;
+  background: #eef4ff;
+  padding: 10px;
 }
 
 .navbar button {
+  border: none;
   background: white;
-  border: 2px solid var(--bleu-lactalis);
-  color: var(--bleu-lactalis);
-  font-weight: 600;
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: 0.2s;
+  color: #0a3478;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 8px 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.navbar button:hover,
-.navbar button.active {
-  background: var(--bleu-lactalis);
+.navbar button:hover {
+  background: #007bff;
   color: white;
+  cursor: pointer;
 }
 
-/* ----------- SECTIONS ----------- */
-.section {
-  display: none;
-  padding: 12px;
-}
+.page { display: none; padding: 15px; }
+.page.active { display: block; }
 
-.section.active {
-  display: block;
-}
-
-/* ----------- BOUTONS LIGNES ----------- */
-.ligne-buttons {
+.lignes-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  margin: 10px 0 20px 0;
+  margin-bottom: 10px;
 }
 
-.btn-ligne {
-  background: linear-gradient(135deg, var(--bleu-lactalis), var(--bleu-clair));
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
-  padding: 10px 18px;
-  min-width: 90px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.btn-ligne:hover {
-  background: linear-gradient(135deg, #005ecb, #1e90ff);
-  transform: translateY(-2px);
-}
-
-.btn-ligne.active {
-  background: linear-gradient(135deg, #004aad, #007bff);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-/* ----------- FORMULAIRES ----------- */
-.card {
-  background: var(--blanc);
-  border-radius: 16px;
-  padding: 15px;
-  width: 90%;
-  max-width: 420px;
-  margin: 0 auto 20px auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: left;
-}
-
-.card label {
-  display: block;
-  margin-top: 8px;
-  font-weight: 600;
-  color: var(--bleu-texte);
-}
-
-.card input,
-.card select,
-.card textarea {
-  width: 100%;
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1em;
-  margin-top: 3px;
-  box-sizing: border-box;
-}
-
-.btns {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-}
-
-.btns button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 10px;
-  font-weight: 600;
+.lignes-container button {
+  background: #007bff;
+  color: white;
   border: none;
   border-radius: 10px;
-  color: white;
-  background: linear-gradient(90deg, var(--bleu-lactalis), var(--bleu-clair));
-  cursor: pointer;
+  padding: 8px 15px;
+  font-weight: bold;
   transition: 0.2s;
 }
 
-.btns button:hover {
-  transform: scale(1.03);
+.lignes-container button:hover {
+  transform: scale(1.05);
+  background: #005fc4;
 }
 
-/* ----------- HISTORIQUE ----------- */
-#historiqueProduction,
-#listeArrets,
-#listePersonnel,
-#listeOrganisation {
-  background: #fff;
+input, select, textarea {
+  width: 90%;
+  max-width: 380px;
+  margin: 5px auto;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  display: block;
+}
+
+button.enregistrer, button.reset {
+  border: none;
+  border-radius: 12px;
+  color: white;
+  padding: 10px 18px;
+  margin: 8px;
+  font-weight: bold;
+}
+
+button.enregistrer { background: #007bff; }
+button.reset { background: #ff9500; }
+
+button.enregistrer:hover, button.reset:hover { opacity: 0.85; cursor: pointer; }
+
+#historique div, #historiqueArrets div, #historiquePersonnel div, #historiqueOrganisation div {
+  background: white;
+  border-radius: 10px;
+  margin: 5px auto;
+  padding: 8px;
   width: 90%;
   max-width: 420px;
-  margin: auto;
-  border-radius: 12px;
-  padding: 10px;
-  text-align: left;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  font-size: 14px;
 }
 
-.hrow {
-  border-bottom: 1px solid #eee;
-  padding: 6px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.calculatrice {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
 }
 
-.hrow:last-child {
+.calculatrice button {
   border: none;
+  border-radius: 50%;
+  width: 55px; height: 55px;
+  background: #007bff;
+  color: white; font-size: 20px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
-.hrow button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: red;
-  font-size: 1.2em;
-}
-
-.empty {
-  color: #777;
-  font-style: italic;
-}
-
-/* ----------- GRAPHIQUE ----------- */
-canvas {
+.calc-content {
+  display: none;
   background: white;
   border-radius: 15px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  width: 90%;
-  max-width: 450px;
-  margin: 15px auto;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin-top: 10px;
+}
+
+.calc-content.active { display: block; }
+
+.calc-content input {
+  width: 100%;
+  margin-bottom: 5px;
+  text-align: right;
+  font-size: 18px;
+  border: none;
+  background: #eef4ff;
+  border-radius: 8px;
   padding: 5px;
 }
 
-/* ----------- RESPONSIVE ----------- */
-@media (max-width: 600px) {
-  h1 { font-size: 1.3em; }
-  .card { padding: 12px; }
-  .btns button { font-size: 0.9em; }
-  .navbar button { font-size: 0.85em; }
+.keys button {
+  width: 22%;
+  margin: 2%;
+  border-radius: 8px;
+  padding: 8px;
 }
+
+.keys .clear { background: #ff4d4d; color: white; }
+.keys .close { background: #444; color: white; }
