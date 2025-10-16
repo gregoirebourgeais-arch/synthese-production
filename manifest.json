@@ -1,9 +1,10 @@
 {
   "name": "Synthèse Atelier Lactalis",
   "short_name": "Synthèse",
-  "description": "Application de suivi de production Lactalis (cadence, arrêts, personnel, organisation, export Excel, graphiques).",
+  "description": "Application de suivi de production Lactalis : cadence, arrêts, personnel, organisation et export Excel.",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f5f8fc",
   "theme_color": "#007bff",
   "icons": [
