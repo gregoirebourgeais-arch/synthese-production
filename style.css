@@ -188,12 +188,9 @@ button.enregistrer:hover, button.reset:hover { opacity: 0.85; cursor: pointer; }
 }
 
 /* ===== PAGE ATELIER ===== */
-.page-section {
-  display: none;
-}
-.page-section.active {
-  display: block;
-}
+.page-section { display: none; }
+.page-section.active { display: block; }
+.hidden { display: none !important; }
 
 .card {
   background: white;
