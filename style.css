@@ -1,296 +1,234 @@
-/******************************************************
- * STYLE LACTALIS — VERSION MARBRE+ FINALE
- * Bleu Lactalis clair, responsive, fluide, cartes arrondies
- ******************************************************/
-
-:root {
-  --bleu-lactalis: #007bff;
-  --bleu-clair: #d8e9ff;
-  --fond: #f4f8fc;
-  --texte: #222;
-  --blanc: #fff;
-  --vert-valid: #28a745;
-  --rouge-stop: #dc3545;
-}
-
-/* --- Structure globale --- */
+/* ---- Style général ---- */
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: var(--fond);
-  color: var(--texte);
-  overflow-x: hidden;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f4f8fb;
+  color: #1d3557;
 }
 
-/* --- En-tête --- */
-.app-header {
+/* ---- En-tête ---- */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #007ac3;
+  color: white;
+  padding: 10px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+header .logo {
+  height: 45px;
+  margin-right: 10px;
+}
+
+header h1 {
+  flex: 1;
   text-align: center;
-  padding: 15px 10px;
-  background: var(--bleu-lactalis);
-  color: var(--blanc);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 0;
-  z-index: 15;
+  font-size: 1.5em;
+  font-weight: 600;
 }
 
-.app-header h1 {
-  font-size: 1.4em;
-  margin: 0;
-}
-
-#datetime {
+#horloge {
   font-size: 0.9em;
-  opacity: 0.9;
 }
 
-/* --- Navigation principale --- */
-nav.menu {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: var(--bleu-lactalis);
+/* ---- Menu ---- */
+nav {
   display: flex;
   justify-content: space-around;
-  flex-wrap: wrap;
-  z-index: 20;
-  border-top: 3px solid #004a99;
+  background-color: #e3f2fd;
+  border-bottom: 2px solid #007ac3;
+  padding: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-nav.menu button {
-  flex: 1;
-  padding: 10px 5px;
-  font-size: 0.9em;
-  color: var(--blanc);
-  background: transparent;
+nav button {
+  background: #007ac3;
   border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
-nav.menu button:hover {
-  background: rgba(255,255,255,0.2);
+nav button:hover {
+  background: #005b94;
+  transform: scale(1.05);
 }
 
-/* --- Sections --- */
+/* ---- Pages ---- */
 .page-section {
   display: none;
-  padding: 80px 20px 100px;
-  animation: fadeIn 0.4s ease-in-out;
+  padding: 20px;
 }
 
 .page-section.active {
   display: block;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ---- Lignes de production ---- */
+.ligne-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-/* --- Cartes --- */
+.ligne-buttons button {
+  background: #0091ea;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.ligne-buttons button:hover {
+  background: #007ac3;
+  transform: scale(1.07);
+}
+
 .card {
-  background: var(--blanc);
-  border-radius: 15px;
+  background: white;
+  border-radius: 16px;
   padding: 15px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-  margin-bottom: 25px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.card h3 {
-  color: var(--bleu-lactalis);
-  margin-top: 0;
-}
-
-/* --- Titres --- */
-h2, h3 {
-  text-align: center;
-  color: var(--bleu-lactalis);
-}
-
-/* --- Formulaires --- */
+/* ---- Formulaires ---- */
 form {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: var(--blanc);
-  border-radius: 15px;
+  background: white;
   padding: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
-}
-
-label {
-  font-weight: 600;
-  color: #333;
-}
-
-input, select, textarea, button {
-  font-size: 1em;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  outline: none;
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: var(--bleu-lactalis);
-  box-shadow: 0 0 5px rgba(0,123,255,0.3);
-}
-
-/* --- Boutons --- */
-button {
-  background: var(--bleu-lactalis);
-  color: var(--blanc);
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.1s;
-}
-
-button:hover {
-  background: #0056b3;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-/* --- Bouton Export Excel --- */
-.export-btn {
-  display: block;
-  margin: 20px auto;
-  background: var(--vert-valid);
-  color: var(--blanc);
-  padding: 10px 25px;
-  font-size: 1em;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.export-btn:hover {
-  background: #218838;
-}
-
-/* --- Historique --- */
-.hist-item {
-  background: var(--bleu-clair);
-  border-radius: 10px;
-  padding: 8px 10px;
-  margin: 6px 0;
-  font-size: 0.9em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.hist-item b {
-  color: var(--bleu-lactalis);
-}
-
-.hist-item button {
-  background: var(--rouge-stop);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 2px 8px;
-  font-size: 0.8em;
-}
-
-/* --- Calculatrice flottante --- */
-#openCalc {
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  background: var(--bleu-lactalis);
-  color: var(--blanc);
-  border: none;
-  font-size: 1.3em;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-  cursor: pointer;
-  z-index: 25;
-}
-
-#calculator {
-  position: fixed;
-  bottom: 160px;
-  right: 20px;
-  width: 250px;
-  background: var(--blanc);
   border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  padding: 10px;
-  display: none;
-  z-index: 30;
-}
-
-#calculator.show {
-  display: block;
-}
-
-#calcScreen {
-  width: 100%;
-  height: 40px;
-  text-align: right;
-  font-size: 1.2em;
-  margin-bottom: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding-right: 5px;
-}
-
-#calcKeys {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-#calcKeys button {
-  padding: 10px 0;
-  background: var(--bleu-clair);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-#calcKeys button:hover {
-  background: var(--bleu-lactalis);
-  color: var(--blanc);
-}
-
-/* --- Graphique Atelier --- */
-#atelierChart {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 25px;
-  background: var(--blanc);
-  border-radius: 15px;
-  padding: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* --- Responsive --- */
-@media (max-width: 700px) {
-  nav.menu {
-    flex-wrap: wrap;
-  }
+form label {
+  font-weight: 600;
+}
 
-  nav.menu button {
-    font-size: 0.8em;
-    padding: 8px 3px;
-  }
+input, select, textarea {
+  border: 1px solid #b0bec5;
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 1em;
+}
 
-  #calculator {
-    width: 90%;
-    right: 5%;
-  }
-  }
+button {
+  background: #007ac3;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #005b94;
+}
+
+/* ---- Tableaux ---- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+
+th {
+  background: #007ac3;
+  color: white;
+}
+
+/* ---- Graphiques ---- */
+canvas {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  margin-top: 10px;
+  max-width: 100%;
+}
+
+/* ---- Calculatrice flottante ---- */
+#calcPanel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #007ac3;
+  color: white;
+  border-radius: 15px;
+  padding: 10px;
+  width: 240px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 10000;
+}
+
+#calcPanel input {
+  width: 100%;
+  text-align: right;
+  font-size: 1.4em;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: none;
+  padding: 5px;
+}
+
+.calc-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.calc-btns button {
+  background: #e3f2fd;
+  color: #007ac3;
+  font-size: 1.2em;
+  border-radius: 10px;
+}
+
+.calc-btns button:hover {
+  background: #b3e5fc;
+}
+
+/* ---- Footer ---- */
+footer {
+  text-align: center;
+  font-size: 0.85em;
+  padding: 10px;
+  color: #607d8b;
+  background: #e3f2fd;
+  margin-top: 20px;
+}
+
+/* ---- Divers ---- */
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  header h1 { font-size: 1.2em; }
+  nav button { padding: 8px 12px; font-size: 0.9em; }
+  .card { padding: 10px; }
+}
