@@ -2,17 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Synthèse Atelier Lactalis</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Chart.js + XLSX -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-
 <body>
   <header>
-    <img src="icons/icon-192.png" class="logo" alt="Lactalis" />
     <h1>Synthèse Atelier Lactalis</h1>
     <div id="horloge"></div>
   </header>
@@ -20,95 +18,333 @@
   <nav id="menu">
     <button onclick="showPage('atelier')">🏭 Atelier</button>
     <button onclick="showPage('production')">📦 Production</button>
-    <button onclick="showPage('arrets')">⏱️ Arrêts</button>
+    <button onclick="showPage('arrets')">⏱ Arrêts</button>
     <button onclick="showPage('organisation')">📝 Organisation</button>
     <button onclick="showPage('personnel')">👥 Personnel</button>
   </nav>
 
   <main>
-    <!-- === Page Atelier === -->
+    <!-- ===== ATELIER ===== -->
     <section id="atelier" class="page-section active">
-      <h2>Vue d'ensemble</h2>
-      <canvas id="graphAtelier" height="120"></canvas>
-      <div id="resumeAtelier"></div>
-      <button onclick="exportAllData()">📊 Export Excel Global</button>
+      <h2>Vue Atelier</h2>
+      <canvas id="chartQuantites" height="140"></canvas>
+      <div class="card">
+        <h3>Arrêts (classement par durée)</h3>
+        <div id="atelierArrets"></div>
+      </div>
+      <button class="export-btn" onclick="exportAll()">📊 Export Excel global</button>
     </section>
 
-    <!-- === Page Production === -->
+    <!-- ===== PRODUCTION ===== -->
     <section id="production" class="page-section">
-      <h2>Suivi Production</h2>
-      <div class="lignes">
-        <div class="ligne-buttons">
-          <button onclick="showLigne('Râpé')">Râpé</button>
-          <button onclick="showLigne('T2')">T2</button>
-          <button onclick="showLigne('RT')">RT</button>
-          <button onclick="showLigne('T1')">T1</button>
-          <button onclick="showLigne('OMORI')">OMORI</button>
-          <button onclick="showLigne('Sticks')">Sticks</button>
-          <button onclick="showLigne('Emballage')">Emballage</button>
-          <button onclick="showLigne('Dés')">Dés</button>
-          <button onclick="showLigne('Filets')">Filets</button>
-          <button onclick="showLigne('Prédécoupés')">Prédécoupés</button>
-        </div>
-        <div id="ligneContainer"></div>
+      <h2>Production par ligne</h2>
+      <div class="ligne-buttons">
+        <button onclick="showLine('Râpé')">Râpé</button>
+        <button onclick="showLine('T2')">T2</button>
+        <button onclick="showLine('RT')">RT</button>
+        <button onclick="showLine('OMORI')">OMORI</button>
+        <button onclick="showLine('T1')">T1</button>
+        <button onclick="showLine('Sticks')">Sticks</button>
+        <button onclick="showLine('Emballage')">Emballage</button>
+        <button onclick="showLine('Dés')">Dés</button>
+        <button onclick="showLine('Filets')">Filets</button>
+        <button onclick="showLine('Prédécoupé')">Prédécoupé</button>
+      </div>
+
+      <!-- 10 FORMULAIRES (un par ligne) -->
+      <div id="Lignes">
+
+        <!-- === Râpé === -->
+        <section id="line-Râpé" class="line-card hidden">
+          <h3>Râpé</h3>
+          <form onsubmit="saveProd(event,'Râpé')">
+            <label>Heure début</label><input type="time" id="debut-Râpé" required>
+            <label>Heure fin</label><input type="time" id="fin-Râpé" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Râpé" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Râpé" placeholder="colis" oninput="liveEstimate('Râpé')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Râpé" placeholder="optionnel">
+
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Râpé">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Râpé">—</b></p>
+            </div>
+
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Râpé')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <h4>Historique</h4>
+            <div id="hist-Râpé"></div>
+          </div>
+          <canvas id="graph-Râpé" height="120"></canvas>
+        </section>
+
+        <!-- === T2 === -->
+        <section id="line-T2" class="line-card hidden">
+          <h3>T2</h3>
+          <form onsubmit="saveProd(event,'T2')">
+            <label>Heure début</label><input type="time" id="debut-T2" required>
+            <label>Heure fin</label><input type="time" id="fin-T2" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-T2" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-T2" placeholder="colis" oninput="liveEstimate('T2')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-T2" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-T2">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-T2">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('T2')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-T2"></div></div>
+          <canvas id="graph-T2" height="120"></canvas>
+        </section>
+
+        <!-- === RT === -->
+        <section id="line-RT" class="line-card hidden">
+          <h3>RT</h3>
+          <form onsubmit="saveProd(event,'RT')">
+            <label>Heure début</label><input type="time" id="debut-RT" required>
+            <label>Heure fin</label><input type="time" id="fin-RT" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-RT" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-RT" placeholder="colis" oninput="liveEstimate('RT')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-RT" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-RT">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-RT">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('RT')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-RT"></div></div>
+          <canvas id="graph-RT" height="120"></canvas>
+        </section>
+
+        <!-- === OMORI === -->
+        <section id="line-OMORI" class="line-card hidden">
+          <h3>OMORI</h3>
+          <form onsubmit="saveProd(event,'OMORI')">
+            <label>Heure début</label><input type="time" id="debut-OMORI" required>
+            <label>Heure fin</label><input type="time" id="fin-OMORI" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-OMORI" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-OMORI" placeholder="colis" oninput="liveEstimate('OMORI')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-OMORI" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-OMORI">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-OMORI">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('OMORI')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-OMORI"></div></div>
+          <canvas id="graph-OMORI" height="120"></canvas>
+        </section>
+
+        <!-- === T1 === -->
+        <section id="line-T1" class="line-card hidden">
+          <h3>T1</h3>
+          <form onsubmit="saveProd(event,'T1')">
+            <label>Heure début</label><input type="time" id="debut-T1" required>
+            <label>Heure fin</label><input type="time" id="fin-T1" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-T1" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-T1" placeholder="colis" oninput="liveEstimate('T1')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-T1" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-T1">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-T1">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('T1')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-T1"></div></div>
+          <canvas id="graph-T1" height="120"></canvas>
+        </section>
+
+        <!-- === Sticks === -->
+        <section id="line-Sticks" class="line-card hidden">
+          <h3>Sticks</h3>
+          <form onsubmit="saveProd(event,'Sticks')">
+            <label>Heure début</label><input type="time" id="debut-Sticks" required>
+            <label>Heure fin</label><input type="time" id="fin-Sticks" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Sticks" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Sticks" placeholder="colis" oninput="liveEstimate('Sticks')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Sticks" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Sticks">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Sticks">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Sticks')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-Sticks"></div></div>
+          <canvas id="graph-Sticks" height="120"></canvas>
+        </section>
+
+        <!-- === Emballage === -->
+        <section id="line-Emballage" class="line-card hidden">
+          <h3>Emballage</h3>
+          <form onsubmit="saveProd(event,'Emballage')">
+            <label>Heure début</label><input type="time" id="debut-Emballage" required>
+            <label>Heure fin</label><input type="time" id="fin-Emballage" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Emballage" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Emballage" placeholder="colis" oninput="liveEstimate('Emballage')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Emballage" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Emballage">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Emballage">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Emballage')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-Emballage"></div></div>
+          <canvas id="graph-Emballage" height="120"></canvas>
+        </section>
+
+        <!-- === Dés === -->
+        <section id="line-Dés" class="line-card hidden">
+          <h3>Dés</h3>
+          <form onsubmit="saveProd(event,'Dés')">
+            <label>Heure début</label><input type="time" id="debut-Dés" required>
+            <label>Heure fin</label><input type="time" id="fin-Dés" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Dés" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Dés" placeholder="colis" oninput="liveEstimate('Dés')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Dés" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Dés">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Dés">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Dés')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-Dés"></div></div>
+          <canvas id="graph-Dés" height="120"></canvas>
+        </section>
+
+        <!-- === Filets === -->
+        <section id="line-Filets" class="line-card hidden">
+          <h3>Filets</h3>
+          <form onsubmit="saveProd(event,'Filets')">
+            <label>Heure début</label><input type="time" id="debut-Filets" required>
+            <label>Heure fin</label><input type="time" id="fin-Filets" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Filets" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Filets" placeholder="colis" oninput="liveEstimate('Filets')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Filets" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Filets">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Filets">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Filets')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-Filets"></div></div>
+          <canvas id="graph-Filets" height="120"></canvas>
+        </section>
+
+        <!-- === Prédécoupé === -->
+        <section id="line-Prédécoupé" class="line-card hidden">
+          <h3>Prédécoupé</h3>
+          <form onsubmit="saveProd(event,'Prédécoupé')">
+            <label>Heure début</label><input type="time" id="debut-Prédécoupé" required>
+            <label>Heure fin</label><input type="time" id="fin-Prédécoupé" required>
+            <label>Quantité réalisée</label><input type="number" id="qte-Prédécoupé" placeholder="colis">
+            <label>Quantité restante</label><input type="number" id="reste-Prédécoupé" placeholder="colis" oninput="liveEstimate('Prédécoupé')">
+            <label>Cadence manuelle (colis/h)</label><input type="number" id="cadenceManuelle-Prédécoupé" placeholder="optionnel">
+            <div class="stats">
+              <p>Cadence calculée : <b id="cad-Prédécoupé">0</b> c/h</p>
+              <p>Fin estimée : <b id="finEst-Prédécoupé">—</b></p>
+            </div>
+            <div class="row">
+              <button type="submit">💾 Enregistrer</button>
+              <button type="button" onclick="resetLine('Prédécoupé')">🔄 Remise à zéro</button>
+            </div>
+          </form>
+          <div class="card"><h4>Historique</h4><div id="hist-Prédécoupé"></div></div>
+          <canvas id="graph-Prédécoupé" height="120"></canvas>
+        </section>
+
       </div>
     </section>
 
-    <!-- === Page Arrêts === -->
+    <!-- ===== ARRETS ===== -->
     <section id="arrets" class="page-section">
-      <h2>Arrêts de ligne</h2>
-      <form id="formArret" onsubmit="ajouterArret(event)">
-        <label>Ligne :</label>
-        <select id="ligneArret">
-          <option>Râpé</option><option>T2</option><option>RT</option><option>T1</option>
-          <option>OMORI</option><option>Sticks</option><option>Emballage</option>
-          <option>Dés</option><option>Filets</option><option>Prédécoupés</option>
+      <h2>Arrêts</h2>
+      <form id="formArret" onsubmit="saveArret(event)">
+        <label>Ligne</label>
+        <select id="arretLigne" required>
+          <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+          <option>T1</option><option>Sticks</option><option>Emballage</option>
+          <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
         </select>
-        <label>Durée (min):</label>
-        <input type="number" id="dureeArret" required />
-        <label>Commentaire :</label>
-        <textarea id="commentArret"></textarea>
+        <label>Durée (min)</label><input type="number" id="arretDuree" required>
+        <label>Cause</label><textarea id="arretCause" required></textarea>
         <button type="submit">💾 Enregistrer</button>
       </form>
-      <div id="tableArrets"></div>
+      <div class="card">
+        <h3>Historique des arrêts</h3>
+        <div id="histArrets"></div>
+      </div>
     </section>
 
-    <!-- === Page Organisation === -->
+    <!-- ===== ORGANISATION ===== -->
     <section id="organisation" class="page-section">
-      <h2>Organisation / Consignes</h2>
-      <form id="formOrganisation" onsubmit="ajouterOrganisation(event)">
-        <textarea id="noteOrganisation" placeholder="Consigne à noter..." required></textarea>
+      <h2>Organisation</h2>
+      <form id="formOrg" onsubmit="saveOrg(event)">
+        <label>Ligne concernée</label>
+        <select id="orgLigne">
+          <option>Atelier</option>
+          <option>Râpé</option><option>T2</option><option>RT</option><option>OMORI</option>
+          <option>T1</option><option>Sticks</option><option>Emballage</option>
+          <option>Dés</option><option>Filets</option><option>Prédécoupé</option>
+        </select>
+        <label>Consigne</label><textarea id="orgTexte" required></textarea>
         <button type="submit">💾 Enregistrer</button>
       </form>
-      <div id="historiqueOrganisation"></div>
+      <div class="card"><h3>Historique</h3><div id="histOrg"></div></div>
     </section>
 
-    <!-- === Page Personnel === -->
+    <!-- ===== PERSONNEL ===== -->
     <section id="personnel" class="page-section">
-      <h2>Suivi Personnel</h2>
-      <form id="formPersonnel" onsubmit="ajouterPersonnel(event)">
-        <label>Nom :</label><input id="nomPersonnel" required />
-        <label>Motif :</label>
-        <select id="motifPersonnel">
+      <h2>Personnel</h2>
+      <form id="formPers" onsubmit="savePers(event)">
+        <label>Nom</label><input id="persNom" required>
+        <label>Motif</label>
+        <select id="persMotif">
           <option>Absence</option><option>Retard</option><option>Départ</option><option>Autre</option>
         </select>
-        <label>Commentaire :</label><textarea id="commentPersonnel"></textarea>
+        <label>Commentaire</label><textarea id="persCom"></textarea>
         <button type="submit">💾 Enregistrer</button>
       </form>
-      <div id="historiquePersonnel"></div>
+      <div class="card"><h3>Historique</h3><div id="histPers"></div></div>
     </section>
   </main>
 
-  <div id="calcPanel" class="hidden">
-    <input id="calcDisplay" readonly />
-    <div class="calc-btns"></div>
-    <button onclick="toggleCalc()">Fermer</button>
+  <!-- Calculatrice flottante -->
+  <button id="openCalc" onclick="toggleCalc()">🧮</button>
+  <div id="calculator" class="hidden">
+    <input type="text" id="calcScreen" readonly />
+    <div id="calcKeys"></div>
+    <button class="closeCalc" onclick="toggleCalc()">Fermer</button>
   </div>
 
   <footer><p>Synthèse Atelier Lactalis © 2025</p></footer>
   <script src="app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
-  </script>
 </body>
 </html>
