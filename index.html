@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -72,12 +73,75 @@
 
     <h3>Historique production</h3>
     <div id="historiqueProduction"></div>
+
+    <h3>Graphique des quantités réalisées</h3>
+    <canvas id="graphQuantites"></canvas>
   </section>
 
-  <!-- 🔹 Autres sections -->
-  <section id="arrets" class="section"><h2>Arrêts</h2><p>Prochainement…</p></section>
-  <section id="personnel" class="section"><h2>Personnel</h2><p>Prochainement…</p></section>
-  <section id="organisation" class="section"><h2>Organisation</h2><p>Prochainement…</p></section>
+  <!-- 🔹 Section ARRETS -->
+  <section id="arrets" class="section">
+    <h2>Arrêts de ligne</h2>
+    <label>Ligne concernée :</label>
+    <select id="ligneArret">
+      <option value="">—</option>
+      <option value="Râpé">Râpé</option>
+      <option value="T2">T2</option>
+      <option value="RT">RT</option>
+      <option value="OMORI">OMORI</option>
+      <option value="T1">T1</option>
+      <option value="Sticks">Sticks</option>
+      <option value="Emballage">Emballage</option>
+      <option value="Dés">Dés</option>
+      <option value="Filets">Filets</option>
+      <option value="Prédécoupé">Prédécoupé</option>
+    </select>
+
+    <label>Durée (minutes) :</label>
+    <input type="number" id="dureeArret" min="1">
+
+    <label>Commentaire :</label>
+    <input type="text" id="commentArret">
+
+    <button onclick="ajouterArret()">➕ Ajouter</button>
+
+    <h3>Historique des arrêts</h3>
+    <div id="listeArrets"></div>
+  </section>
+
+  <!-- 🔹 Section PERSONNEL -->
+  <section id="personnel" class="section">
+    <h2>Suivi du personnel</h2>
+
+    <label>Nom :</label>
+    <input type="text" id="nomPersonnel">
+
+    <label>Motif :</label>
+    <select id="motifPersonnel">
+      <option value="">—</option>
+      <option value="Absence">Absence</option>
+      <option value="Retard">Retard</option>
+      <option value="Départ anticipé">Départ anticipé</option>
+      <option value="Autre">Autre</option>
+    </select>
+
+    <label>Commentaire :</label>
+    <input type="text" id="commentPersonnel">
+
+    <button onclick="ajouterPersonnel()">💾 Enregistrer</button>
+
+    <h3>Historique du personnel</h3>
+    <div id="listePersonnel"></div>
+  </section>
+
+  <!-- 🔹 Section ORGANISATION -->
+  <section id="organisation" class="section">
+    <h2>Consignes / Organisation</h2>
+    <textarea id="texteOrganisation" rows="4" placeholder="Saisir une consigne ou remarque..."></textarea>
+    <button onclick="ajouterOrganisation()">💾 Enregistrer</button>
+
+    <h3>Historique des consignes</h3>
+    <div id="listeOrganisation"></div>
+  </section>
 
   <script src="app.js"></script>
 </body>
