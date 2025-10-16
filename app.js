@@ -278,3 +278,38 @@ document.addEventListener("DOMContentLoaded", ()=>{
 /* Expose quelques helpers si besoin dans HTML inline */
 window.selectLigne = selectLigne;
 window.supprLigneHistorique = supprLigneHistorique;
+}
+
+/* ------------------ GESTION DES CLICS ROBUSTE (DÉLÉGATION) ------------------ */
+document.addEventListener("click", (ev) => {
+  // 1) Boutons de LIGNE
+  const bLigne = ev.target.closest("[data-line]");
+  if (bLigne) {
+    const nom = bLigne.getAttribute("data-line");
+    if (nom) {
+      selectLigne(nom);          // vient du JS précédent
+      // feedback visuel actif
+      document.querySelectorAll(".btn-ligne").forEach(btn => {
+        btn.classList.toggle("active", btn === bLigne);
+      });
+    }
+    return;
+  }
+
+  // 2) Bouton ENREGISTRER
+  if (ev.target.closest("#" + ids.btnSave)) {
+    enregistrerCourant();        // vient du JS précédent
+    return;
+  }
+
+  // 3) Bouton REMISE À ZÉRO
+  if (ev.target.closest("#" + ids.btnReset)) {
+    $(ids.qte).value = "";
+    $(ids.qteRest).value = "";
+    $(ids.cadMan).value = "";
+    $(ids.cadCalc).value = "";
+    $(ids.estim).value = "";
+    sauverBrouillon(ligneActive); // conserve le brouillon vide pour CETTE ligne
+    return;
+  }
+});
