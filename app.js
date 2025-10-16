@@ -386,18 +386,23 @@ setInterval(() => {
   majListeArrets();
 }, 10000);
 
-// === GESTION DE LA NAVIGATION ===
+// --- NAVIGATION ENTRE PAGES ---
 function showSection(sectionId) {
-  // Masquer toutes les sections
-  document.querySelectorAll(".page-section").forEach(sec => sec.classList.add("hidden"));
-
-  // Afficher uniquement celle demandée
+  // masquer toutes les pages
+  document.querySelectorAll(".page-section").forEach(sec => {
+    sec.classList.remove("active");
+    sec.classList.add("hidden");
+  });
+  // afficher la cible
   const target = document.getElementById(sectionId);
   if (target) {
     target.classList.remove("hidden");
     target.classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+}
+// ✅ rendre accessible aux onclick du HTML
+window.showSection = showSection;
 
   // Fermer les menus latéraux si ouverts (mobile friendly)
   const sideMenu = document.querySelector(".side-menu");
