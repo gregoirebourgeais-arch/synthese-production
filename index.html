@@ -5,117 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthèse Production Lactalis</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
   <header>
-    <img src="icons/icon-512.png" alt="Logo Lactalis" class="logo">
+    <img src="logo.png" alt="Logo Lactalis" class="logo">
     <h1>Synthèse Production Lactalis</h1>
-    <div id="dateHeure"></div>
-    <div id="equipeActuelle"></div>
+    <p id="horloge"></p>
+    <p id="equipeActuelle"></p>
   </header>
 
   <nav class="navbar">
     <button onclick="showSection('atelier')">🏭 Atelier</button>
-    <button onclick="showSection('arrets')">⏸️ Arrêts</button>
+    <button onclick="showSection('arrets')">⏸ Arrêts</button>
     <button onclick="showSection('personnel')">👥 Personnel</button>
-    <button onclick="showSection('organisation')">🗒️ Organisation</button>
+    <button onclick="showSection('organisation')">🗒 Organisation</button>
     <button onclick="exportGlobal()">📊 Export</button>
   </nav>
 
-  <main>
-    <!-- ----------------------- -->
-    <!-- Section ATELIER -->
-    <!-- ----------------------- -->
-    <section id="atelier" class="page-section active">
-      <h2>Atelier</h2>
+  <!-- 🔹 Section ATELIER -->
+  <section id="atelier" class="section active">
+    <h2>Atelier</h2>
 
-<div class="ligne-buttons">
-  <button class="btn-ligne" data-line="Râpé">Râpé</button>
-  <button class="btn-ligne" data-line="T2">T2</button>
-  <button class="btn-ligne" data-line="RT">RT</button>
-  <button class="btn-ligne" data-line="OMORI">OMORI</button>
-  <button class="btn-ligne" data-line="T1">T1</button>
-  <button class="btn-ligne" data-line="Sticks">Sticks</button>
-  <button class="btn-ligne" data-line="Emballage">Emballage</button>
-  <button class="btn-ligne" data-line="Dés">Dés</button>
-  <button class="btn-ligne" data-line="Filets">Filets</button>
-  <button class="btn-ligne" data-line="Prédécoupé">Prédécoupé</button>
-</div>
+    <div class="ligne-buttons">
+      <button class="btn-ligne" data-line="Râpé">Râpé</button>
+      <button class="btn-ligne" data-line="T2">T2</button>
+      <button class="btn-ligne" data-line="RT">RT</button>
+      <button class="btn-ligne" data-line="OMORI">OMORI</button>
+      <button class="btn-ligne" data-line="T1">T1</button>
+      <button class="btn-ligne" data-line="Sticks">Sticks</button>
+      <button class="btn-ligne" data-line="Emballage">Emballage</button>
+      <button class="btn-ligne" data-line="Dés">Dés</button>
+      <button class="btn-ligne" data-line="Filets">Filets</button>
+      <button class="btn-ligne" data-line="Prédécoupé">Prédécoupé</button>
+    </div>
 
-      <div id="zoneProduction" class="zone-production">
-        <h3 id="titreLigne">Ligne : —</h3>
-        <label>Heure début :</label>
-        <input type="time" id="heureDebut">
-        <label>Heure fin :</label>
-        <input type="time" id="heureFin">
-        <label>Quantité réalisée :</label>
-        <input type="number" id="quantiteRealisee">
-        <label>Quantité restante :</label>
-        <input type="number" id="quantiteRestante">
-        <label>Cadence manuelle :</label>
-        <input type="number" id="cadenceManuelle" step="0.1">
-        <label>Estimation de fin :</label>
-        <input type="text" id="estimationFin" readonly>
+    <div class="card">
+      <h3>Ligne : <span id="titreLigne">—</span></h3>
 
-        <div class="btn-group">
-          <button onclick="enregistrerProduction()">💾 Enregistrer</button>
-          <button onclick="remiseAZero()">🧹 Remise à zéro</button>
-        </div>
+      <label>Heure début :</label>
+      <select id="heureDebut"></select>
 
-        <h4>Historique production</h4>
-        <ul id="historiqueProduction"></ul>
+      <label>Heure fin :</label>
+      <select id="heureFin"></select>
+
+      <label>Quantité réalisée :</label>
+      <input type="number" id="quantiteRealisee">
+
+      <label>Quantité restante :</label>
+      <input type="number" id="quantiteRestante">
+
+      <label>Cadence manuelle (colis/h) :</label>
+      <input type="number" id="cadenceManuelle">
+
+      <label>Cadence calculée :</label>
+      <input type="text" id="cadenceCalculee" readonly>
+
+      <label>Estimation de fin :</label>
+      <input type="text" id="estimationFin" readonly>
+
+      <div class="btns">
+        <button id="btnEnregistrer">💾 Enregistrer</button>
+        <button id="btnReset">🧹 Remise à zéro</button>
       </div>
+    </div>
 
-      <canvas id="chartQuantites" height="120"></canvas>
-    </section>
+    <h3>Historique production</h3>
+    <div id="historiqueProduction"></div>
+  </section>
 
-    <!-- ----------------------- -->
-    <!-- Section ARRÊTS -->
-    <!-- ----------------------- -->
-    <section id="arrets" class="page-section">
-      <h2>Arrêts</h2>
-      <label>Durée (minutes) :</label>
-      <input type="number" id="dureeArret">
-      <label>Motif :</label>
-      <input type="text" id="motifArret">
-      <button onclick="enregistrerArret()">💾 Enregistrer</button>
-      <h4>Historique des arrêts</h4>
-      <ul id="historiqueArrets"></ul>
-    </section>
-
-    <!-- ----------------------- -->
-    <!-- Section PERSONNEL -->
-    <!-- ----------------------- -->
-    <section id="personnel" class="page-section">
-      <h2>Personnel</h2>
-      <label>Nom :</label>
-      <input type="text" id="nomPersonnel">
-      <label>Motif :</label>
-      <input type="text" id="motifPersonnel">
-      <label>Commentaire :</label>
-      <textarea id="commentairePersonnel"></textarea>
-      <button onclick="enregistrerPersonnel()">💾 Enregistrer</button>
-      <h4>Historique du personnel</h4>
-      <ul id="historiquePersonnel"></ul>
-    </section>
-
-    <!-- ----------------------- -->
-    <!-- Section ORGANISATION -->
-    <!-- ----------------------- -->
-    <section id="organisation" class="page-section">
-      <h2>Organisation</h2>
-      <label>Consigne :</label>
-      <textarea id="consigneTexte"></textarea>
-      <button onclick="enregistrerConsigne()">💾 Enregistrer</button>
-      <h4>Historique des consignes</h4>
-      <ul id="historiqueConsignes"></ul>
-    </section>
-  </main>
+  <!-- 🔹 Autres sections -->
+  <section id="arrets" class="section"><h2>Arrêts</h2><p>Prochainement…</p></section>
+  <section id="personnel" class="section"><h2>Personnel</h2><p>Prochainement…</p></section>
+  <section id="organisation" class="section"><h2>Organisation</h2><p>Prochainement…</p></section>
 
   <script src="app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
 </html>
