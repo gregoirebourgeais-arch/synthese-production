@@ -1,315 +1,341 @@
-/* ---------------------- CONFIG GLOBALE ---------------------- */
+/* =====================================================
+   APP SYNTHÈSE PRODUCTION LACTALIS - VERSION COMPLÈTE
+   ===================================================== */
+
 const LIGNES = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
 let ligneActive = LIGNES[0];
+let chartQuantites = null;
 
-/* Sélecteurs – adapte les IDs si besoin */
-const ids = {
-  titreLigne: "titreLigne",           // <span id="titreLigne"></span>
-  hDebut: "heureDebut",               // <select id="heureDebut">
-  hFin: "heureFin",                   // <select id="heureFin">
-  qte: "quantiteRealisee",            // <input id="quantiteRealisee">
-  qteRest: "quantiteRestante",        // <input id="quantiteRestante">
-  cadMan: "cadenceManuelle",          // <input id="cadenceManuelle">
-  cadCalc: "cadenceCalculee",         // <input id="cadenceCalculee" readonly>
-  estim: "estimationFin",             // <input id="estimationFin" readonly>
-  btnSave: "btnEnregistrer",          // <button id="btnEnregistrer">
-  btnReset: "btnReset",               // <button id="btnReset">
-  histo: "historiqueProduction"       // <div id="historiqueProduction">
-};
+/* ------------------- OUTILS ------------------- */
+const $ = id => document.getElementById(id);
+const pad2 = n => String(n).padStart(2, "0");
 
-/* ---------------------- OUTILS ---------------------- */
-const $ = (id) => document.getElementById(id);
-const pad2 = (n) => String(n).padStart(2,"0");
-
-/** construit une clé locale namespacée par ligne */
-const kDraft   = (ligne) => `draft:${ligne}`;
-const kHist    = (ligne) => `history:${ligne}`;
-const kStops   = (ligne) => `stops:${ligne}:${cleEquipeDuJour()}`;
-
-/** équipe et date-clef (M 5–13 / AM 13–21 / N 21–5) */
-function equipeCourante(date=new Date()) {
-  const h = date.getHours();
-  if (h >= 5 && h < 13) return "M";
-  if (h >= 13 && h < 21) return "AM";
-  return "N";
-}
-function cleEquipeDuJour(d=new Date()){
-  // On “repousse” la nuit au jour suivant pour avoir une clé unique
-  const e = equipeCourante(d);
-  const jour = new Date(d);
-  if (e === "N" && d.getHours() < 5) jour.setDate(jour.getDate()-1);
-  return `${jour.getFullYear()}-${pad2(jour.getMonth()+1)}-${pad2(jour.getDate())}-${e}`;
+function heureCourante() {
+  const d = new Date();
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-/** parse “HH:MM” en minutes depuis 00:00 */
-const hmToMin = (s) => {
-  if (!s || !s.includes(":")) return null;
-  const [H,M] = s.split(":").map(Number);
-  return H*60 + M;
-};
-/** durée nette (en heures) entre hDebut et hFin, avec passage minuit + retraits arrêts (minutes) */
-function dureeNetteHeures(hDeb, hFin, minutesArret=0){
-  let d = hmToMin(hDeb);
-  let f = hmToMin(hFin);
-  if (d==null || f==null) return 0;
-  if (f < d) f += 24*60;                 // passage minuit
-  let minutes = (f - d) - (minutesArret||0);
-  if (minutes < 0) minutes = 0;
-  return minutes / 60;
+function equipeActuelle() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 13) return "M (5h-13h)";
+  if (h >= 13 && h < 21) return "AM (13h-21h)";
+  return "N (21h-5h)";
 }
 
-/** récup/maj minutes d’arrêt de la ligne active pour l’équipe courante */
-function getMinutesArret(ligne){
-  return Number(localStorage.getItem(kStops(ligne))) || 0;
-}
-function setMinutesArret(ligne, totalMinutes){
-  localStorage.setItem(kStops(ligne), String(Math.max(0, Math.floor(totalMinutes||0))));
+function updateHorloge() {
+  $("horloge").textContent = `Heure : ${heureCourante()}`;
+  $("equipeActuelle").textContent = `Équipe : ${equipeActuelle()}`;
+  setTimeout(updateHorloge, 1000 * 60);
 }
 
-/* ---------------------- PERSISTENCE PAR LIGNE ---------------------- */
-function chargerBrouillon(ligne){
-  const raw = localStorage.getItem(kDraft(ligne));
-  const d = raw ? JSON.parse(raw) : {};
-  $(ids.hDebut).value   = d.hDebut   ?? "";
-  $(ids.hFin).value     = d.hFin     ?? "";
-  $(ids.qte).value      = d.qte      ?? "";
-  $(ids.qteRest).value  = d.qteRest  ?? "";
-  $(ids.cadMan).value   = d.cadMan   ?? "";
-  // champs calculés
-  $(ids.cadCalc).value  = d.cadCalc  ?? "";
-  $(ids.estim).value    = d.estim    ?? "";
-  // titre
-  $(ids.titreLigne).textContent = ligne;
-  // historique
-  rafraichirHistorique(ligne);
+/* ------------------- PERSISTANCE ------------------- */
+function kDraft(l) { return `draft:${l}`; }
+function kHist(l) { return `history:${l}`; }
+function kArrets() { return "arrets"; }
+function kPerso() { return "personnel"; }
+function kOrg() { return "organisation"; }
+
+function loadJSON(key, def=[]) {
+  try { return JSON.parse(localStorage.getItem(key)) || def; }
+  catch { return def; }
 }
-function sauverBrouillon(ligne){
-  const data = {
-    hDebut:  $(ids.hDebut).value,
-    hFin:    $(ids.hFin).value,
-    qte:     $(ids.qte).value,
-    qteRest: $(ids.qteRest).value,
-    cadMan:  $(ids.cadMan).value,
-    cadCalc: $(ids.cadCalc).value,
-    estim:   $(ids.estim).value
+function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ------------------- FONCTIONS LIGNE ------------------- */
+function selectLigne(ligne) {
+  ligneActive = ligne;
+  document.querySelectorAll(".btn-ligne").forEach(b=>{
+    b.classList.toggle("active", b.dataset.line===ligne);
+  });
+  $("titreLigne").textContent = ligne;
+  chargerBrouillon(ligne);
+  afficherHistorique(ligne);
+  recalculer();
+}
+
+function chargerBrouillon(ligne) {
+  const d = loadJSON(kDraft(ligne), {});
+  $("heureDebut").value = d.hDebut || "";
+  $("heureFin").value = d.hFin || "";
+  $("quantiteRealisee").value = d.qte || "";
+  $("quantiteRestante").value = d.qteRest || "";
+  $("cadenceManuelle").value = d.cadMan || "";
+  $("cadenceCalculee").value = d.cadCalc || "";
+  $("estimationFin").value = d.estim || "";
+}
+
+function sauverBrouillon() {
+  const d = {
+    hDebut: $("heureDebut").value,
+    hFin: $("heureFin").value,
+    qte: $("quantiteRealisee").value,
+    qteRest: $("quantiteRestante").value,
+    cadMan: $("cadenceManuelle").value,
+    cadCalc: $("cadenceCalculee").value,
+    estim: $("estimationFin").value
   };
-  localStorage.setItem(kDraft(ligne), JSON.stringify(data));
-}
-function viderBrouillon(ligne){
-  localStorage.removeItem(kDraft(ligne));
+  saveJSON(kDraft(ligneActive), d);
 }
 
-/* ---------------------- HISTORIQUE PAR LIGNE ---------------------- */
-function rafraichirHistorique(ligne){
-  const zone = $(ids.histo);
-  const raw = localStorage.getItem(kHist(ligne));
-  const list = raw ? JSON.parse(raw) : [];
-  if (!list.length){
-    zone.innerHTML = `<div class="empty">Aucun enregistrement pour ${ligne}.</div>`;
+/* ------------------- CALCULS ------------------- */
+function recalculer() {
+  const hDeb = $("heureDebut").value;
+  const hFin = $("heureFin").value;
+  const qte = Number($("quantiteRealisee").value);
+  const rest = Number($("quantiteRestante").value);
+  const cadMan = Number($("cadenceManuelle").value);
+
+  let d = parseHeure(hDeb);
+  let f = parseHeure(hFin);
+  if (!d || !f) return;
+  if (f < d) f += 24 * 60;
+  const dureeHeures = (f - d) / 60;
+
+  let cadCalc = "";
+  if (qte > 0 && dureeHeures > 0) cadCalc = (qte / dureeHeures).toFixed(2);
+  $("cadenceCalculee").value = cadCalc;
+
+  const cadence = cadMan || Number(cadCalc);
+  if (rest > 0 && cadence > 0) {
+    const minutes = Math.round((rest / cadence) * 60);
+    const now = new Date();
+    const fin = new Date(now.getTime() + minutes * 60000);
+    $("estimationFin").value = `${pad2(fin.getHours())}:${pad2(fin.getMinutes())} (${Math.floor(minutes/60)}h${pad2(minutes%60)})`;
+  }
+
+  sauverBrouillon();
+}
+
+function parseHeure(h) {
+  if (!h || !h.includes(":")) return null;
+  const [H, M] = h.split(":").map(Number);
+  return H * 60 + M;
+}
+
+/* ------------------- ENREGISTREMENT ------------------- */
+function enregistrer() {
+  const hDeb = $("heureDebut").value;
+  const hFin = $("heureFin").value;
+  const qte = Number($("quantiteRealisee").value);
+  const rest = Number($("quantiteRestante").value);
+  const cadMan = Number($("cadenceManuelle").value);
+  const cadCalc = $("cadenceCalculee").value;
+  const estim = $("estimationFin").value;
+
+  if (!hDeb || !hFin || (!qte && !rest)) return alert("Saisir heures et quantités.");
+
+  const hist = loadJSON(kHist(ligneActive));
+  hist.unshift({
+    date: new Date().toLocaleString("fr-FR"),
+    hDeb, hFin, qte, rest,
+    cadence: cadMan || cadCalc,
+    estim
+  });
+  saveJSON(kHist(ligneActive), hist);
+
+  localStorage.removeItem(kDraft(ligneActive));
+  $("quantiteRealisee").value = "";
+  $("quantiteRestante").value = "";
+  $("cadenceManuelle").value = "";
+  $("cadenceCalculee").value = "";
+  $("estimationFin").value = "";
+  afficherHistorique(ligneActive);
+  majGraphique();
+}
+
+/* ------------------- HISTORIQUE ------------------- */
+function afficherHistorique(ligne) {
+  const zone = $("historiqueProduction");
+  const hist = loadJSON(kHist(ligne));
+  if (!hist.length) {
+    zone.innerHTML = `<div class='empty'>Aucun enregistrement</div>`;
     return;
   }
-  zone.innerHTML = list.map((r,i)=>`
+  zone.innerHTML = hist.map((r,i)=>`
     <div class="hrow">
-      <div>
-        <strong>${r.date}</strong> — ${r.hDebut} → ${r.hFin} —
-        Q=${r.qte} — Rest=${r.qteRest} — Cad=${r.cadenceAff}
-        ${r.estim ? ` — Fin ~ ${r.estim}` : ""}
-      </div>
-      <button class="hdel" aria-label="Supprimer" onclick="supprLigneHistorique('${ligne}', ${i})">🗑</button>
+      <div><b>${r.date}</b> — ${r.hDeb} → ${r.hFin} | Q=${r.qte} | Rest=${r.rest} | Cad=${r.cadence} | Fin ~ ${r.estim}</div>
+      <button onclick="supprHist('${ligne}',${i})">🗑</button>
     </div>
   `).join("");
 }
-function supprLigneHistorique(ligne, index){
-  const raw = localStorage.getItem(kHist(ligne));
-  const list = raw ? JSON.parse(raw) : [];
-  list.splice(index,1);
-  localStorage.setItem(kHist(ligne), JSON.stringify(list));
-  rafraichirHistorique(ligne);
+
+function supprHist(ligne,i){
+  const hist = loadJSON(kHist(ligne));
+  hist.splice(i,1);
+  saveJSON(kHist(ligne),hist);
+  afficherHistorique(ligne);
+  majGraphique();
 }
 
-/* ---------------------- CALCULS ---------------------- */
-function recalculerCadenceEtEstim(){
-  const hDeb   = $(ids.hDebut).value;
-  const hFin   = $(ids.hFin).value;
-  const qte    = Number($(ids.qte).value);
-  const rest   = Number($(ids.qteRest).value);
-  const cadMan = Number($(ids.cadMan).value);
-
-  const minutesArret = getMinutesArret(ligneActive);
-  const heures = dureeNetteHeures(hDeb, hFin, minutesArret);
-
-  // cadence calculée
-  let cadCalc = "";
-  if (qte>0 && heures>0){
-    cadCalc = (qte / heures).toFixed(2);
-  }
-  $(ids.cadCalc).value = cadCalc;
-
-  // cadence utilisée pour l'estimation
-  const cadence = cadMan>0 ? cadMan : (cadCalc ? Number(cadCalc) : 0);
-
-  // estimation
-  let estimTxt = "";
-  if (rest>0 && cadence>0){
-    const minutes = Math.round((rest / cadence) * 60);
-    const now = new Date();
-    const fin = new Date(now.getTime() + minutes*60000);
-    estimTxt = `${pad2(fin.getHours())}:${pad2(fin.getMinutes())} (${Math.floor(minutes/60)}h${pad2(minutes%60)})`;
-  }
-  $(ids.estim).value = estimTxt;
-
-  // on sauve le brouillon de la ligne courante
-  sauverBrouillon(ligneActive);
-}
-
-/* ---------------------- ENREGISTREMENT ---------------------- */
-function enregistrerCourant(){
-  const hDeb   = $(ids.hDebut).value;
-  const hFin   = $(ids.hFin).value;
-  const qte    = Number($(ids.qte).value||0);
-  const rest   = Number($(ids.qteRest).value||0);
-  const cadMan = Number($(ids.cadMan).value||0);
-  const cadCalc= $(ids.cadCalc).value;
-  const estim  = $(ids.estim).value;
-
-  if (!hDeb || !hFin || (!qte && !rest)){
-    alert("Veuillez saisir au moins les heures et une quantité (réalisée ou restante).");
-    return;
-  }
-
-  const raw = localStorage.getItem(kHist(ligneActive));
-  const list = raw ? JSON.parse(raw) : [];
-  const dateStr = new Date().toLocaleString("fr-FR");
-
-  list.unshift({
-    date: dateStr,
-    hDebut: hDeb,
-    hFin: hFin,
-    qte: qte,
-    qteRest: rest,
-    cadenceAff: cadMan>0 ? `${cadMan} (man.)` : (cadCalc || "-"),
-    estim: estim
+/* ------------------- GRAPHIQUE ------------------- */
+function majGraphique(){
+  const data = LIGNES.map(l=>{
+    const hist = loadJSON(kHist(l));
+    return hist.reduce((t,r)=>t+(Number(r.qte)||0),0);
   });
-  localStorage.setItem(kHist(ligneActive), JSON.stringify(list));
-
-  // après enregistrement : on efface le brouillon de cette ligne et on nettoie les champs
-  viderBrouillon(ligneActive);
-  $(ids.qte).value = "";
-  $(ids.qteRest).value = "";
-  $(ids.cadMan).value = "";
-  $(ids.cadCalc).value = "";
-  $(ids.estim).value = "";
-  // (on laisse les heures sélectionnées, pratique en cours d’équipe)
-  rafraichirHistorique(ligneActive);
-}
-
-/* ---------------------- LIGNE ACTIVE ---------------------- */
-function selectLigne(ligne){
-  if (!LIGNES.includes(ligne)) return;
-  ligneActive = ligne;
-  // visuel bouton actif
-  document.querySelectorAll(".ligne-buttons button").forEach(b=>{
-    if (b.textContent.trim()===ligne) b.classList.add("active");
-    else b.classList.remove("active");
+  const ctx = $("graphQuantites").getContext("2d");
+  if (chartQuantites) chartQuantites.destroy();
+  chartQuantites = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: LIGNES,
+      datasets: [{
+        label: "Quantité réalisée (colis)",
+        data,
+        backgroundColor: "#007bff",
+        borderRadius: 6
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
   });
-  // titre + données
-  chargerBrouillon(ligneActive);
 }
 
-/* ---------------------- ARRÊTS (minutes) ---------------------- */
-/* Si tu as un champ “minutes d’arrêt” dans un autre onglet,
-   appelle juste setMinutesArret(ligne, totalMinutes) quand ça change.
-   Ici on expose une fonction globale au besoin. */
-function majArretsPourLigne(ligne, totalMinutes){
-  setMinutesArret(ligne, totalMinutes);
-  if (ligne === ligneActive){
-    recalculerCadenceEtEstim();
-  }
-}
-window.majArretsPourLigne = majArretsPourLigne;
+/* ------------------- EXPORT ------------------- */
+function exportGlobal(){
+  const rows = [["Date","Type","Ligne","Infos","Quantité","Cadence","Estimation"]];
+  // production
+  LIGNES.forEach(l=>{
+    loadJSON(kHist(l)).forEach(r=>{
+      rows.push([r.date,"Production",l,`${r.hDeb}-${r.hFin}`,r.qte,r.cadence,r.estim]);
+    });
+  });
+  // arrêts
+  loadJSON(kArrets()).forEach(a=>{
+    rows.push([a.date,"Arrêt",a.ligne,`Durée: ${a.duree}min`, "", "", a.comment]);
+  });
+  // personnel
+  loadJSON(kPerso()).forEach(p=>{
+    rows.push([p.date,"Personnel",p.nom,p.motif,"","",p.comment]);
+  });
+  // organisation
+  loadJSON(kOrg()).forEach(o=>{
+    rows.push([o.date,"Organisation","",o.text,"","",""]);
+  });
 
-/* ---------------------- INIT ---------------------- */
-function remplirSelectHeures(){
-  // Remplissage HH:MM (toutes les 5 minutes)
-  const opts = [];
-  for (let h=0; h<24; h++){
-    for (let m=0; m<60; m+=5){
+  const csv = rows.map(r=>r.map(x=>`"${(x||"").replace(/"/g,'""')}"`).join(";")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Synthese_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+/* ------------------- ARRÊTS / PERSONNEL / ORG ------------------- */
+function ajouterArret(){
+  const ligne = $("ligneArret").value;
+  const duree = $("dureeArret").value;
+  const comment = $("commentArret").value;
+  if (!ligne || !duree) return alert("Sélectionner une ligne et durée.");
+  const list = loadJSON(kArrets());
+  list.unshift({date:new Date().toLocaleString("fr-FR"),ligne,duree,comment});
+  saveJSON(kArrets(),list);
+  afficherArrets();
+}
+
+function afficherArrets(){
+  const zone = $("listeArrets");
+  const list = loadJSON(kArrets());
+  zone.innerHTML = list.map((a,i)=>`
+    <div class="hrow"><div>${a.date} — ${a.ligne} — ${a.duree}min — ${a.comment}</div>
+    <button onclick="supprArret(${i})">🗑</button></div>
+  `).join("") || "<div class='empty'>Aucun arrêt</div>";
+}
+
+function supprArret(i){
+  const list = loadJSON(kArrets());
+  list.splice(i,1);
+  saveJSON(kArrets(),list);
+  afficherArrets();
+}
+
+function ajouterPersonnel(){
+  const nom=$("nomPersonnel").value, motif=$("motifPersonnel").value, comment=$("commentPersonnel").value;
+  if(!nom||!motif) return alert("Nom et motif obligatoires");
+  const list=loadJSON(kPerso());
+  list.unshift({date:new Date().toLocaleString("fr-FR"),nom,motif,comment});
+  saveJSON(kPerso(),list);
+  afficherPersonnel();
+}
+
+function afficherPersonnel(){
+  const zone=$("listePersonnel");
+  const list=loadJSON(kPerso());
+  zone.innerHTML=list.map((p,i)=>`
+  <div class="hrow"><div>${p.date} — ${p.nom} — ${p.motif} — ${p.comment}</div>
+  <button onclick="supprPerso(${i})">🗑</button></div>
+  `).join("")||"<div class='empty'>Aucun enregistrement</div>";
+}
+
+function supprPerso(i){
+  const list=loadJSON(kPerso());
+  list.splice(i,1);saveJSON(kPerso(),list);afficherPersonnel();
+}
+
+function ajouterOrganisation(){
+  const text=$("texteOrganisation").value;
+  if(!text) return;
+  const list=loadJSON(kOrg());
+  list.unshift({date:new Date().toLocaleString("fr-FR"),text});
+  saveJSON(kOrg(),list);
+  afficherOrganisation();
+}
+
+function afficherOrganisation(){
+  const zone=$("listeOrganisation");
+  const list=loadJSON(kOrg());
+  zone.innerHTML=list.map((o,i)=>`
+  <div class="hrow"><div>${o.date} — ${o.text}</div>
+  <button onclick="supprOrg(${i})">🗑</button></div>
+  `).join("")||"<div class='empty'>Aucune consigne</div>";
+}
+
+function supprOrg(i){
+  const list=loadJSON(kOrg());
+  list.splice(i,1);saveJSON(kOrg(),list);afficherOrganisation();
+}
+
+/* ------------------- NAVIGATION ------------------- */
+function showSection(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+/* ------------------- INIT ------------------- */
+function initHeures(){
+  const opts=[];
+  for(let h=0;h<24;h++){
+    for(let m=0;m<60;m+=5){
       opts.push(`${pad2(h)}:${pad2(m)}`);
     }
   }
-  [ids.hDebut, ids.hFin].forEach(id=>{
-    const sel = $(id);
-    if (!sel || sel.options?.length > 10) return;
-    sel.innerHTML = `<option value="">—</option>` + 
-      opts.map(v=>`<option value="${v}">${v}</option>`).join("");
+  ["heureDebut","heureFin"].forEach(id=>{
+    $(id).innerHTML="<option value=''></option>"+opts.map(o=>`<option value='${o}'>${o}</option>`).join("");
   });
 }
 
-function lierEvenements(){
-  [ids.hDebut, ids.hFin, ids.qte, ids.qteRest, ids.cadMan].forEach(id=>{
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener("input", recalculerCadenceEtEstim);
-    el.addEventListener("change", recalculerCadenceEtEstim);
-  });
-  $(ids.btnSave)?.addEventListener("click", enregistrerCourant);
-  $(ids.btnReset)?.addEventListener("click", ()=>{
-    $(ids.qte).value = "";
-    $(ids.qteRest).value = "";
-    $(ids.cadMan).value = "";
-    $(ids.cadCalc).value = "";
-    $(ids.estim).value = "";
-    sauverBrouillon(ligneActive);
-  });
-  // boutons lignes (si présents)
-  document.querySelectorAll(".ligne-buttons button").forEach(btn=>{
-    btn.addEventListener("click", ()=> selectLigne(btn.textContent.trim()));
-  });
-}
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  remplirSelectHeures();
-  lierEvenements();
-  // ligne par défaut + brouillon
-  selectLigne(ligneActive);
-  recalculerCadenceEtEstim();
+document.addEventListener("click",e=>{
+  const btn=e.target.closest("[data-line]");
+  if(btn){selectLigne(btn.dataset.line);return;}
+  if(e.target.id==="btnEnregistrer"){enregistrer();}
+  if(e.target.id==="btnReset"){
+    ["quantiteRealisee","quantiteRestante","cadenceManuelle","cadenceCalculee","estimationFin"].forEach(id=>$(id).value="");
+    sauverBrouillon();
+  }
 });
 
-/* Expose quelques helpers si besoin dans HTML inline */
-window.selectLigne = selectLigne;
-window.supprLigneHistorique = supprLigneHistorique;
-}
-
-/* ------------------ GESTION DES CLICS ROBUSTE (DÉLÉGATION) ------------------ */
-document.addEventListener("click", (ev) => {
-  // 1) Boutons de LIGNE
-  const bLigne = ev.target.closest("[data-line]");
-  if (bLigne) {
-    const nom = bLigne.getAttribute("data-line");
-    if (nom) {
-      selectLigne(nom);          // vient du JS précédent
-      // feedback visuel actif
-      document.querySelectorAll(".btn-ligne").forEach(btn => {
-        btn.classList.toggle("active", btn === bLigne);
-      });
-    }
-    return;
-  }
-
-  // 2) Bouton ENREGISTRER
-  if (ev.target.closest("#" + ids.btnSave)) {
-    enregistrerCourant();        // vient du JS précédent
-    return;
-  }
-
-  // 3) Bouton REMISE À ZÉRO
-  if (ev.target.closest("#" + ids.btnReset)) {
-    $(ids.qte).value = "";
-    $(ids.qteRest).value = "";
-    $(ids.cadMan).value = "";
-    $(ids.cadCalc).value = "";
-    $(ids.estim).value = "";
-    sauverBrouillon(ligneActive); // conserve le brouillon vide pour CETTE ligne
-    return;
-  }
+document.addEventListener("DOMContentLoaded",()=>{
+  initHeures();
+  updateHorloge();
+  afficherArrets();
+  afficherPersonnel();
+  afficherOrganisation();
+  selectLigne(ligneActive);
+  majGraphique();
+  document.querySelectorAll("input,select").forEach(el=>{
+    el.addEventListener("input",recalculer);
+  });
 });
