@@ -58,55 +58,25 @@
     <button onclick="exportGlobal()">📊 Export</button>
   </nav>
 
-  <!-- Atelier -->
-  <section id="atelier" class="page active">
-    <h2>Atelier</h2>
-    <div class="lignes-container">
-      <button onclick="selectLine('Râpé')">Râpé</button>
-      <button onclick="selectLine('T2')">T2</button>
-      <button onclick="selectLine('RT')">RT</button>
-      <button onclick="selectLine('OMORI')">OMORI</button>
-      <button onclick="selectLine('T1')">T1</button>
-      <button onclick="selectLine('Sticks')">Sticks</button>
-      <button onclick="selectLine('Emballage')">Emballage</button>
-      <button onclick="selectLine('Dés')">Dés</button>
-      <button onclick="selectLine('Filets')">Filets</button>
-      <button onclick="selectLine('Prédécoupé')">Prédécoupé</button>
-    </div>
+<!-- ==================== PAGE ATELIER ==================== -->
+<section id="atelier" class="page-section hidden">
+  <h2>Atelier</h2>
 
-    <h3 id="ligneTitre">Ligne : —</h3>
-
-    <label>Heure début :</label>
-    <input type="time" id="heureDebut">
-    <label>Heure fin :</label>
-    <input type="time" id="heureFin">
-
-    <label>Quantité réalisée :</label>
-    <input type="number" id="qteRealisee" placeholder="colis">
-
-    <label>Quantité restante :</label>
-    <input type="number" id="qteRestante" placeholder="colis" oninput="updateEstimation()">
-
-    <label>Cadence manuelle (colis/h) :</label>
-    <input type="number" id="cadenceManuelle" placeholder="optionnel">
-
-    <label>Cadence calculée :</label>
-    <input type="text" id="cadenceCalculee" readonly>
-
-    <label>Estimation de fin :</label>
-    <input type="text" id="estimationFin" readonly>
-
-    <div class="boutons">
-      <button class="enregistrer" onclick="enregistrer()">💾 Enregistrer</button>
-      <button class="reset" onclick="resetForm()">🧹 Remise à zéro</button>
-    </div>
-
-    <h3>Historique production</h3>
-    <div id="historique"></div>
-
-    <h3>Graphique des quantités réalisées</h3>
+  <div class="card">
+    <h3>Comparatif des quantités par ligne</h3>
     <canvas id="chartQuantites"></canvas>
-  </section>
+  </div>
+
+  <div class="card">
+    <h3>Évolution de la cadence par ligne</h3>
+    <canvas id="chartCadences"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Liste des arrêts par ligne</h3>
+    <div id="listeArrets"></div>
+  </div>
+</section>
 
   <!-- Arrêts -->
   <section id="arrets" class="page">
