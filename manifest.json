@@ -1,12 +1,27 @@
 {
   "name": "Synthèse Atelier Lactalis",
-  "short_name": "Synthèse",
+  "short_name": "Synthèse Atelier",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f8fb",
+  "background_color": "#f5f9ff",
   "theme_color": "#007ac3",
-  "orientation": "portrait-primary",
+  "description": "Application de suivi atelier, production, arrêts, organisation et personnel – Lactalis",
   "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
