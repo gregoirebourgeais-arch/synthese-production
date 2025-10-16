@@ -237,3 +237,30 @@ button.enregistrer:hover, button.reset:hover { opacity: 0.85; cursor: pointer; }
 .export-btn:hover {
   background-color: #0056b3;
 }
+
+.hidden {
+  display: none !important;
+}
+.active {
+  display: block !important;
+}
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.menu button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.menu button:hover {
+  background: #0056b3;
+}
