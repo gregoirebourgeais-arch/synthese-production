@@ -385,3 +385,80 @@ setInterval(() => {
   majGraphiques();
   majListeArrets();
 }, 10000);
+
+// === EXPORT GLOBAL EXCEL (TOUT EN UN ONGLET) ===
+document.getElementById("exportExcelGlobal").addEventListener("click", exportGlobalExcel);
+
+function exportGlobalExcel() {
+  try {
+    const wb = XLSX.utils.book_new();
+    let ws_data = [];
+
+    // ====== En-tête principale ======
+    ws_data.push(["Synthèse Atelier Lactalis"]);
+    ws_data.push(["Date :", new Date().toLocaleString()]);
+    ws_data.push([]);
+
+    // ====== SECTION 1 : PRODUCTION ======
+    ws_data.push(["📦 Production"]);
+    ws_data.push(["Ligne", "Heure début", "Heure fin", "Quantité", "Cadence", "Estimation fin"]);
+    Object.entries(historique || {}).forEach(([ligne, enregistrements]) => {
+      enregistrements.forEach(e => {
+        ws_data.push([
+          ligne,
+          e.heureDebut || "",
+          e.heureFin || "",
+          e.quantite || "",
+          e.cadence || "",
+          e.estimationFin || ""
+        ]);
+      });
+    });
+    ws_data.push([]);
+
+    // ====== SECTION 2 : ARRÊTS ======
+    ws_data.push(["⛔ Arrêts"]);
+    ws_data.push(["Ligne", "Motif", "Durée (min)"]);
+    Object.entries(arrets || {}).forEach(([ligne, data]) => {
+      data.forEach(a => {
+        ws_data.push([ligne, a.motif || "", a.duree || ""]);
+      });
+    });
+    ws_data.push([]);
+
+    // ====== SECTION 3 : PERSONNEL ======
+    ws_data.push(["👷‍♂️ Personnel"]);
+    ws_data.push(["Nom", "Motif", "Commentaire"]);
+    (personnel || []).forEach(p => {
+      ws_data.push([p.nom || "", p.motif || "", p.commentaire || ""]);
+    });
+    ws_data.push([]);
+
+    // ====== SECTION 4 : ORGANISATION ======
+    ws_data.push(["🗒️ Organisation"]);
+    ws_data.push(["Date", "Consigne"]);
+    (organisation || []).forEach(o => {
+      ws_data.push([o.date || "", o.consigne || ""]);
+    });
+
+    // Création de la feuille
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
+
+    // Largeur des colonnes
+    ws["!cols"] = [
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 25 }
+    ];
+
+    // Export
+    XLSX.writeFile(wb, `Synthese_Atelier_${new Date().toISOString().slice(0,10)}.xlsx`);
+  } catch (err) {
+    console.error("Erreur export Excel :", err);
+    alert("⚠️ Impossible d’exporter le fichier Excel.");
+  }
+}
