@@ -1,19 +1,19 @@
 {
   "name": "Synthèse Production Lactalis",
-  "short_name": "Synthèse",
+  "short_name": "Synthèse Prod",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f5f8ff",
+  "background_color": "#007bff",
   "theme_color": "#007bff",
-  "description": "Application interne de suivi de production Lactalis - Cadences, arrêts, organisation, personnel.",
+  "description": "Application de suivi de production Lactalis (cadences, arrêts, personnel, organisation)",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
