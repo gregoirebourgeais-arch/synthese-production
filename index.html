@@ -8,6 +8,39 @@
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+  <!-- 🧮 Calculatrice flottante -->
+<div id="calculator" class="calculator hidden">
+  <div class="calc-header">
+    <span>Calculatrice</span>
+    <button id="closeCalc">✖</button>
+  </div>
+  <input type="text" id="calcDisplay" readonly />
+
+  <div class="calc-buttons">
+    <button class="calc-btn">7</button>
+    <button class="calc-btn">8</button>
+    <button class="calc-btn">9</button>
+    <button class="calc-btn op">/</button>
+
+    <button class="calc-btn">4</button>
+    <button class="calc-btn">5</button>
+    <button class="calc-btn">6</button>
+    <button class="calc-btn op">*</button>
+
+    <button class="calc-btn">1</button>
+    <button class="calc-btn">2</button>
+    <button class="calc-btn">3</button>
+    <button class="calc-btn op">-</button>
+
+    <button class="calc-btn">0</button>
+    <button class="calc-btn">.</button>
+    <button id="calcEqual">=</button>
+    <button class="calc-btn op">+</button>
+  </div>
+</div>
+
+<!-- Bouton flottant pour ouvrir la calculatrice -->
+<button id="openCalc" class="floating-btn">🧮</button>
 
 <body>
   <header>
