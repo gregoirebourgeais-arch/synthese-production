@@ -1,12 +1,12 @@
-/* ---- Style général ---- */
+/* === Style général === */
 body {
   margin: 0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background: #f4f8fb;
-  color: #1d3557;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f5f9ff;
+  color: #1a237e;
 }
 
-/* ---- En-tête ---- */
+/* === En-tête === */
 header {
   display: flex;
   align-items: center;
@@ -16,95 +16,88 @@ header {
   padding: 10px 20px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
-
 header .logo {
   height: 45px;
-  margin-right: 10px;
 }
-
 header h1 {
-  flex: 1;
-  text-align: center;
-  font-size: 1.5em;
+  font-size: 1.6em;
   font-weight: 600;
+  text-align: center;
+  flex: 1;
 }
-
 #horloge {
   font-size: 0.9em;
 }
 
-/* ---- Menu ---- */
+/* === Menu === */
 nav {
   display: flex;
   justify-content: space-around;
   background-color: #e3f2fd;
-  border-bottom: 2px solid #007ac3;
   padding: 8px;
+  border-bottom: 2px solid #007ac3;
   position: sticky;
   top: 0;
   z-index: 1000;
 }
-
 nav button {
   background: #007ac3;
-  border: none;
   color: white;
   font-weight: 600;
-  padding: 10px 16px;
+  border: none;
+  padding: 10px 14px;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
 nav button:hover {
   background: #005b94;
   transform: scale(1.05);
 }
 
-/* ---- Pages ---- */
+/* === Sections === */
 .page-section {
   display: none;
   padding: 20px;
 }
-
 .page-section.active {
   display: block;
 }
 
-/* ---- Lignes de production ---- */
+/* === Cartes de lignes === */
 .ligne-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
   justify-content: center;
+  gap: 10px;
   margin-bottom: 20px;
 }
-
 .ligne-buttons button {
-  background: #0091ea;
+  background: #0288d1;
   color: white;
   border: none;
   padding: 10px 14px;
   border-radius: 20px;
-  cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: 0.2s;
 }
-
 .ligne-buttons button:hover {
-  background: #007ac3;
-  transform: scale(1.07);
+  background: #01579b;
+  transform: scale(1.05);
 }
-
 .card {
   background: white;
   border-radius: 16px;
   padding: 15px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+.card h3 {
+  margin-top: 0;
+  color: #007ac3;
 }
 
-/* ---- Formulaires ---- */
+/* === Formulaires === */
 form {
   display: flex;
   flex-direction: column;
@@ -114,18 +107,21 @@ form {
   border-radius: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 form label {
   font-weight: 600;
 }
-
 input, select, textarea {
   border: 1px solid #b0bec5;
   border-radius: 10px;
   padding: 8px;
   font-size: 1em;
 }
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
 
+/* === Boutons === */
 button {
   background: #007ac3;
   color: white;
@@ -136,12 +132,11 @@ button {
   cursor: pointer;
   transition: 0.3s;
 }
-
 button:hover {
   background: #005b94;
 }
 
-/* ---- Tableaux ---- */
+/* === Tableaux === */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -150,19 +145,17 @@ table {
   border-radius: 10px;
   overflow: hidden;
 }
-
 th, td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
   text-align: center;
 }
-
 th {
   background: #007ac3;
   color: white;
 }
 
-/* ---- Graphiques ---- */
+/* === Graphiques === */
 canvas {
   background: #ffffff;
   border-radius: 10px;
@@ -171,7 +164,7 @@ canvas {
   max-width: 100%;
 }
 
-/* ---- Calculatrice flottante ---- */
+/* === Calculatrice === */
 #calcPanel {
   position: fixed;
   bottom: 20px;
@@ -184,7 +177,6 @@ canvas {
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   z-index: 10000;
 }
-
 #calcPanel input {
   width: 100%;
   text-align: right;
@@ -193,42 +185,43 @@ canvas {
   border-radius: 10px;
   border: none;
   padding: 5px;
+  background: white;
+  color: #007ac3;
 }
-
 .calc-btns {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
-
 .calc-btns button {
   background: #e3f2fd;
   color: #007ac3;
   font-size: 1.2em;
   border-radius: 10px;
 }
-
 .calc-btns button:hover {
   background: #b3e5fc;
 }
 
-/* ---- Footer ---- */
+/* === Footer === */
 footer {
   text-align: center;
   font-size: 0.85em;
   padding: 10px;
-  color: #607d8b;
+  color: #455a64;
   background: #e3f2fd;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
-/* ---- Divers ---- */
+/* === Divers === */
 .hidden {
   display: none !important;
 }
 
+/* === Responsive === */
 @media (max-width: 768px) {
   header h1 { font-size: 1.2em; }
   nav button { padding: 8px 12px; font-size: 0.9em; }
   .card { padding: 10px; }
+  #calcPanel { width: 90%; right: 5%; }
 }
