@@ -326,3 +326,17 @@ function exportAllData() {
   XLSX.utils.book_append_sheet(wb, ws, "Synthèse Atelier");
   XLSX.writeFile(wb, `Synthese_Atelier_${new Date().toLocaleDateString()}.xlsx`);
                                                              }
+/* --- Réactivation des boutons de ligne --- */
+function showLigne(nom) {
+  // masquer toutes les fiches de ligne
+  document.querySelectorAll("#ligneContainer .card").forEach(c => c.classList.add("hidden"));
+  // afficher la ligne choisie
+  const target = document.getElementById(`ligne-${nom}`);
+  if (target) {
+    target.classList.remove("hidden");
+    target.scrollIntoView({ behavior: "smooth" });
+  } else {
+    console.warn("Ligne introuvable :", nom);
+  }
+}
+window.showLigne = showLigne;
