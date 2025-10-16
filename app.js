@@ -168,18 +168,66 @@ function updateChart() {
 }
 
 // === EXPORT EXCEL ===
+// === EXPORT EXCEL (.xlsx) AVEC STYLE ===
 function exportGlobal() {
-  const rows = [["Ligne", "Date", "Heure Début", "Heure Fin", "Quantité", "Restante", "Cadence", "Fin estimée"]];
+  if (!Object.keys(historique).length) {
+    alert("Aucune donnée à exporter !");
+    return;
+  }
+
+  // Création des données
+  const rows = [
+    ["Ligne", "Date", "Heure Début", "Heure Fin", "Quantité Réalisée", "Quantité Restante", "Cadence (colis/h)", "Fin estimée"]
+  ];
+
   Object.entries(historique).forEach(([ligne, entries]) => {
     entries.forEach(e => {
       rows.push([ligne, e.date, e.hD, e.hF, e.qR, e.qRest, e.cad, e.estFin]);
     });
   });
-  const csv = rows.map(r => r.join(";")).join("\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+
+  // Création du workbook et worksheet
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Mise en forme automatique
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_cell({ r: 0, c: C });
+    if (!ws[address]) continue;
+    ws[address].s = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "007BFF" } },
+      alignment: { horizontal: "center" }
+    };
+  }
+
+  // Ajustement de largeur automatique
+  const colWidths = rows[0].map((_, i) =>
+    ({ wch: Math.max(...rows.map(r => (r[i] ? r[i].toString().length : 0))) + 2 })
+  );
+  ws['!cols'] = colWidths;
+
+  // Ajout du style “bande alternée”
+  for (let R = 1; R <= range.e.r; ++R) {
+    const bg = R % 2 === 0 ? "E8F0FE" : "FFFFFF"; // alternance bleu clair / blanc
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const addr = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[addr]) continue;
+      ws[addr].s = { fill: { fgColor: { rgb: bg } } };
+    }
+  }
+
+  // Ajout au classeur
+  XLSX.utils.book_append_sheet(wb, ws, "Synthèse");
+
+  // Export
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([wbout], { type: "application/octet-stream" });
+
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "Synthese_Production_Lactalis.csv";
+  link.download = `Synthese_Production_Lactalis_${new Date().toLocaleDateString("fr-FR")}.xlsx`;
   link.click();
 }
 
