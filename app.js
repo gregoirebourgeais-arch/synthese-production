@@ -1,189 +1,162 @@
-/* =====================================================
-   APP SYNTHÈSE PRODUCTION LACTALIS - VERSION COMPLÈTE
-   ===================================================== */
+// === VARIABLES GLOBALES ===
+let currentLine = "";
+let historique = JSON.parse(localStorage.getItem("historique")) || {};
+let chart;
 
-const LIGNES = ["Râpé","T2","RT","OMORI","T1","Sticks","Emballage","Dés","Filets","Prédécoupé"];
-let ligneActive = LIGNES[0];
-let chartQuantites = null;
+// === DATE ET ÉQUIPE ===
+function updateDateHeure() {
+  const now = new Date();
+  document.getElementById("dateHeure").textContent =
+    now.toLocaleString("fr-FR", { dateStyle: "full", timeStyle: "medium" });
 
-/* ------------------- OUTILS ------------------- */
-const $ = id => document.getElementById(id);
-const pad2 = n => String(n).padStart(2, "0");
+  const heure = now.getHours();
+  let equipe = "N";
+  if (heure >= 5 && heure < 13) equipe = "M";
+  else if (heure >= 13 && heure < 21) equipe = "AM";
+  document.getElementById("equipeActuelle").textContent = `Équipe actuelle : ${equipe} (${equipe === "M" ? "5h–13h" : equipe === "AM" ? "13h–21h" : "21h–5h"})`;
+}
+setInterval(updateDateHeure, 1000);
+updateDateHeure();
 
-function heureCourante() {
-  const d = new Date();
-  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+// === NAVIGATION ===
+function showSection(id) {
+  document.querySelectorAll(".page").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-function equipeActuelle() {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 13) return "M (5h-13h)";
-  if (h >= 13 && h < 21) return "AM (13h-21h)";
-  return "N (21h-5h)";
+// === SÉLECTION DE LIGNE ===
+function selectLine(line) {
+  currentLine = line;
+  document.getElementById("ligneTitre").textContent = "Ligne : " + line;
+  restoreInputs(line);
+  updateChart();
 }
 
-function updateHorloge() {
-  $("horloge").textContent = `Heure : ${heureCourante()}`;
-  $("equipeActuelle").textContent = `Équipe : ${equipeActuelle()}`;
-  setTimeout(updateHorloge, 1000 * 60);
+// === RESTAURATION DES CHAMPS ===
+function restoreInputs(line) {
+  const data = JSON.parse(localStorage.getItem(`data_${line}`)) || {};
+  document.getElementById("heureDebut").value = data.heureDebut || "";
+  document.getElementById("heureFin").value = data.heureFin || "";
+  document.getElementById("qteRealisee").value = data.qteRealisee || "";
+  document.getElementById("qteRestante").value = data.qteRestante || "";
+  document.getElementById("cadenceManuelle").value = data.cadenceManuelle || "";
+  document.getElementById("cadenceCalculee").value = data.cadenceCalculee || "";
+  document.getElementById("estimationFin").value = data.estimationFin || "";
 }
 
-/* ------------------- PERSISTANCE ------------------- */
-function kDraft(l) { return `draft:${l}`; }
-function kHist(l) { return `history:${l}`; }
-function kArrets() { return "arrets"; }
-function kPerso() { return "personnel"; }
-function kOrg() { return "organisation"; }
-
-function loadJSON(key, def=[]) {
-  try { return JSON.parse(localStorage.getItem(key)) || def; }
-  catch { return def; }
-}
-function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-
-/* ------------------- FONCTIONS LIGNE ------------------- */
-function selectLigne(ligne) {
-  ligneActive = ligne;
-  document.querySelectorAll(".btn-ligne").forEach(b=>{
-    b.classList.toggle("active", b.dataset.line===ligne);
+// === SAUVEGARDE LOCALE TEMPORAIRE ===
+document.querySelectorAll("#heureDebut, #heureFin, #qteRealisee, #qteRestante, #cadenceManuelle").forEach(el => {
+  el.addEventListener("input", () => {
+    if (!currentLine) return;
+    const data = {
+      heureDebut: document.getElementById("heureDebut").value,
+      heureFin: document.getElementById("heureFin").value,
+      qteRealisee: document.getElementById("qteRealisee").value,
+      qteRestante: document.getElementById("qteRestante").value,
+      cadenceManuelle: document.getElementById("cadenceManuelle").value,
+      cadenceCalculee: document.getElementById("cadenceCalculee").value,
+      estimationFin: document.getElementById("estimationFin").value
+    };
+    localStorage.setItem(`data_${currentLine}`, JSON.stringify(data));
+    updateEstimation();
   });
-  $("titreLigne").textContent = ligne;
-  chargerBrouillon(ligne);
-  afficherHistorique(ligne);
-  recalculer();
-}
+});
 
-function chargerBrouillon(ligne) {
-  const d = loadJSON(kDraft(ligne), {});
-  $("heureDebut").value = d.hDebut || "";
-  $("heureFin").value = d.hFin || "";
-  $("quantiteRealisee").value = d.qte || "";
-  $("quantiteRestante").value = d.qteRest || "";
-  $("cadenceManuelle").value = d.cadMan || "";
-  $("cadenceCalculee").value = d.cadCalc || "";
-  $("estimationFin").value = d.estim || "";
-}
+// === CALCUL AUTOMATIQUE ===
+function updateEstimation() {
+  const debut = document.getElementById("heureDebut").value;
+  const fin = document.getElementById("heureFin").value;
+  const qte = parseFloat(document.getElementById("qteRealisee").value);
+  const rest = parseFloat(document.getElementById("qteRestante").value);
+  const cadMan = parseFloat(document.getElementById("cadenceManuelle").value);
 
-function sauverBrouillon() {
-  const d = {
-    hDebut: $("heureDebut").value,
-    hFin: $("heureFin").value,
-    qte: $("quantiteRealisee").value,
-    qteRest: $("quantiteRestante").value,
-    cadMan: $("cadenceManuelle").value,
-    cadCalc: $("cadenceCalculee").value,
-    estim: $("estimationFin").value
-  };
-  saveJSON(kDraft(ligneActive), d);
-}
+  let cadence = 0;
+  if (debut && fin && qte) {
+    const [h1, m1] = debut.split(":").map(Number);
+    const [h2, m2] = fin.split(":").map(Number);
+    let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (diff <= 0) diff += 24 * 60;
+    cadence = qte / (diff / 60);
+    document.getElementById("cadenceCalculee").value = cadence.toFixed(2);
+  }
 
-/* ------------------- CALCULS ------------------- */
-function recalculer() {
-  const hDeb = $("heureDebut").value;
-  const hFin = $("heureFin").value;
-  const qte = Number($("quantiteRealisee").value);
-  const rest = Number($("quantiteRestante").value);
-  const cadMan = Number($("cadenceManuelle").value);
-
-  let d = parseHeure(hDeb);
-  let f = parseHeure(hFin);
-  if (!d || !f) return;
-  if (f < d) f += 24 * 60;
-  const dureeHeures = (f - d) / 60;
-
-  let cadCalc = "";
-  if (qte > 0 && dureeHeures > 0) cadCalc = (qte / dureeHeures).toFixed(2);
-  $("cadenceCalculee").value = cadCalc;
-
-  const cadence = cadMan || Number(cadCalc);
-  if (rest > 0 && cadence > 0) {
-    const minutes = Math.round((rest / cadence) * 60);
+  if (rest && (cadMan || cadence)) {
+    const rate = cadMan || cadence;
+    const hoursNeeded = rest / rate;
     const now = new Date();
-    const fin = new Date(now.getTime() + minutes * 60000);
-    $("estimationFin").value = `${pad2(fin.getHours())}:${pad2(fin.getMinutes())} (${Math.floor(minutes/60)}h${pad2(minutes%60)})`;
+    const finEstimee = new Date(now.getTime() + hoursNeeded * 3600000);
+    document.getElementById("estimationFin").value =
+      finEstimee.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) +
+      ` (~${hoursNeeded.toFixed(2)}h)`;
   }
-
-  sauverBrouillon();
 }
 
-function parseHeure(h) {
-  if (!h || !h.includes(":")) return null;
-  const [H, M] = h.split(":").map(Number);
-  return H * 60 + M;
-}
-
-/* ------------------- ENREGISTREMENT ------------------- */
+// === ENREGISTRER ===
 function enregistrer() {
-  const hDeb = $("heureDebut").value;
-  const hFin = $("heureFin").value;
-  const qte = Number($("quantiteRealisee").value);
-  const rest = Number($("quantiteRestante").value);
-  const cadMan = Number($("cadenceManuelle").value);
-  const cadCalc = $("cadenceCalculee").value;
-  const estim = $("estimationFin").value;
+  if (!currentLine) return alert("Sélectionne d'abord une ligne.");
+  const date = new Date().toLocaleString("fr-FR");
+  const hD = document.getElementById("heureDebut").value;
+  const hF = document.getElementById("heureFin").value;
+  const qR = document.getElementById("qteRealisee").value;
+  const qRest = document.getElementById("qteRestante").value;
+  const cad = document.getElementById("cadenceCalculee").value;
+  const estFin = document.getElementById("estimationFin").value;
 
-  if (!hDeb || !hFin || (!qte && !rest)) return alert("Saisir heures et quantités.");
+  const lineData = historique[currentLine] || [];
+  lineData.push({ date, hD, hF, qR, qRest, cad, estFin });
+  historique[currentLine] = lineData;
+  localStorage.setItem("historique", JSON.stringify(historique));
+  localStorage.removeItem(`data_${currentLine}`);
+  afficherHistorique();
+  resetForm();
+  updateChart();
+}
 
-  const hist = loadJSON(kHist(ligneActive));
-  hist.unshift({
-    date: new Date().toLocaleString("fr-FR"),
-    hDeb, hFin, qte, rest,
-    cadence: cadMan || cadCalc,
-    estim
+// === RESET ===
+function resetForm() {
+  document.querySelectorAll("#heureDebut, #heureFin, #qteRealisee, #qteRestante, #cadenceManuelle, #cadenceCalculee, #estimationFin")
+    .forEach(i => i.value = "");
+}
+
+// === HISTORIQUE ===
+function afficherHistorique() {
+  const histDiv = document.getElementById("historique");
+  histDiv.innerHTML = "";
+  if (!historique[currentLine]) return;
+  historique[currentLine].forEach((e, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `${e.date} — ${e.hD} ➜ ${e.hF} | Q=${e.qR} | Rest=${e.qRest} | Cad=${e.cad} | Fin=${e.estFin}
+      <button onclick="supprEntry(${i})">🗑️</button>`;
+    histDiv.appendChild(div);
   });
-  saveJSON(kHist(ligneActive), hist);
-
-  localStorage.removeItem(kDraft(ligneActive));
-  $("quantiteRealisee").value = "";
-  $("quantiteRestante").value = "";
-  $("cadenceManuelle").value = "";
-  $("cadenceCalculee").value = "";
-  $("estimationFin").value = "";
-  afficherHistorique(ligneActive);
-  majGraphique();
+}
+function supprEntry(i) {
+  historique[currentLine].splice(i, 1);
+  localStorage.setItem("historique", JSON.stringify(historique));
+  afficherHistorique();
+  updateChart();
 }
 
-/* ------------------- HISTORIQUE ------------------- */
-function afficherHistorique(ligne) {
-  const zone = $("historiqueProduction");
-  const hist = loadJSON(kHist(ligne));
-  if (!hist.length) {
-    zone.innerHTML = `<div class='empty'>Aucun enregistrement</div>`;
-    return;
-  }
-  zone.innerHTML = hist.map((r,i)=>`
-    <div class="hrow">
-      <div><b>${r.date}</b> — ${r.hDeb} → ${r.hFin} | Q=${r.qte} | Rest=${r.rest} | Cad=${r.cadence} | Fin ~ ${r.estim}</div>
-      <button onclick="supprHist('${ligne}',${i})">🗑</button>
-    </div>
-  `).join("");
-}
-
-function supprHist(ligne,i){
-  const hist = loadJSON(kHist(ligne));
-  hist.splice(i,1);
-  saveJSON(kHist(ligne),hist);
-  afficherHistorique(ligne);
-  majGraphique();
-}
-
-/* ------------------- GRAPHIQUE ------------------- */
-function majGraphique(){
-  const data = LIGNES.map(l=>{
-    const hist = loadJSON(kHist(l));
-    return hist.reduce((t,r)=>t+(Number(r.qte)||0),0);
+// === CHART ===
+function updateChart() {
+  const ctx = document.getElementById("chartQuantites").getContext("2d");
+  const labels = Object.keys(historique);
+  const data = labels.map(l => {
+    const arr = historique[l] || [];
+    return arr.reduce((sum, e) => sum + Number(e.qR || 0), 0);
   });
-  const ctx = $("graphQuantites").getContext("2d");
-  if (chartQuantites) chartQuantites.destroy();
-  chartQuantites = new Chart(ctx, {
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: LIGNES,
+      labels,
       datasets: [{
         label: "Quantité réalisée (colis)",
         data,
-        backgroundColor: "#007bff",
-        borderRadius: 6
+        backgroundColor: "#007bff88",
+        borderColor: "#005fc4",
+        borderWidth: 1.5
       }]
     },
     options: {
@@ -194,148 +167,76 @@ function majGraphique(){
   });
 }
 
-/* ------------------- EXPORT ------------------- */
-function exportGlobal(){
-  const rows = [["Date","Type","Ligne","Infos","Quantité","Cadence","Estimation"]];
-  // production
-  LIGNES.forEach(l=>{
-    loadJSON(kHist(l)).forEach(r=>{
-      rows.push([r.date,"Production",l,`${r.hDeb}-${r.hFin}`,r.qte,r.cadence,r.estim]);
+// === EXPORT EXCEL ===
+function exportGlobal() {
+  const rows = [["Ligne", "Date", "Heure Début", "Heure Fin", "Quantité", "Restante", "Cadence", "Fin estimée"]];
+  Object.entries(historique).forEach(([ligne, entries]) => {
+    entries.forEach(e => {
+      rows.push([ligne, e.date, e.hD, e.hF, e.qR, e.qRest, e.cad, e.estFin]);
     });
   });
-  // arrêts
-  loadJSON(kArrets()).forEach(a=>{
-    rows.push([a.date,"Arrêt",a.ligne,`Durée: ${a.duree}min`, "", "", a.comment]);
-  });
-  // personnel
-  loadJSON(kPerso()).forEach(p=>{
-    rows.push([p.date,"Personnel",p.nom,p.motif,"","",p.comment]);
-  });
-  // organisation
-  loadJSON(kOrg()).forEach(o=>{
-    rows.push([o.date,"Organisation","",o.text,"","",""]);
-  });
-
-  const csv = rows.map(r=>r.map(x=>`"${(x||"").replace(/"/g,'""')}"`).join(";")).join("\n");
-  const blob = new Blob([csv],{type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `Synthese_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+  const csv = rows.map(r => r.join(";")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "Synthese_Production_Lactalis.csv";
+  link.click();
 }
 
-/* ------------------- ARRÊTS / PERSONNEL / ORG ------------------- */
-function ajouterArret(){
-  const ligne = $("ligneArret").value;
-  const duree = $("dureeArret").value;
-  const comment = $("commentArret").value;
-  if (!ligne || !duree) return alert("Sélectionner une ligne et durée.");
-  const list = loadJSON(kArrets());
-  list.unshift({date:new Date().toLocaleString("fr-FR"),ligne,duree,comment});
-  saveJSON(kArrets(),list);
-  afficherArrets();
+// === ARRÊTS ===
+function enregistrerArret() {
+  const ligne = document.getElementById("arretLigne").value;
+  const duree = document.getElementById("dureeArret").value;
+  const motif = document.getElementById("motifArret").value;
+  if (!ligne || !duree) return alert("Complète les champs arrêt.");
+  const date = new Date().toLocaleString("fr-FR");
+  const entry = `[${date}] ${ligne} — ${duree}min — ${motif}`;
+  const div = document.createElement("div");
+  div.textContent = entry;
+  document.getElementById("historiqueArrets").appendChild(div);
+  document.getElementById("dureeArret").value = "";
+  document.getElementById("motifArret").value = "";
+  document.getElementById("arretLigne").value = "";
 }
 
-function afficherArrets(){
-  const zone = $("listeArrets");
-  const list = loadJSON(kArrets());
-  zone.innerHTML = list.map((a,i)=>`
-    <div class="hrow"><div>${a.date} — ${a.ligne} — ${a.duree}min — ${a.comment}</div>
-    <button onclick="supprArret(${i})">🗑</button></div>
-  `).join("") || "<div class='empty'>Aucun arrêt</div>";
+// === PERSONNEL ===
+function enregistrerPersonnel() {
+  const n = document.getElementById("nomPers").value;
+  const m = document.getElementById("motifPers").value;
+  const c = document.getElementById("comPers").value;
+  if (!n) return;
+  const date = new Date().toLocaleString("fr-FR");
+  const div = document.createElement("div");
+  div.textContent = `[${date}] ${n} — ${m} — ${c}`;
+  document.getElementById("historiquePersonnel").appendChild(div);
+  document.getElementById("nomPers").value = "";
+  document.getElementById("motifPers").value = "";
+  document.getElementById("comPers").value = "";
 }
 
-function supprArret(i){
-  const list = loadJSON(kArrets());
-  list.splice(i,1);
-  saveJSON(kArrets(),list);
-  afficherArrets();
+// === ORGANISATION ===
+function enregistrerOrganisation() {
+  const txt = document.getElementById("noteOrganisation").value;
+  if (!txt) return;
+  const date = new Date().toLocaleString("fr-FR");
+  const div = document.createElement("div");
+  div.textContent = `[${date}] ${txt}`;
+  document.getElementById("historiqueOrganisation").appendChild(div);
+  document.getElementById("noteOrganisation").value = "";
 }
 
-function ajouterPersonnel(){
-  const nom=$("nomPersonnel").value, motif=$("motifPersonnel").value, comment=$("commentPersonnel").value;
-  if(!nom||!motif) return alert("Nom et motif obligatoires");
-  const list=loadJSON(kPerso());
-  list.unshift({date:new Date().toLocaleString("fr-FR"),nom,motif,comment});
-  saveJSON(kPerso(),list);
-  afficherPersonnel();
+// === CALCULATRICE ===
+function toggleCalc() {
+  document.querySelector(".calc-content").classList.toggle("active");
 }
-
-function afficherPersonnel(){
-  const zone=$("listePersonnel");
-  const list=loadJSON(kPerso());
-  zone.innerHTML=list.map((p,i)=>`
-  <div class="hrow"><div>${p.date} — ${p.nom} — ${p.motif} — ${p.comment}</div>
-  <button onclick="supprPerso(${i})">🗑</button></div>
-  `).join("")||"<div class='empty'>Aucun enregistrement</div>";
+function calcAdd(val) {
+  document.getElementById("calcScreen").value += val;
 }
-
-function supprPerso(i){
-  const list=loadJSON(kPerso());
-  list.splice(i,1);saveJSON(kPerso(),list);afficherPersonnel();
+function calcCompute() {
+  const input = document.getElementById("calcScreen");
+  try { input.value = eval(input.value); }
+  catch { input.value = "Erreur"; }
 }
-
-function ajouterOrganisation(){
-  const text=$("texteOrganisation").value;
-  if(!text) return;
-  const list=loadJSON(kOrg());
-  list.unshift({date:new Date().toLocaleString("fr-FR"),text});
-  saveJSON(kOrg(),list);
-  afficherOrganisation();
+function calcClear() {
+  document.getElementById("calcScreen").value = "";
 }
-
-function afficherOrganisation(){
-  const zone=$("listeOrganisation");
-  const list=loadJSON(kOrg());
-  zone.innerHTML=list.map((o,i)=>`
-  <div class="hrow"><div>${o.date} — ${o.text}</div>
-  <button onclick="supprOrg(${i})">🗑</button></div>
-  `).join("")||"<div class='empty'>Aucune consigne</div>";
-}
-
-function supprOrg(i){
-  const list=loadJSON(kOrg());
-  list.splice(i,1);saveJSON(kOrg(),list);afficherOrganisation();
-}
-
-/* ------------------- NAVIGATION ------------------- */
-function showSection(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  $(id).classList.add("active");
-}
-
-/* ------------------- INIT ------------------- */
-function initHeures(){
-  const opts=[];
-  for(let h=0;h<24;h++){
-    for(let m=0;m<60;m+=5){
-      opts.push(`${pad2(h)}:${pad2(m)}`);
-    }
-  }
-  ["heureDebut","heureFin"].forEach(id=>{
-    $(id).innerHTML="<option value=''></option>"+opts.map(o=>`<option value='${o}'>${o}</option>`).join("");
-  });
-}
-
-document.addEventListener("click",e=>{
-  const btn=e.target.closest("[data-line]");
-  if(btn){selectLigne(btn.dataset.line);return;}
-  if(e.target.id==="btnEnregistrer"){enregistrer();}
-  if(e.target.id==="btnReset"){
-    ["quantiteRealisee","quantiteRestante","cadenceManuelle","cadenceCalculee","estimationFin"].forEach(id=>$(id).value="");
-    sauverBrouillon();
-  }
-});
-
-document.addEventListener("DOMContentLoaded",()=>{
-  initHeures();
-  updateHorloge();
-  afficherArrets();
-  afficherPersonnel();
-  afficherOrganisation();
-  selectLigne(ligneActive);
-  majGraphique();
-  document.querySelectorAll("input,select").forEach(el=>{
-    el.addEventListener("input",recalculer);
-  });
-});
