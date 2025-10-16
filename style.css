@@ -1,227 +1,59 @@
-/* === Style général === */
-body {
-  margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f5f9ff;
-  color: #1a237e;
+:root{
+  --bleu:#007ac3; --bleu2:#005b94; --fond:#f5f9ff; --txt:#1a237e; --vert:#28a745; --rouge:#d32f2f;
 }
 
-/* === En-tête === */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #007ac3;
-  color: white;
-  padding: 10px 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-header .logo {
-  height: 45px;
-}
-header h1 {
-  font-size: 1.6em;
-  font-weight: 600;
-  text-align: center;
-  flex: 1;
-}
-#horloge {
-  font-size: 0.9em;
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--fond);color:var(--txt)}
+header{display:flex;align-items:center;justify-content:space-between;background:var(--bleu);color:#fff;padding:10px 16px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+header h1{margin:0;font-size:1.4em;font-weight:700}
+#horloge{opacity:.95}
 
-/* === Menu === */
-nav {
-  display: flex;
-  justify-content: space-around;
-  background-color: #e3f2fd;
-  padding: 8px;
-  border-bottom: 2px solid #007ac3;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-nav button {
-  background: #007ac3;
-  color: white;
-  font-weight: 600;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-nav button:hover {
-  background: #005b94;
-  transform: scale(1.05);
-}
+#menu{display:flex;gap:8px;justify-content:space-around;background:#e3f2fd;border-bottom:2px solid var(--bleu);padding:8px;position:sticky;top:0;z-index:10}
+#menu button{background:var(--bleu);color:#fff;border:none;border-radius:20px;padding:9px 14px;font-weight:700;cursor:pointer;transition:.2s}
+#menu button:hover{background:var(--bleu2);transform:scale(1.05)}
 
-/* === Sections === */
-.page-section {
-  display: none;
-  padding: 20px;
-}
-.page-section.active {
-  display: block;
-}
+.page-section{display:none;padding:16px}
+.page-section.active{display:block}
 
-/* === Cartes de lignes === */
-.ligne-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.ligne-buttons button {
-  background: #0288d1;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-weight: 600;
-  transition: 0.2s;
-}
-.ligne-buttons button:hover {
-  background: #01579b;
-  transform: scale(1.05);
-}
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-.card h3 {
-  margin-top: 0;
-  color: #007ac3;
-}
+.ligne-buttons{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
+.ligne-buttons button{background:#0288d1;border:none;color:#fff;padding:8px 12px;border-radius:18px;font-weight:700;cursor:pointer;transition:.2s}
+.ligne-buttons button:hover{background:#01579b;transform:scale(1.05)}
 
-/* === Formulaires === */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: white;
-  padding: 15px;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-form label {
-  font-weight: 600;
-}
-input, select, textarea {
-  border: 1px solid #b0bec5;
-  border-radius: 10px;
-  padding: 8px;
-  font-size: 1em;
-}
-textarea {
-  resize: vertical;
-  min-height: 60px;
-}
+.line-card, .card{background:#fff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.line-card h3{margin:4px 0 10px;color:var(--bleu)}
 
-/* === Boutons === */
-button {
-  background: #007ac3;
-  color: white;
-  border: none;
-  border-radius: 15px;
-  padding: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover {
-  background: #005b94;
-}
+form{display:flex;flex-direction:column;gap:8px}
+label{font-weight:700}
+input,select,textarea{border:1px solid #c5d1de;border-radius:10px;padding:8px;font-size:1em}
+textarea{min-height:60px;resize:vertical}
 
-/* === Tableaux === */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-}
-th, td {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  text-align: center;
-}
-th {
-  background: #007ac3;
-  color: white;
-}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{background:var(--bleu);border:none;color:#fff;border-radius:12px;padding:9px 12px;font-weight:700;cursor:pointer;transition:.2s}
+button:hover{background:var(--bleu2)}
+.export-btn{background:var(--vert);}
 
-/* === Graphiques === */
-canvas {
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-  margin-top: 10px;
-  max-width: 100%;
-}
+.stats b{color:var(--bleu)}
 
-/* === Calculatrice === */
-#calcPanel {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #007ac3;
-  color: white;
-  border-radius: 15px;
-  padding: 10px;
-  width: 240px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  z-index: 10000;
-}
-#calcPanel input {
-  width: 100%;
-  text-align: right;
-  font-size: 1.4em;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: none;
-  padding: 5px;
-  background: white;
-  color: #007ac3;
-}
-.calc-btns {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-.calc-btns button {
-  background: #e3f2fd;
-  color: #007ac3;
-  font-size: 1.2em;
-  border-radius: 10px;
-}
-.calc-btns button:hover {
-  background: #b3e5fc;
-}
+#openCalc{position:fixed;bottom:16px;right:16px;width:56px;height:56px;border-radius:50%;background:var(--bleu);color:#fff;font-size:1.2em;box-shadow:0 4px 8px rgba(0,0,0,.3);z-index:20;border:none}
+#calculator{position:fixed;bottom:84px;right:16px;width:260px;background:#fff;border-radius:14px;box-shadow:0 6px 16px rgba(0,0,0,.35);padding:10px;z-index:21}
+#calculator.hidden{display:none}
+#calcScreen{width:100%;height:40px;text-align:right;font-size:1.2em;border:1px solid #c5d1de;border-radius:8px;margin-bottom:8px;padding:0 6px}
+#calcKeys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#calcKeys button{background:#e6f2ff;color:#003a62;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer}
+#calcKeys button:hover{background:#cce6ff}
+.closeCalc{width:100%;margin-top:6px;background:#999}
 
-/* === Footer === */
-footer {
-  text-align: center;
-  font-size: 0.85em;
-  padding: 10px;
-  color: #455a64;
-  background: #e3f2fd;
-  margin-top: 30px;
-}
+canvas{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.1);margin-top:8px}
 
-/* === Divers === */
-.hidden {
-  display: none !important;
-}
+.hist-row{display:flex;justify-content:space-between;align-items:center;background:#eef6ff;border-radius:10px;padding:6px 8px;margin:6px 0}
+.hist-row button{background:var(--rouge)}
 
-/* === Responsive === */
-@media (max-width: 768px) {
-  header h1 { font-size: 1.2em; }
-  nav button { padding: 8px 12px; font-size: 0.9em; }
-  .card { padding: 10px; }
-  #calcPanel { width: 90%; right: 5%; }
+.hidden{display:none!important}
+
+footer{text-align:center;color:#607d8b;background:#e3f2fd;padding:10px;margin-top:20px}
+
+@media (max-width:768px){
+  header h1{font-size:1.1em}
+  #menu button{padding:8px 10px}
+  #calculator{width:92%;right:4%}
 }
